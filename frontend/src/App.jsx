@@ -1,10 +1,10 @@
 import { Toaster } from "react-hot-toast";
 import { Routes, Route, Navigate } from "react-router-dom";
 import "./index.css";
-import ListadoUsuarios from "./paginas/ListadoUsuarios.jsx";
-import NuevoUsuario from "./paginas/NuevoUsuario.jsx";
-import EditarUsuarioPage from "./paginas/EditarUsuarioPage.jsx";
-import VerUsuario from "./paginas/VerUsuario.jsx";
+import ListadoUsuarios from "./pages/ListadoUsuarios.jsx";
+import NuevoUsuario from "./pages/NuevoUsuario.jsx";
+import EditarUsuarioPage from "./pages/EditarUsuarioPage.jsx";
+import VerUsuario from "./pages/VerUsuario.jsx";
 
 function App() {
   return (
