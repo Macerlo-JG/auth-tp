@@ -1,0 +1,145 @@
+{
+  "info": {
+    "name": "Usuarios API",
+    "_postman_id": "c3f9d2a1-1234-4b7a-9f11-abcdef123456",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Usuarios",
+      "item": [
+        {
+          "name": "GET usuarios",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5000/usuarios",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["usuarios"]
+            }
+          }
+        },
+        {
+          "name": "GET usuario por ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5000/usuarios/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["usuarios", "1"]
+            }
+          }
+        },
+        {
+          "name": "POST usuario",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_persona\": 1,\n  \"estado_usuario\": \"PENDIENTE\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/usuarios",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["usuarios"]
+            }
+          }
+        },
+        {
+          "name": "PUT usuario ACTIVO",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado_usuario\": \"ACTIVO\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/usuarios/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["usuarios", "1"]
+            }
+          }
+        },
+        {
+          "name": "PUT usuario BLOQUEADO",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado_usuario\": \"BLOQUEADO\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/usuarios/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["usuarios", "1"]
+            }
+          }
+        },
+        {
+          "name": "PUT usuario INACTIVO",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado_usuario\": \"INACTIVO\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/usuarios/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["usuarios", "1"]
+            }
+          }
+        },
+        {
+          "name": "DELETE usuario (borrado lógico)",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "http://localhost:5000/usuarios/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["usuarios", "1"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

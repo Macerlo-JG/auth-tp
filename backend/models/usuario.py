@@ -1,0 +1,69 @@
+from db import db
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import (
+    Integer,
+    Boolean,
+    DateTime,
+    Enum
+)
+from datetime import datetime, timezone
+from sqlalchemy.sql import func
+import enum
+
+
+class EstadoUsuario(enum.Enum):
+    PENDIENTE = "PENDIENTE"
+    ACTIVO = "ACTIVO"
+    BLOQUEADO = "BLOQUEADO"
+    INACTIVO = "INACTIVO"
+
+class Usuario(db.Model):
+    __tablename__ = "usuarios"
+
+    id_usuario: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True
+    )
+
+    id_persona: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        unique=True
+    )
+
+    estado_usuario: Mapped[EstadoUsuario] = mapped_column(
+        Enum(
+            EstadoUsuario,
+            name="estado_usuario"
+        ),
+        nullable=False,
+        default=EstadoUsuario.PENDIENTE
+    )
+
+    activo: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=True
+    )
+
+    created_by: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False
+    )
+
+    updated_by: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc)
+    )
+
+    updated_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+        onupdate=func.now()
+    )
