@@ -1,6 +1,5 @@
 ﻿# Auth
-# Requisitos
-
+# Guía de instalación
 # Clonar el repositorio
 
 ```bash
