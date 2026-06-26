@@ -33,7 +33,7 @@ Una vez iniciado el proyecto estarán disponibles los siguientes servicios:
 |----------|------------------------|
 | Frontend | http://localhost:5173 |
 | Backend API | http://localhost:5000 |
-| PostgreSQL | localhost:5432 |
+| PostgreSQL | http:/localhost:5432 |
 | PgAdmin | http://localhost:5050 |
 
 Para detener los contenedores:
