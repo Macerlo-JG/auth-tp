@@ -1,42 +1,5 @@
-﻿# Auth-TP
-
-Sistema de autenticación desarrollado con arquitectura de microservicios.
-
-## Estructura del proyecto
-
-```
-auth-tp/
-│
-├── backend/
-│   ├── Dockerfile
-│   ├── docker-compose.yml
-│   ├── requirements.txt
-│   └── ...
-│
-└── frontend/
-    ├── Dockerfile
-    ├── package.json
-    ├── src/
-    └── ...
-```
-
----
-
+﻿# Auth
 # Requisitos
-
-Antes de comenzar es necesario tener instalado:
-
-- Docker Desktop
-- Docker Compose (incluido en Docker Desktop)
-
-Verificar la instalación:
-
-```bash
-docker --version
-docker compose version
-```
-
----
 
 # Clonar el repositorio
 
@@ -64,14 +27,6 @@ Construir las imágenes y levantar los servicios:
 docker compose up --build
 ```
 
-Para ejecutar los contenedores en segundo plano:
-
-```bash
-docker compose up -d --build
-```
-
----
-
 # Servicios disponibles
 
 Una vez iniciado el proyecto estarán disponibles los siguientes servicios:
@@ -82,60 +37,6 @@ Una vez iniciado el proyecto estarán disponibles los siguientes servicios:
 | Backend API | http://localhost:5000 |
 | PostgreSQL | localhost:5432 |
 | PgAdmin | http://localhost:5050 |
-
----
-
-# Credenciales de PgAdmin
-
-Email:
-
-```
-admin@admin.com
-```
-
-Contraseña:
-
-```
-admin
-```
-
----
-
-# Credenciales de PostgreSQL
-
-Host:
-
-```
-postgres
-```
-
-Puerto:
-
-```
-5432
-```
-
-Base de datos:
-
-```
-auth
-```
-
-Usuario:
-
-```
-postgres
-```
-
-Contraseña:
-
-```
-postgres
-```
-
----
-
-# Detener el proyecto
 
 Para detener los contenedores:
 
@@ -148,129 +49,6 @@ Si además desea eliminar los volúmenes de la base de datos:
 ```bash
 docker compose down -v
 ```
-
-> **Advertencia:** eliminar los volúmenes borrará todos los datos almacenados en PostgreSQL.
-
----
-
-# Reconstruir las imágenes
-
-Si se modificó el Dockerfile o las dependencias del proyecto:
-
-```bash
-docker compose up --build
-```
-
-O bien:
-
-```bash
-docker compose build --no-cache
-docker compose up
-```
-
----
-
-# Ver los logs
-
-Todos los servicios:
-
-```bash
-docker compose logs -f
-```
-
-Backend:
-
-```bash
-docker compose logs -f backend
-```
-
-Frontend:
-
-```bash
-docker compose logs -f frontend
-```
-
-PostgreSQL:
-
-```bash
-docker compose logs -f postgres
-```
-
----
-
-# Acceder a un contenedor
-
-Backend:
-
-```bash
-docker exec -it backend bash
-```
-
-Frontend:
-
-```bash
-docker exec -it frontend sh
-```
-
-PostgreSQL:
-
-```bash
-docker exec -it postgres psql -U postgres -d auth
-```
-
----
-
-# Apagar completamente el entorno
-
-```bash
-docker compose down
-```
-
-Eliminar imágenes creadas para el proyecto:
-
-```bash
-docker compose down --rmi local
-```
-
-Eliminar imágenes y volúmenes:
-
-```bash
-docker compose down --rmi local -v
-```
-
----
-
-# Solución de problemas
-
-## El puerto está ocupado
-
-Verifique que no exista otro proceso utilizando alguno de los siguientes puertos:
-
-- 5000 (Backend)
-- 5173 (Frontend)
-- 5432 (PostgreSQL)
-- 5050 (PgAdmin)
-
----
-
-## El frontend no se conecta al backend
-
-Verifique que:
-
-- El contenedor `backend` esté en ejecución.
-- La variable `VITE_API_URL` esté correctamente configurada.
-- El backend esté escuchando en el puerto `5000`.
-
----
-
-## Reiniciar completamente el entorno
-
-```bash
-docker compose down -v
-docker compose up --build
-```
-
----
 
 # Tecnologías utilizadas
 
