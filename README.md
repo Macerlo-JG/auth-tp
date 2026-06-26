@@ -4,12 +4,10 @@
 # Clonar el repositorio
 
 ```bash
-git clone <URL_DEL_REPOSITORIO>
+git clone https://github.com/unlz-programacion/2026-caba-1c-auth.git
 
 cd auth-tp
 ```
-
----
 
 # Levantar el proyecto
 
