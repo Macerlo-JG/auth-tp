@@ -9,7 +9,7 @@ export default function Navbar() {
           <div className="flex items-center gap-3 shrink-0">
             <IconShield />
             <div className="text-white leading-tight">
-              <div className="font-bold text-[15px]">Sistema de Legajos</div>
+              <div className="font-bold text-[15px]">Sistema de Usuarios</div>
               <div className="text-[11px] text-white/75">Bomberos Voluntarios</div>
             </div>
           </div>

@@ -1,5 +1,7 @@
 ﻿# Auth
+
 # Guía de instalación
+
 # Clonar el repositorio
 
 ```bash
@@ -10,12 +12,12 @@ cd auth-tp
 
 # Levantar el proyecto
 
-Actualmente el archivo `docker-compose.yml` se encuentra dentro de la carpeta `backend`.
+Actualmente el archivo `docker-compose.yml` se encuentra dentro de la carpeta `deploy`.
 
 Ingresar a dicha carpeta:
 
 ```bash
-cd backend
+cd deploy
 ```
 
 Construir las imágenes y levantar los servicios:
@@ -28,12 +30,12 @@ docker compose up --build
 
 Una vez iniciado el proyecto estarán disponibles los siguientes servicios:
 
-| Servicio | URL |
-|----------|------------------------|
-| Frontend | http://localhost:5173 |
+| Servicio    | URL                   |
+| ----------- | --------------------- |
+| Frontend    | http://localhost:5173 |
 | Backend API | http://localhost:5000 |
-| PostgreSQL | http:/localhost:5432 |
-| PgAdmin | http://localhost:5050 |
+| PostgreSQL  | http:/localhost:5432  |
+| PgAdmin     | http://localhost:5050 |
 
 Para detener los contenedores:
 
