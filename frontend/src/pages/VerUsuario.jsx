@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import Layout from "../componentes/layout/Layout.jsx";
-import Breadcrumbs from "../componentes/layout/Breadcrumbs.jsx";
-import EstadoBadge from "../componentes/EstadoBadge.jsx";
-import { IconPencil } from "../componentes/icons.jsx";
+import Layout from "../components/layout/Layout.jsx";
+import Breadcrumbs from "../components/layout/Breadcrumbs.jsx";
+import EstadoBadge from "../components/EstadoBadge.jsx";
+import { IconPencil } from "../components/icons.jsx";
 import { getUsuario } from "../api.js";
 import { formatearId, formatearFecha } from "../utils/format.js";
 

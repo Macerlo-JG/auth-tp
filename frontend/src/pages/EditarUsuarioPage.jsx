@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
-import Layout from "../componentes/layout/Layout.jsx";
-import Breadcrumbs from "../componentes/layout/Breadcrumbs.jsx";
+import Layout from "../components/layout/Layout.jsx";
+import Breadcrumbs from "../components/layout/Breadcrumbs.jsx";
 import {
   IconPerson,
   IconBuilding,
   IconHeart,
   IconSave,
-} from "../componentes/icons.jsx";
+} from "../components/icons.jsx";
 import {
   getUsuario,
   editarUsuario,

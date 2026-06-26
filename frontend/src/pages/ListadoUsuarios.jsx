@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import Layout from "../componentes/layout/Layout.jsx";
-import EstadoBadge from "../componentes/EstadoBadge.jsx";
-import ConfirmarEliminacion from "../componentes/ConfirmarEliminacion.jsx";
+import Layout from "../components/layout/Layout.jsx";
+import EstadoBadge from "../components/EstadoBadge.jsx";
+import ConfirmarEliminacion from "../components/ConfirmarEliminacion.jsx";
 import {
   IconSearch,
   IconEye,
   IconPencil,
   IconTrash,
-} from "../componentes/icons.jsx";
+} from "../components/icons.jsx";
 import { getUsuarios, eliminarUsuario } from "../api.js";
 import { formatearId } from "../utils/format.js";
 

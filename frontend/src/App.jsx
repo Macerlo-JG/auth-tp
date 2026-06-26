@@ -10,6 +10,7 @@ function App() {
   return (
     <>
       <Toaster
+      //contenedor donde apareceran las notificaciones toast
         position="top-right"
         toastOptions={{
           duration: 2500,
@@ -17,7 +18,7 @@ function App() {
         }}
       />
       <Routes>
-        <Route path="/" element={<Navigate to="/usuarios" replace />} />
+        <Route path="/" element={<Navigate to="/usuarios" replace />} /> 
         <Route path="/usuarios" element={<ListadoUsuarios />} />
         <Route path="/usuarios/nuevo" element={<NuevoUsuario />} />
         <Route path="/usuarios/:id" element={<VerUsuario />} />
@@ -26,5 +27,6 @@ function App() {
     </>
   );
 }
+//por el momento "/" redirecciona a "/usuarios" hasta que haya un "/home"
 
 export default App;

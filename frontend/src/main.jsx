@@ -14,8 +14,8 @@ import "./index.css";
 import App from "./App.jsx";
 
 //buscamos la parte de la pagina web donde esta root y ahi vemos toda la app
-// es como capas sobre la app(donde va todo) va la capa de Browser Router 
-//  que permite navegar por distintas partes sin recargar las paginas y
+//es como capas sobre la app(donde va todo) va la capa de Browser Router 
+//que permite navegar por distintas partes sin recargar las paginas y
 //Strict Mode sirve revisar errores en React
 
 createRoot(document.getElementById("root")).render(

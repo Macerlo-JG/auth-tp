@@ -1,0 +1,9 @@
+backend/services/__pycache__/usuario_service.cpython-312.pyc
+backend/services/__pycache__/__init__.cpython-312.pyc
+backend/schemas/__pycache__/usuario_schema.cpython-312.pyc
+backend/routes/__pycache__/usuarios.cpython-312.pyc
+backend/routes/__pycache__/__init__.cpython-312.pyc
+backend/models/__pycache__/usuario.cpython-312.pyc
+backend/models/__pycache__/__init__.cpython-312.pyc
+backend/config/__pycache__/config.cpython-312.pyc
+backend/__pycache__/db.cpython-312.pyc
