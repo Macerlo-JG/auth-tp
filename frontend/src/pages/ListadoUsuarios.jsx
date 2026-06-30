@@ -19,6 +19,9 @@ export default function ListadoUsuarios() {
   const [busqueda, setBusqueda] = useState("");
   const [cargando, setCargando] = useState(true);
   const [eliminarTarget, setEliminarTarget] = useState(null);
+  const [paginaActual, setPaginaActual] = useState(1);
+
+  const ITEMS_POR_PAGINA = 10;
 
   const cargarUsuarios = async () => {
     try {
@@ -58,7 +61,10 @@ export default function ListadoUsuarios() {
 
   const handleBusqueda = (e) => {
     const valor = e.target.value;
+
     setBusqueda(valor);
+    setPaginaActual(1);
+
     aplicarFiltro(usuarios, valor);
   };
 
@@ -79,10 +85,17 @@ export default function ListadoUsuarios() {
       setEliminarTarget(null);
     }
   };
+const total = filtro.length;
 
-  const total = filtro.length;
-  const desde = total > 0 ? 1 : 0;
-  const hasta = total;
+const totalPaginas = Math.ceil(total / ITEMS_POR_PAGINA);
+
+const indiceInicio = (paginaActual - 1) * ITEMS_POR_PAGINA;
+const indiceFin = indiceInicio + ITEMS_POR_PAGINA;
+
+const usuariosPagina = filtro.slice(indiceInicio, indiceFin);
+
+const desde = total === 0 ? 0 : indiceInicio + 1;
+const hasta = Math.min(indiceFin, total);
 
   return (
     <Layout>
@@ -124,7 +137,7 @@ export default function ListadoUsuarios() {
                 </tr>
               </thead>
               <tbody>
-                {filtro.map((usuario) => (
+                {usuariosPagina.map((usuario) => (
                   <tr key={usuario.id_usuario} className="hover:bg-gray-50/80">
                     <td className="table-td font-medium text-gray-800">
                       {formatearId(usuario.id_usuario)}
@@ -177,18 +190,28 @@ export default function ListadoUsuarios() {
           <div className="flex items-center gap-1">
             <button
               type="button"
-              disabled
-              className="w-8 h-8 flex items-center justify-center rounded border border-gray-200 text-gray-400 text-sm"
+              onClick={() => setPaginaActual((p) => p - 1)}
+              disabled={paginaActual === 1}
+              className={`w-8 h-8 flex items-center justify-center rounded border text-sm ${
+                paginaActual === 1
+                  ? "border-gray-200 text-gray-400"
+                  : "border-gray-300 hover:bg-gray-50"
+              }`}
             >
               ‹
             </button>
             <span className="w-8 h-8 flex items-center justify-center rounded bg-bomberos text-white text-sm font-semibold">
-              1
+              {paginaActual}
             </span>
             <button
               type="button"
-              disabled
-              className="w-8 h-8 flex items-center justify-center rounded border border-gray-200 text-gray-400 text-sm"
+              onClick={() => setPaginaActual((p) => p + 1)}
+              disabled={paginaActual === totalPaginas}
+              className={`w-8 h-8 flex items-center justify-center rounded border text-sm ${
+                paginaActual === totalPaginas
+                  ? "border-gray-200 text-gray-400"
+                  : "border-gray-300 hover:bg-gray-50"
+              }`}
             >
               ›
             </button>

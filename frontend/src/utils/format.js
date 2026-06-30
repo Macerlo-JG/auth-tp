@@ -1,5 +1,5 @@
-export function formatearId(numero, digitos = 6) {
-  return String(numero).padStart(digitos, "0");
+export function formatearId(numero) {
+  return String(numero);
 }
 
 export function formatearFecha(fecha) {
