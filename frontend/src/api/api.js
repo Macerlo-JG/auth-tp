@@ -42,9 +42,4 @@ export const eliminarUsuario = async (id) => {
   return { ok: res.ok, status: res.status, body: await res.json() };
 };
 
-export const ESTADOS_USUARIO = [
-  "PENDIENTE",
-  "ACTIVO",
-  "BLOQUEADO",
-  "INACTIVO",
-];
+export const ESTADOS_USUARIO = ["PENDIENTE", "ACTIVO", "BLOQUEADO", "INACTIVO"];

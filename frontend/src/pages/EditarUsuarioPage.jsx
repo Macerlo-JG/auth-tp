@@ -9,7 +9,7 @@ import {
   IconHeart,
   IconSave,
 } from "../components/icons.jsx";
-import {getUsuario,editarUsuario,ESTADOS_USUARIO,parseApiError,} from "../api.js";
+import {getUsuario,editarUsuario,ESTADOS_USUARIO,parseApiError,} from "../api/api.js";
 import { formatearId, formatearFecha } from "../utils/format.js";
 
 export default function EditarUsuarioPage() {
