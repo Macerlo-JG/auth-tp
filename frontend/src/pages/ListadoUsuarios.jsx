@@ -10,7 +10,7 @@ import {
   IconPencil,
   IconTrash,
 } from "../components/icons.jsx";
-import {eliminarUsuario, ESTADOS_USUARIO } from "../api/api.js";
+import {eliminarUsuario, ESTADOS_USUARIO } from "../api/usuarios.js";
 import { formatearId } from "../utils/format.js";
 import { getListadoUsuarios } from "../services/usuariosService.js";
 

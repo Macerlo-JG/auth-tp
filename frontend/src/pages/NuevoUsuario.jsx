@@ -9,7 +9,7 @@ import {
   IconHeart,
   IconSave,
 } from "../components/icons.jsx";
-import { crearUsuario, parseApiError } from "../api/api.js";
+import { crearUsuario, parseApiError } from "../api/usuarios.js";
 
 export default function NuevoUsuario() {
   const formRef = useRef(null);

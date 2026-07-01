@@ -5,7 +5,7 @@ import Layout from "../components/layout/Layout.jsx";
 import Breadcrumbs from "../components/layout/Breadcrumbs.jsx";
 import EstadoBadge from "../components/EstadoBadge.jsx";
 import { IconPencil } from "../components/icons.jsx";
-import { getUsuario } from "../api/api.js";
+import { getUsuario } from "../api/usuarios.js";
 import { formatearId, formatearFecha } from "../utils/format.js";
 
 export default function VerUsuario() {

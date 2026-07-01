@@ -1,4 +1,4 @@
-import { getUsuarios } from "../api/api";
+import { getUsuarios } from "../api/usuarios";
 import { getPersonas } from "../api/personas";
 
 export const getListadoUsuarios = async () => {
@@ -27,4 +27,10 @@ export const getListadoUsuarios = async () => {
       email: "-",
     },
   }));
+};
+
+export const getUsuarioDetalle = async (idUsuario) => {
+  const lista = await getListadoUsuarios();
+
+  return lista.find((usuario) => usuario.id_usuario === Number(idUsuario));
 };

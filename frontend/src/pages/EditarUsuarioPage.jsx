@@ -9,8 +9,12 @@ import {
   IconHeart,
   IconSave,
 } from "../components/icons.jsx";
-import {getUsuario,editarUsuario,ESTADOS_USUARIO,parseApiError,} from "../api/api.js";
+import {getUsuario,editarUsuario,ESTADOS_USUARIO,parseApiError,} from "../api/usuarios.js";
 import { formatearId, formatearFecha } from "../utils/format.js";
+import UsuarioRoles from "./UsuarioRoles.jsx";
+import { getUsuarioDetalle } from "../services/usuariosService";
+import { getRolesUsuarioDetalle } from "../services/rolesService.js";
+import { guardarRolesUsuario } from "../services/rolesService";
 
 export default function EditarUsuarioPage() {
   const { id } = useParams();
@@ -18,23 +22,38 @@ export default function EditarUsuarioPage() {
   const formRef = useRef(null);
   const [usuario, setUsuario] = useState(null);
   const [cargando, setCargando] = useState(true);
+  const [rolesOriginales, setRolesOriginales] = useState([]);
+  const [rolesUsuario, setRolesUsuario] = useState([]);
 
-  useEffect(() => {
-    getUsuario(id)
-      .then((data) => {
-        if (data.ok && data.data?.[0]) {
-          setUsuario(data.data[0]);
-        } else {
-          toast.error("Usuario no encontrado");
-          navigate("/usuarios");
-        }
-      })
-      .catch(() => {
-        toast.error("Error al cargar usuario");
+useEffect(() => {
+  const cargarDatos = async () => {
+    try {
+      const [usuario, roles] = await Promise.all([
+        getUsuarioDetalle(id),
+        getRolesUsuarioDetalle(id),
+      ]);
+
+      if (!usuario) {
+        toast.error("Usuario no encontrado");
         navigate("/usuarios");
-      })
-      .finally(() => setCargando(false));
-  }, [id, navigate]);
+        return;
+      }
+
+      setUsuario(usuario);
+      setRolesOriginales(roles);
+      setRolesUsuario(roles);
+
+    } catch (error) {
+      console.error(error);
+      toast.error("Error al cargar usuario");
+      navigate("/usuarios");
+    } finally {
+      setCargando(false);
+    }
+  };
+
+  cargarDatos();
+}, [id, navigate]);
 
   const handleGuardar = async () => {
     const form = formRef.current;
@@ -56,6 +75,11 @@ export default function EditarUsuarioPage() {
     try {
       const { ok, body } = await editarUsuario(usuario.id_usuario, jsonData);
       if (ok) {
+        await guardarRolesUsuario(
+            usuario.id_usuario,
+            rolesOriginales,
+            rolesUsuario
+        );
         toast.success(body.message || "Usuario actualizado");
         navigate("/usuarios");
       } else {
@@ -86,7 +110,7 @@ export default function EditarUsuarioPage() {
 
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800">
-          Editar Usuario {formatearId(usuario.id_usuario)}
+          Editar Usuario {formatearId(usuario.id_usuario)} / {usuario.persona.nombre} {usuario.persona.apellido}
         </h1>
         <p className="text-gray-500 mt-1">
           Modifique el estado y los datos del usuario.
@@ -95,6 +119,15 @@ export default function EditarUsuarioPage() {
 
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 md:p-8">
         <form ref={formRef}>
+
+          <section className="form-section">
+              <UsuarioRoles
+                idUsuario={usuario.id_usuario}
+                roles={rolesUsuario}
+                setRoles={setRolesUsuario}
+              />
+          </section>
+
           <section className="form-section">
             <h2 className="form-section-title">
               <IconPerson className="text-bomberos" />
@@ -103,34 +136,25 @@ export default function EditarUsuarioPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="form-label">ID Persona</label>
-                <input
-                  type="number"
-                  name="id_persona"
-                  min="1"
-                  defaultValue={usuario.id_persona}
-                  placeholder="ID de la persona"
-                  className="form-input"
-                />
+                <input  type="number" disabled name="id_persona" min="1" defaultValue={usuario.id_persona} placeholder="ID de la persona" className="form-input cursor-not-allowed" />
               </div>
             </div>
           </section>
 
           <section className="form-section">
+
             <h2 className="form-section-title">
               <IconBuilding className="text-bomberos" />
               Estado y control
             </h2>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
               <div>
                 <label className="form-label">
                   Estado <span className="required">*</span>
                 </label>
-                <select
-                  name="estado_usuario"
-                  required
-                  defaultValue={usuario.estado_usuario}
-                  className="form-input"
-                >
+                <select name="estado_usuario" required defaultValue={usuario.estado_usuario} className="form-input">
                   {ESTADOS_USUARIO.map((estado) => (
                     <option key={estado} value={estado}>
                       {estado}
@@ -138,6 +162,7 @@ export default function EditarUsuarioPage() {
                   ))}
                 </select>
               </div>
+
               <div>
                 <label className="form-label">
                   ID Usuario modificador <span className="required">*</span>
@@ -151,6 +176,7 @@ export default function EditarUsuarioPage() {
                   required
                 />
               </div>
+
             </div>
           </section>
 
@@ -191,11 +217,7 @@ export default function EditarUsuarioPage() {
           </section>
 
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
-            <button
-              type="button"
-              onClick={() => navigate("/usuarios")}
-              className="btn-cancel"
-            >
+            <button type="button"onClick={() => navigate("/usuarios")}className="btn-cancel">
               Cancelar
             </button>
             <button type="button" onClick={handleGuardar} className="btn-save">
