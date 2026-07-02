@@ -1,6 +1,6 @@
 {
   "info": {
-    "name": "Usuarios API",
+    "name": "Auth API",
     "_postman_id": "c3f9d2a1-1234-4b7a-9f11-abcdef123456",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
@@ -46,7 +46,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"id_persona\": 1,\n  \"estado_usuario\": \"PENDIENTE\"\n}"
+              "raw": "{\n  \"id_persona\": 1,\n  \"created_by\": 1\n}"
             },
             "url": {
               "raw": "http://localhost:5000/usuarios",
@@ -69,7 +69,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"estado_usuario\": \"ACTIVO\"\n}"
+              "raw": "{\n  \"estado_usuario\": \"ACTIVO\",\n  \"updated_by\": 1\n}"
             },
             "url": {
               "raw": "http://localhost:5000/usuarios/1",
@@ -92,7 +92,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"estado_usuario\": \"BLOQUEADO\"\n}"
+              "raw": "{\n  \"estado_usuario\": \"BLOQUEADO\",\n  \"updated_by\": 1\n}"
             },
             "url": {
               "raw": "http://localhost:5000/usuarios/1",
@@ -115,7 +115,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"estado_usuario\": \"INACTIVO\"\n}"
+              "raw": "{\n  \"estado_usuario\": \"INACTIVO\",\n  \"updated_by\": 1\n}"
             },
             "url": {
               "raw": "http://localhost:5000/usuarios/1",
@@ -136,6 +136,93 @@
               "host": ["localhost"],
               "port": "5000",
               "path": ["usuarios", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Roles de Usuario",
+      "item": [
+        {
+          "name": "GET roles de un usuario",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:5000/usuarios/1/roles",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["usuarios", "1", "roles"]
+            }
+          }
+        },
+        {
+          "name": "POST asignar múltiples roles",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_roles\": [1, 2],\n  \"created_by\": 1\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/usuarios/1/roles",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["usuarios", "1", "roles"]
+            }
+          }
+        },
+        {
+          "name": "DELETE revocar un rol",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"updated_by\": 1\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/usuarios/1/roles/2",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["usuarios", "1", "roles", "2"]
+            }
+          }
+        },
+        {
+          "name": "DELETE revocar múltiples roles",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id_roles\": [2, 3],\n  \"updated_by\": 1\n}"
+            },
+            "url": {
+              "raw": "http://localhost:5000/usuarios/1/roles",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["usuarios", "1", "roles"]
             }
           }
         }

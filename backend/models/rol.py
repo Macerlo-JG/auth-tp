@@ -3,35 +3,20 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import (
     Integer,
     Boolean,
-    DateTime,
-    Enum
+    String,
+    DateTime
 )
 from datetime import datetime
 from sqlalchemy.sql import func
-import enum
 
-class EstadoUsuario(enum.Enum):
-    PENDIENTE = "PENDIENTE"
-    ACTIVO = "ACTIVO"
-    BLOQUEADO = "BLOQUEADO"
-    INACTIVO = "INACTIVO"
+class Rol(db.Model):
+    __tablename__ = "roles"
 
-class Usuario(db.Model):
-    __tablename__ = "usuarios"
+    id_rol: Mapped[int] = mapped_column(Integer, primary_key=True)
+    nombre: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    descripcion: Mapped[str] = mapped_column(String(255), nullable=False)
 
-    id_usuario: Mapped[int] = mapped_column(Integer, primary_key=True)
-    id_persona: Mapped[int] = mapped_column(Integer, nullable=False, unique=True)
-
-    estado_usuario: Mapped[EstadoUsuario] = mapped_column(
-        Enum(
-            EstadoUsuario,
-            name="estado_usuario"
-        ),
-        nullable=False,
-        default=EstadoUsuario.PENDIENTE
-    )
-
-    roles_usuario = relationship("RolUsuario", back_populates="usuario")
+    roles_usuario = relationship("RolUsuario", back_populates="rol")
 
     created_by: Mapped[int] = mapped_column(Integer, nullable=False)
 
@@ -48,8 +33,8 @@ class Usuario(db.Model):
         nullable=True,
         onupdate=func.now()
     )
-
+    
     activo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
     def __repr__(self):
-        return f"<Id usuario={self.id_usuario}>"
+        return f"<Rol={self.nombre}>"

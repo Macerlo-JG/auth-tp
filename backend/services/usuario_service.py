@@ -1,5 +1,5 @@
 from models.usuario import Usuario
-from schemas.usuario_schema import usuario_create_schema, usuario_update_schema
+from schemas.usuario_schemas import usuario_create_schema, usuario_update_schema
 from db import db
 
 """
