@@ -23,7 +23,7 @@ export default function ListadoUsuarios() {
   const [paginaActual, setPaginaActual] = useState(1);
   const [estadoFiltro, setEstadoFiltro] = useState("");
 
-  const ITEMS_POR_PAGINA = 8;
+  const itemsPorPagina = 8;
 
   const cargarUsuarios = async () => {
     try {
@@ -90,10 +90,10 @@ export default function ListadoUsuarios() {
       const { ok, body } = await eliminarUsuario(eliminarTarget.id_usuario);
       if (ok) {
         toast.success(body.message || "Usuario eliminado");
-        await cargarUsuarios();
       } else {
         toast.error(body.message || "No se pudo eliminar");
       }
+      await cargarUsuarios();
     } catch (e) {
       console.error(e);
       toast.error("Error al eliminar");
@@ -104,10 +104,10 @@ export default function ListadoUsuarios() {
 
 const total = filtro.length;
 
-const totalPaginas = Math.ceil(total / ITEMS_POR_PAGINA);
+const totalPaginas = Math.ceil(total / itemsPorPagina);
 
-const indiceInicio = (paginaActual - 1) * ITEMS_POR_PAGINA;
-const indiceFin = indiceInicio + ITEMS_POR_PAGINA;
+const indiceInicio = (paginaActual - 1) * itemsPorPagina;
+const indiceFin = indiceInicio + itemsPorPagina;
 
 const usuariosPagina = filtro.slice(indiceInicio, indiceFin);
 
@@ -120,6 +120,7 @@ const hasta = Math.min(indiceFin, total);
         <h1 className="text-2xl font-bold text-gray-800 mb-6">Listado de Usuarios</h1>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div className="flex flex-col sm:flex-row gap-3 flex-1">
+
             <div className="relative flex-1">
               <IconSearch className="search-icon" />
               <input
@@ -127,23 +128,18 @@ const hasta = Math.min(indiceFin, total);
                 value={busqueda}
                 onChange={handleBusqueda}
                 placeholder="Buscar por usuario, persona o email"
-                className="form-input pl-10"
-              />
+                className="form-input pl-10"/>
             </div>
 
-            <select
-              value={estadoFiltro}
-              onChange={handleEstado}
-              className="form-input w-full sm:w-56"
-            >
+            <select value={estadoFiltro}onChange={handleEstado} className="form-input w-full sm:w-56">
               <option value="">Todos los estados</option>
-
               {ESTADOS_USUARIO.map((estado) => (
                 <option key={estado} value={estado}>
                   {estado}
                 </option>
               ))}
             </select>
+
           </div>
 
           <Link to="/usuarios/nuevo" className="btn-bomberos shrink-0">
@@ -243,7 +239,7 @@ const hasta = Math.min(indiceFin, total);
               className={`w-8 h-8 flex items-center justify-center rounded border text-sm ${
                 paginaActual === 1
                   ? "border-gray-200 text-gray-400"
-                  : "border-gray-300 hover:bg-gray-50"
+                  : "border-gray-300 hover:bg-gray-300"
               }`}
             >
               ‹
@@ -258,7 +254,7 @@ const hasta = Math.min(indiceFin, total);
               className={`w-8 h-8 flex items-center justify-center rounded border text-sm ${
                 paginaActual === totalPaginas
                   ? "border-gray-200 text-gray-400"
-                  : "border-gray-300 hover:bg-gray-50"
+                  : "border-gray-300 hover:bg-gray-300"
               }`}
             >
               ›

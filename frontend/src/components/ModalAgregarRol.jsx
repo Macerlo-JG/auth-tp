@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import {
-    getRolesDisponibles
-} from "../services/rolesService";
+import {getRolesDisponibles} from "../services/rolesService";
 import { agregarRolUsuario } from "../api/roles";
 
 

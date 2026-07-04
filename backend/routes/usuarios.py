@@ -74,7 +74,7 @@ def eliminar_usuario(id):
    
    eliminar(usuario)
 
-   return respuesta_api(True, [], "Usuario eliminado", 204)
+   return respuesta_api(True, [], "Usuario eliminado", 200)
 
 # Helper para formatear las respuestas
 def respuesta_api(ok=True, data=None, message="", status=200):

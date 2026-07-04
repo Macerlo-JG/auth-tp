@@ -40,8 +40,8 @@ useEffect(() => {
       }
 
       setUsuario(usuario);
-      setRolesOriginales(roles);
-      setRolesUsuario(roles);
+      setRolesOriginales(roles.map(r => ({ ...r })));
+      setRolesUsuario(roles.map(r => ({ ...r })));
 
     } catch (error) {
       console.error(error);
@@ -136,7 +136,7 @@ useEffect(() => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="form-label">ID Persona</label>
-                <input  type="number" disabled name="id_persona" min="1" defaultValue={usuario.id_persona} placeholder="ID de la persona" className="form-input cursor-not-allowed" />
+                <input  type="number" disabled name="id_persona" defaultValue={usuario.id_persona} placeholder="ID de la persona" className="form-input cursor-not-allowed" />
               </div>
             </div>
           </section>
@@ -154,7 +154,7 @@ useEffect(() => {
                 <label className="form-label">
                   Estado <span className="required">*</span>
                 </label>
-                <select name="estado_usuario" required defaultValue={usuario.estado_usuario} className="form-input">
+                <select name="estado_usuario" required defaultValue={usuario.estado_usuario} className="form-input ">
                   {ESTADOS_USUARIO.map((estado) => (
                     <option key={estado} value={estado}>
                       {estado}
@@ -165,15 +165,15 @@ useEffect(() => {
 
               <div>
                 <label className="form-label">
-                  ID Usuario modificador <span className="required">*</span>
+                  ID Usuario modificador
                 </label>
                 <input
                   type="number"
                   name="updated_by"
-                  min="1"
-                  placeholder="ID del usuario que modifica"
-                  className="form-input"
-                  required
+                  value={1}
+                  readOnly
+                  disabled
+                  className="form-input bg-gray-50 text-gray-500 cursor-not-allowed"
                 />
               </div>
 

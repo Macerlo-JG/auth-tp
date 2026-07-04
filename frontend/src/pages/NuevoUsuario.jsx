@@ -90,15 +90,14 @@ export default function NuevoUsuario() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="form-label">
-                  ID Usuario creador <span className="required">*</span>
+                  ID Usuario Creador
                 </label>
                 <input
                   type="number"
                   name="created_by"
-                  min="1"
-                  placeholder="ID del usuario que crea el registro"
-                  className="form-input"
-                  required
+                  value={1}
+                  readOnly
+                  className="form-input bg-gray-50 text-gray-500 cursor-not-allowed"
                 />
               </div>
               <div>

@@ -36,15 +36,24 @@ export default function UsuarioRoles({
                         El usuario no posee roles.
                     </p>
                 ) : (
-                    roles.map((rol) => (
-                        <div key={rol.id_rol} className="flex justify-between items-center border rounded-md px-4 py-2">
+                <div className="flex flex-wrap gap-3">
+                        {roles.map((rol) => (
+                        <div
+                            key={rol.id_rol}
+                            className="flex items-center gap-2 rounded-md bg-gray-100 px-4 py-2"
+                        >
                             <span>{rol.nombre}</span>
+
                             <button
-                                type="button" onClick={() => handleEliminar(rol.id_rol)} className="text-red-600 hover:text-red-700">
-                                <IconTrash />
+                            type="button"
+                            onClick={() => handleEliminar(rol.id_rol)}
+                            className="flex h-6 w-6 items-center justify-center rounded-full text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors"
+                            >
+                            <IconTrash />
                             </button>
                         </div>
-                    ))
+                        ))}
+                    </div>
                 )}
                 <button type="button" className="btn-bomberos mt-3" onClick={() => setMostrarModal(true)}>+ Agregar Rol</button>
             </div>

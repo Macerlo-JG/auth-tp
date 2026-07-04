@@ -5,7 +5,7 @@ export const ROLES = [
   },
   {
     id_rol: 2,
-    nombre: "Gestión Académica",
+    nombre: "Gestión Academica",
   },
   {
     id_rol: 3,
@@ -73,6 +73,8 @@ export const agregarRolUsuario = async (idUsuario, idRol) => {
 };
 
 export const eliminarRolUsuario = async (idUsuario, idRol) => {
+  console.log("ELIMINANDO", idUsuario, idRol);
+
   USUARIO_ROLES = USUARIO_ROLES.filter(
     (r) => !(r.id_usuario === Number(idUsuario) && r.id_rol === Number(idRol)),
   );
