@@ -3,32 +3,28 @@ from models.usuario import EstadoUsuario
 from db import ma
 from models.usuario import Usuario
 
-
 class UsuarioBaseSchema(ma.SQLAlchemySchema):
     class Meta:
         model = Usuario
         load_instance = True
 
-    id_usuario = ma.auto_field(
-        dump_only=True
-    )
+    id_usuario = ma.auto_field(dump_only=True)
 
-    id_persona = ma.auto_field()
+    id_persona = ma.auto_field(dump_only=True)
 
     estado_usuario = fields.Enum(
         EstadoUsuario,
         by_value=True
     )
 
-    created_by = ma.auto_field()
+    created_by = ma.auto_field(dump_only=True)
 
     updated_by = ma.auto_field(
+        dump_only=True,
         allow_none=True
     )
 
-    activo = ma.auto_field(
-        dump_only=True
-    )
+    activo = ma.auto_field(dump_only=True)
 
     created_at = fields.DateTime(
         dump_only=True,
@@ -69,7 +65,6 @@ class UsuarioCreateSchema(UsuarioBaseSchema):
 
     @validates_schema
     def validar_persona_unica(self, data, **kwargs):
-
         id_persona = data.get("id_persona")
 
         if not id_persona:
@@ -114,7 +109,6 @@ class UsuarioUpdateSchema(UsuarioBaseSchema):
 
     @validates_schema
     def validar_actualizacion(self, data, **kwargs):
-
         if self.instance and "updated_by" not in data:
             raise ValidationError({
                 "updated_by": [
@@ -124,5 +118,6 @@ class UsuarioUpdateSchema(UsuarioBaseSchema):
 
 usuario_schema = UsuarioBaseSchema()
 usuarios_schema = UsuarioBaseSchema(many=True)
+
 usuario_create_schema = UsuarioCreateSchema()
 usuario_update_schema = UsuarioUpdateSchema()

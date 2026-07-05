@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from marshmallow import ValidationError
-from schemas.usuario_schema import usuario_schema, usuarios_schema
+from schemas.usuario_schemas import usuario_schema, usuarios_schema
 
 from services.usuario_service import (
     obtener_todos,
@@ -12,9 +12,6 @@ from services.usuario_service import (
 
 """
 Este archivo define los endpoints del CRUD de usuario
-
-Utiliza Flask Blueprint para modularizar las rutas y separarlas del archivo principal
-Cada endpoint llama a la capa de servicios, donde está la lógica de negocio
 """
 
 usuarios_bp = Blueprint("usuarios", __name__, url_prefix="/usuarios")

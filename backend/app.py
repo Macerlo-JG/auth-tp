@@ -1,9 +1,10 @@
 from flask import Flask
 from db import db, ma
 from flask_cors import CORS
-
 from config.config import Config
 from routes.usuarios import usuarios_bp
+from routes.roles_usuarios import roles_usuarios_bp
+from seed.seed_data import seed_data
 
 """
 Archivo principal de la aplicación:
@@ -23,8 +24,10 @@ ma.init_app(app)
 
 with app.app_context():
     db.create_all()    
+    seed_data()
 
 app.register_blueprint(usuarios_bp)    
+app.register_blueprint(roles_usuarios_bp)
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
