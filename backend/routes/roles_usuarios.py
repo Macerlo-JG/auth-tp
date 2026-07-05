@@ -8,12 +8,19 @@ from services.rol_usuario_service import (
 )
 from schemas.rol_usuario_schemas import roles_usuarios_schema, roles_usuario_schema
 from schemas.rol_schemas import roles_schema
+from models.rol import Rol
 
 """
 Este archivo define los endpoints relacionados a asignación y revocación de roles a usuarios.
 """
 
 roles_usuarios_bp = Blueprint("roles_usuarios",__name__, url_prefix="/usuarios")
+
+@roles_usuarios_bp.route("/roles", methods=["GET"])
+def listar_roles():
+    roles = Rol.query.filter_by(activo=True).all()
+    data = roles_schema.dump(roles)
+    return respuesta_api(True, data)
 
 @roles_usuarios_bp.route("/<int:id_usuario>/roles", methods=["GET"])
 def obtener_roles(id_usuario):
