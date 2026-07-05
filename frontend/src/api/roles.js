@@ -5,7 +5,7 @@ export const ROLES = [
   },
   {
     id_rol: 2,
-    nombre: "Gestión Academica",
+    nombre: "GestionAcademica",
   },
   {
     id_rol: 3,
@@ -17,7 +17,7 @@ export const ROLES = [
   },
   {
     id_rol: 5,
-    nombre: "Auditor / Consulta",
+    nombre: "AuditorConsulta",
   },
 ];
 

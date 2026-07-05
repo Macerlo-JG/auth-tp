@@ -1,3 +1,5 @@
+//iconos otorgados por la IA para el diseño del modelo
+
 function iconClass(className = "") {
   return `w-4 h-4 shrink-0 ${className}`.trim();
 }

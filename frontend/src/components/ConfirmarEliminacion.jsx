@@ -1,3 +1,9 @@
+// Modal de confirmacion eliminacion
+// Recibe:
+// - mensaje: texto que se muestra al usuario
+// - onConfirmar: accion a ejecutar al confirmar
+// - onCancelar: accion para cerrar el modal
+
 export default function ConfirmarEliminacion({ mensaje, onConfirmar, onCancelar }) {
   return (
     <div className="modal-overlay">

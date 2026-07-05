@@ -16,46 +16,45 @@ export default function VerUsuario() {
 
   // Hooks
 
-  // -----Obtiene el id recibido por la URL.
+  // -----Obtiene el id recibido por la URL
   const { id } = useParams();
 
-  // Permite realizar redirecciones.
+  // Permite realizar redirecciones
   const navigate = useNavigate();
 
   // Estados
 
-  // -----Información del usuario.
+  // -----Informacion del usuario
   const [usuario, setUsuario] = useState(null);
 
-  // Controla la pantalla de carga.
+  // Controla la pantalla de carga
   const [cargando, setCargando] = useState(true);
 
   // Carga inicial
-
   useEffect(() => {
     const cargarUsuario = async () => {
       try {
-        // Obtiene toda la información necesaria del usuario.
-        // El servicio ya incluye los datos de la persona y sus roles.
+        // Obtiene toda la informacion necesaria del usuario
+        // El servicio ya incluye los datos de la persona y sus roles
         const usuario = await getUsuarioDetalle(id);
 
-        // Si el usuario no existe, vuelve al listado.
+        // Si el usuario no existe, vuelve al listado
         if (!usuario) {
           toast.error("Usuario no encontrado");
           navigate("/usuarios");
           return;
         }
 
-        // Guarda la información en el estado.
+        // Guarda la información en el estado
         setUsuario(usuario);
 
       } catch (error) {
-        // Si ocurre un error cualquiera se informa al usuario y se vuelve al listado.
+        // Si ocurre un error cualquiera se informa al usuario y se vuelve al listado
         toast.error("Error al cargar el usuario");
         navigate("/usuarios");
 
       } finally {
-        // Finaliza el estado de carga.
+        // Finaliza el estado de carga
         setCargando(false);
       }
     };
@@ -74,80 +73,39 @@ export default function VerUsuario() {
     );
   }
 
-  // =====================================
-  // Datos que se mostrarán en pantalla
-  // =====================================
-
+  // Datos que se ven en pantalla
   const campos = [
-    {
-      label: "N° Usuario",
-      valor: formatearId(usuario.id_usuario),
-    },
-    {
-      label: "Nombre",
-      valor: usuario.persona.nombre,
-    },
-    {
-      label: "Apellido",
-      valor: usuario.persona.apellido,
-    },
-    {
-      label: "Roles",
-      valor:
-        usuario.roles.length > 0 ? (
+    {label: "N° Usuario", valor: formatearId(usuario.id_usuario),},
+    {label: "Nombre", valor: usuario.persona.nombre,},
+    {label: "Apellido",valor: usuario.persona.apellido,},
+
+    {label: "Roles", valor: usuario.roles.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {usuario.roles.map((rol) => (
-              <RolBadge
-                key={rol.id_rol}
-                nombre={rol.nombre}
-              />
-            ))}
-          </div>
-        ) : (
-          "Sin roles"
-        ),
+              <RolBadge key={rol.id_rol} nombre={rol.nombre}/>)
+              )}
+          </div> ) : ("Sin roles"),
     },
-    {
-      label: "Estado",
-      valor: (
-        <EstadoBadge estado={usuario.estado_usuario} />
-      ),
-    },
-    {
-      label: "Creado por",
-      valor: usuario.created_by,
-    },
-    {
-      label: "Modificado por",
-      valor: usuario.updated_by ?? "—",
-    },
-    {
-      label: "Fecha de creación",
-      valor: formatearFecha(usuario.created_at),
-    },
-    {
-      label: "Última actualización",
-      valor: formatearFecha(usuario.updated_at),
-    },
+
+    {label: "Estado", valor: (<EstadoBadge estado={usuario.estado_usuario} />),},
+    {label: "Creado por",valor: usuario.created_by,},
+    {label: "Modificado por", valor: usuario.updated_by ?? "—",},
+    {label: "Fecha de creación",valor: formatearFecha(usuario.created_at),},
+    {label: "Última actualización", valor: formatearFecha(usuario.updated_at),},
   ];
 
   return (
     <Layout>
 
-      {/* Ruta de navegación */}
+      {}
       <Breadcrumbs
         items={[
-          {
-            label: "Usuarios",
-            to: "/usuarios",
-          },
-          {
-            label: formatearId(usuario.id_usuario),
-          },
+          {label: "Usuarios", to: "/usuarios",},
+          {label: formatearId(usuario.id_usuario),},
         ]}
       />
 
-      {/* Encabezado */}
+      {}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
 
         <div>
@@ -160,7 +118,7 @@ export default function VerUsuario() {
           </p>
         </div>
 
-        {/* Acceso a la edición */}
+        {}
         <Link
           to={`/usuarios/${usuario.id_usuario}/editar`}
           className="btn-bomberos"
@@ -171,15 +129,14 @@ export default function VerUsuario() {
 
       </div>
 
-      {/* Información del usuario */}
+      {}
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 md:p-8">
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-          {/* Se recorren todos los campos para construir
-              el detalle del usuario. */}
+          {}
           {campos.map((campo) => (
             <div key={campo.label}>
+
               <p className="text-sm font-semibold text-gray-500 mb-1">
                 {campo.label}
               </p>
@@ -187,23 +144,21 @@ export default function VerUsuario() {
               <div className="text-gray-800 font-medium">
                 {campo.valor}
               </div>
+
             </div>
           ))}
 
         </div>
 
-        {/* Acciones */}
+        {}
         <div className="flex justify-end gap-3 pt-6 mt-6 border-t border-gray-100">
           <Link
             to="/usuarios"
             className="btn-cancel"
-          >
-            Volver al listado
-          </Link>
+          >Volver al listado</Link>
         </div>
 
       </div>
-
     </Layout>
   );
 }
