@@ -5,9 +5,9 @@ export default function RolBadge({ nombre }) {
 
   // Colores asociados a cada tipo de rol (los importantes)
   const colores = {
-    Administrador: "bg-red-100 text-red-700",
-    GestionAcademica: "bg-blue-100 text-blue-700",
-    AuditorConsulta: "bg-green-100 text-green-700",
+    ADMINISTRADOR: "bg-red-100 text-red-700",
+    ALUMNO: "bg-blue-100 text-blue-700",
+    DOCENTE: "bg-green-100 text-green-700",
   };
 
   // Obtiene el color correspondiente al rol
