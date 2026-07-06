@@ -1,0 +1,334 @@
+CU-01: Crear Usuario
+
+Actor principal:
+Administrador
+
+Descripción:
+Permite registrar un nuevo usuario en el sistema.
+
+Precondiciones:
+- El administrador debe estar autenticado.
+- Debe poseer el permiso `usuarios.control_parcial`.
+
+Flujo principal:
+1. El administrador ingresa los datos del usuario (mínimo: `id_persona`).
+2. El sistema valida que no exista otro usuario con el mismo `id_persona`.
+3. Se crea el registro en `usuarios` con `estado_usuario = PENDIENTE` y `activo = 1`.
+4. Se genera una contraseña temporal y se crea el registro en `credenciales` con `es_actual = 1` y `requiere_cambio_clave = 1` en `usuarios`.
+5. El sistema genera un OTP de tipo `activacion`, lo hashea y lo almacena en Redis con TTL de 10 minutos.
+6. Se envía el OTP en texto plano al email del `contacto_principal` obtenido del microservicio Contactos usando `id_persona`.
+7. El OTP en texto plano se descarta de memoria.
+
+Postcondiciones:
+- Usuario creado con `estado_usuario = PENDIENTE`.
+- Contraseña temporal activa con `requiere_cambio_clave = 1`.
+- OTP de activación válido por 10 minutos en Redis.
+- Sin registro en `verificacion` aún: ese registro se crea cuando el usuario completa la activación (CU-02).
+
+---
+
+CU-02: Activar Cuenta mediante OTP
+
+Actor principal:
+Usuario
+
+Descripción:
+Permite activar una cuenta creada por un administrador mediante el código OTP recibido por email.
+
+Precondiciones:
+- La cuenta debe existir con `estado_usuario = PENDIENTE`.
+- Debe existir un OTP válido en Redis para ese `id_usuario` con tipo `activacion`.
+
+Flujo principal:
+1. El usuario recibe el OTP por email.
+2. Ingresa el código recibido en el sistema.
+3. El sistema hashea el código ingresado y lo compara con el hash almacenado en Redis.
+4. Si el hash coincide y el TTL no expiró:
+   - Se ejecuta `DEL` en Redis sobre el OTP (uso único garantizado).
+   - Se actualiza `estado_usuario = ACTIVO` en `usuarios`.
+   - Se crea el registro en `verificacion` con `email_habilitado = 1` y `telefono_habilitado = 0`.
+5. Se registra el evento en `logs_acciones` con `tipo_accion = 'activacion_cuenta'`.
+
+Flujo alternativo:
+- Si el TTL expiró: Redis ya eliminó el OTP automáticamente. El sistema informa que el código no es válido y ofrece reenviar uno nuevo (vuelve al paso 5 de CU-01).
+- Si el hash no coincide: el sistema rechaza el intento sin eliminar el OTP de Redis.
+
+Postcondiciones:
+- `estado_usuario = ACTIVO`.
+- Registro en `verificacion` creado con canal email habilitado.
+- OTP eliminado de Redis.
+
+---
+
+CU-03: Iniciar Sesión
+
+Actor principal:
+Usuario
+
+Descripción:
+Permite autenticarse en el sistema y obtener un JWT de acceso.
+
+Precondiciones:
+- Usuario existente con `estado_usuario = ACTIVO` y `activo = 1`.
+- Credencial activa en `credenciales` con `es_actual = 1`.
+
+Flujo principal:
+1. El usuario ingresa email y contraseña.
+2. El sistema busca el usuario por email en `usuarios`.
+3. Verifica que `estado_usuario = ACTIVO` y `activo = 1`.
+4. Busca el registro en `credenciales` con `es_actual = 1` para ese usuario y verifica el hash de la contraseña.
+5. Verifica si transcurrieron más de N días desde `created_at` de esa credencial; si es así, activa `requiere_cambio_clave = 1` y deriva al CU-04 antes de continuar.
+6. Verifica documentos legales: consulta `documentos_legales` para obtener los registros con `vigente = 1` de cada tipo requerido. Si el usuario no tiene aceptación registrada en `usuario_documento_legal` para alguno, lo redirige al CU-11 antes de continuar.
+7. Verifica `verificacion`: si `email_habilitado = 1` o `telefono_habilitado = 1`, el login requiere segundo factor:
+   - Genera OTP, lo hashea y lo almacena en Redis (TTL 10 min) con tipo `login_2fa`.
+   - Envía el OTP en texto plano al `contacto_principal` vía microservicio Contactos.
+   - El usuario ingresa el código. El sistema hashea el input y compara con Redis.
+   - Si coincide: `DEL` inmediato en Redis.
+   - Si el TTL expiró o el hash no coincide: rechaza el intento.
+8. Se consultan los roles del usuario desde `usuarios_roles` y los permisos asociados desde `roles_acciones`.
+9. Se almacenan los permisos en Redis bajo la key `permisos:{id_usuario}`.
+10. Se genera un UUID como refresh token y se almacena en Redis bajo `refresh:{id_usuario}:{uuid}` con TTL configurable.
+11. Se emite el JWT de acceso con claims `sub`, `iat`, `exp`, `jti`.
+12. Se actualizan `ultimo_acceso` y `ultima_accion` en `usuarios`.
+13. Se registra el evento en `logs_acciones` con `tipo_accion = 'login_exitoso'`.
+
+Flujo alternativo:
+- Si la contraseña no coincide: se registra `tipo_accion = 'login_fallido'` en `logs_acciones`. No se revela si el email existe o no (respuesta genérica).
+- Si `estado_usuario = BLOQUEADO` o `INACTIVO`: se rechaza el acceso con mensaje apropiado.
+
+Postcondiciones:
+- JWT de acceso emitido.
+- Refresh token y permisos almacenados en Redis.
+- `ultimo_acceso` actualizado.
+
+---
+
+CU-04: Cambio Obligatorio de Contraseña
+
+Actor principal:
+Usuario
+
+Descripción:
+Permite reemplazar la contraseña temporal o vencida cuando `requiere_cambio_clave = 1`.
+
+Precondiciones:
+- `requiere_cambio_clave = 1` en `usuarios`.
+
+Flujo principal:
+1. El sistema detecta `requiere_cambio_clave = 1` durante o después del login.
+2. Solicita al usuario que ingrese una nueva contraseña.
+3. Valida complejidad de la contraseña (criterios a definir).
+4. Verifica que el hash de la nueva contraseña no coincida con ningún registro existente en `credenciales` para ese usuario (historial completo).
+5. Marca el registro actual en `credenciales` con `es_actual = 0`.
+6. Inserta un nuevo registro en `credenciales` con el nuevo hash y `es_actual = 1`.
+7. Actualiza `requiere_cambio_clave = 0` en `usuarios`.
+8. Se registra el evento en `logs_acciones` con `tipo_accion = 'cambio_contrasena'`.
+
+Flujo alternativo:
+- Si la nueva contraseña coincide con algún hash del historial: se rechaza y se solicita una diferente.
+
+Postcondiciones:
+- Nueva contraseña activa con `es_actual = 1`.
+- `requiere_cambio_clave = 0`.
+- Contraseña anterior en historial con `es_actual = 0`.
+
+---
+
+CU-05: Recuperar Contraseña
+
+Actor principal:
+Usuario
+
+Descripción:
+Permite recuperar acceso a la cuenta cuando el usuario no recuerda su contraseña.
+
+Precondiciones:
+- Usuario registrado con `estado_usuario = ACTIVO`.
+
+Flujo principal:
+1. El usuario solicita recuperación ingresando su email.
+2. El sistema busca el usuario. Si existe y está activo, genera un OTP de tipo `recuperacion`.
+3. Hashea el OTP y lo almacena en Redis con TTL de 10 minutos. El texto plano se descarta de memoria.
+4. Envía el OTP en texto plano al `contacto_principal` vía microservicio Contactos.
+5. El usuario ingresa el código recibido.
+6. El sistema hashea el input y compara con Redis.
+7. Si coincide y el TTL no expiró: `DEL` inmediato en Redis.
+8. El usuario define una nueva contraseña.
+9. El sistema verifica que el hash no coincida con ningún registro del historial en `credenciales`.
+10. Marca el registro actual con `es_actual = 0` e inserta uno nuevo con `es_actual = 1`.
+11. Se registra el evento en `logs_acciones` con `tipo_accion = 'recuperacion_contrasena'`.
+
+Flujo alternativo:
+- Si el email no existe o el usuario no está activo: el sistema responde con mensaje genérico sin confirmar si el email existe (prevención de enumeración de usuarios).
+- Si el TTL expiró: informa que el código no es válido y ofrece generar uno nuevo.
+
+Postcondiciones:
+- Contraseña restablecida con `es_actual = 1`.
+- OTP eliminado de Redis.
+
+---
+
+CU-06: Asignar Rol a Usuario
+
+Actor principal:
+Administrador
+
+Descripción:
+Permite otorgar uno o más roles a un usuario existente.
+
+Precondiciones:
+- Administrador autenticado con permiso `usuarios.control_parcial`.
+- El usuario destino debe existir con `estado_usuario = ACTIVO`.
+- Los roles a asignar deben existir en `roles`.
+
+Flujo principal:
+1. El administrador selecciona el usuario destino.
+2. Selecciona uno o más roles a asignar.
+3. El sistema verifica que no exista ya un registro activo en `usuarios_roles` para esa combinación `id_usuario` + `id_rol`.
+4. Inserta los registros correspondientes en `usuarios_roles` con `activo = 1`.
+5. Actualiza los permisos en Redis: recarga la key `permisos:{id_usuario}` con el nuevo conjunto de acciones derivado de todos los roles activos del usuario.
+6. Se registra el evento en `logs_acciones` con `tipo_accion = 'cambio_rol'`.
+
+Postcondiciones:
+- Nuevos roles asignados en `usuarios_roles`.
+- Permisos en Redis actualizados inmediatamente.
+
+---
+
+CU-07: Revocar Rol a Usuario
+
+Actor principal:
+Administrador
+
+Descripción:
+Permite quitar un rol previamente asignado a un usuario.
+
+Precondiciones:
+- Administrador autenticado con permiso `usuarios.control_parcial`.
+- El usuario debe tener el rol a revocar activo en `usuarios_roles`.
+
+Flujo principal:
+1. El administrador selecciona el usuario.
+2. Selecciona el rol a revocar.
+3. El sistema marca el registro correspondiente en `usuarios_roles` con `activo = 0` (borrado lógico; no se elimina físicamente).
+4. Actualiza los permisos en Redis: recarga la key `permisos:{id_usuario}` con el conjunto de acciones derivado de los roles que siguen activos.
+5. Se registra el evento en `logs_acciones` con `tipo_accion = 'cambio_rol'`.
+
+Postcondiciones:
+- Rol revocado con `activo = 0` en `usuarios_roles`.
+- Permisos en Redis actualizados inmediatamente.
+
+---
+
+CU-08: Crear Rol
+
+Actor principal:
+Administrador
+
+Descripción:
+Permite crear nuevos perfiles de acceso en el sistema.
+
+Precondiciones:
+- Administrador autenticado con permiso `usuarios.control_parcial`.
+
+Flujo principal:
+1. El administrador define el nombre del rol.
+2. Define una descripción.
+3. El sistema verifica que no exista un rol activo con el mismo nombre.
+4. Inserta el registro en `roles` con `activo = 1`.
+
+Ejemplos de roles:
+- Estudiante
+- Docente
+- Coordinador
+- Administrador
+
+Postcondiciones:
+- Nuevo rol disponible en `roles` para ser asignado a usuarios y acciones.
+
+---
+
+CU-09: Asignar Permisos a un Rol
+
+Actor principal:
+Administrador
+
+Descripción:
+Permite asociar acciones a un rol existente.
+
+Precondiciones:
+- Administrador autenticado con permiso `usuarios.control_parcial`.
+- El rol debe existir en `roles` con `activo = 1`.
+- Las acciones a asignar deben existir en `acciones` con `activo = 1`.
+
+Flujo principal:
+1. El administrador selecciona el rol.
+2. Selecciona una o más acciones a asignar.
+3. El sistema verifica que no exista ya un registro activo en `roles_acciones` para esa combinación `id_rol` + `id_accion`.
+4. Inserta los registros en `roles_acciones` con `activo = 1`.
+5. Para cada usuario que tenga ese rol activo en `usuarios_roles`, recarga la key `permisos:{id_usuario}` en Redis con el conjunto de acciones actualizado.
+
+Ejemplos:
+
+Rol Docente: `curso.crear`, `curso.editar`, `notas.control_parcial`, `asistencia.control_parcial`
+
+Rol Estudiante: `cursos.control_parcial`, `legajos.leer`
+
+Postcondiciones:
+- Rol actualizado con nuevas acciones en `roles_acciones`.
+- Permisos en Redis actualizados para todos los usuarios afectados.
+
+---
+
+CU-10: Aceptar Términos y Condiciones
+
+Actor principal:
+Usuario
+
+Descripción:
+Permite registrar la aceptación de la versión vigente de un documento legal. Es un sub-flujo que se activa dentro del login (CU-03, paso 6) cuando el usuario no tiene aceptación registrada para la versión vigente de algún documento requerido.
+
+Precondiciones:
+- Existe al menos un documento en `documentos_legales` con `vigente = 1`.
+- El usuario no tiene registro en `usuario_documento_legal` para ese `id_documento`.
+
+Flujo principal:
+1. El sistema detecta que falta aceptación durante el login.
+2. Muestra el documento vigente al usuario.
+3. El usuario lee y acepta.
+4. El sistema inserta un registro en `usuario_documento_legal` con `id_usuario`, `id_documento` y `fecha_aceptacion`.
+5. Se registra el evento en `logs_acciones` con `tipo_accion = 'aceptacion_documento'`.
+6. El flujo retorna al CU-03 para continuar con el login.
+
+Postcondiciones:
+- Aceptación registrada en `usuario_documento_legal` con fecha y hora.
+- El historial de aceptaciones previas no se sobreescribe.
+
+---
+
+CU-11: Desactivar Usuario
+
+Actor principal:
+Administrador
+
+Descripción:
+Permite bloquear o dar de baja una cuenta sin eliminarla físicamente.
+
+Precondiciones:
+- Administrador autenticado con permiso `usuarios.control_parcial`.
+- El usuario a desactivar debe existir con `activo = 1`.
+
+Flujo principal:
+1. El administrador selecciona el usuario.
+2. Elige la acción: bloquear (`estado_usuario = BLOQUEADO`) o dar de baja (`estado_usuario = INACTIVO`).
+3. El sistema actualiza `estado_usuario` según la acción elegida.
+4. Invalida la sesión activa del usuario: ejecuta `DEL` en Redis sobre `refresh:{id_usuario}:*` y `permisos:{id_usuario}`.
+5. Se registra el evento en `logs_acciones` con `tipo_accion = 'bloqueo_cuenta'`.
+
+Nota sobre borrado lógico vs estado de negocio:
+`activo = 0` es el flag técnico de borrado lógico transversal (usado en todas las tablas). `estado_usuario = BLOQUEADO` o `INACTIVO` es el estado de negocio. En este caso de uso se modifica el estado de negocio; `activo` se mantiene en `1` a menos que sea una baja definitiva del registro por razones administrativas internas, lo cual es una decisión de implementación separada.
+
+Postcondiciones:
+- `estado_usuario` actualizado.
+- Sesión invalidada inmediatamente en Redis.
+- El usuario no puede autenticarse hasta que un administrador revierta el estado (fuera del alcance de este CU).
