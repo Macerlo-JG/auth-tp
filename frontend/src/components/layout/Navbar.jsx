@@ -1,7 +1,38 @@
-import { NavLink } from "react-router-dom";
 import { IconShield, IconFolder, IconUsers, IconChevronDown } from "../icons.jsx";
+import { useState, useRef, useEffect } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import useAuth from "../../hooks/useAuth";
 
 export default function Navbar() {
+
+const navigate = useNavigate();
+const { user, logout } = useAuth();
+const [open, setOpen] = useState(false);
+const menuRef = useRef(null);
+
+useEffect(() => {
+  function handleClickOutside(event) {
+    if (
+      menuRef.current &&
+      !menuRef.current.contains(event.target)
+    ) {
+      setOpen(false);
+    }
+  }
+  document.addEventListener(
+    "mousedown",
+    handleClickOutside
+  );
+  return () =>
+    document.removeEventListener(
+      "mousedown",
+      handleClickOutside
+    );
+}, []);
+async function handleLogout() {
+  await logout();
+  navigate("/login", { replace: true });
+}
   return (
     <header className="bg-bomberos shadow-md">
       <div className="max-w-[1100px] mx-auto px-6">
@@ -29,13 +60,40 @@ export default function Navbar() {
               Usuarios
             </NavLink>
           </nav>
+          <div
+            ref={menuRef}
+            className="relative"
+          >
+            <button
+              onClick={() => setOpen(!open)}
+              className="flex items-center gap-2 text-white text-sm font-medium"
+            >
+              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                <IconUsers />
+              </div>
+              <span className="hidden sm:inline">
+                {user?.nombre}
+              </span>
+              <IconChevronDown />
+            </button>
 
-          <div className="flex items-center gap-2 text-white text-sm font-medium shrink-0">
-            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-              <IconUsers />
-            </div>
-            <span className="hidden sm:inline">Administrador</span>
-            <IconChevronDown className="text-white/70" />
+            {open && (
+              <div className="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-lg border py-2 z-50">
+
+                <div className="px-4 pb-2 border-b">
+                  <p className="font-semibold">
+                    {user?.nombre}
+                  </p>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100 text-red-600"
+                >
+                  Cerrar sesión
+                </button>
+
+              </div>
+            )}
           </div>
         </div>
       </div>

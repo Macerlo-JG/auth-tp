@@ -1,16 +1,19 @@
 import { Toaster } from "react-hot-toast";
 import { Routes, Route, Navigate } from "react-router-dom";
-import "./index.css";
+import Login from "./pages/Login";
+import ProtectedRoute from "./routes/ProtectedRoute";
+import PublicRoute from "./routes/PublicRoute";
 import ListadoUsuarios from "./pages/ListadoUsuarios.jsx";
 import NuevoUsuario from "./pages/NuevoUsuario.jsx";
 import EditarUsuarioPage from "./pages/EditarUsuarioPage.jsx";
 import VerUsuario from "./pages/VerUsuario.jsx";
+import "./index.css";
 
 function App() {
   return (
     <>
       <Toaster
-      //contenedor donde apareceran las notificaciones toast
+      // Contenedor donde apareceran las notificaciones toast
         position="top-right"
         toastOptions={{
           duration: 2500,
@@ -18,11 +21,35 @@ function App() {
         }}
       />
       <Routes>
-        <Route path="/" element={<Navigate to="/usuarios" replace />} /> 
-        <Route path="/usuarios" element={<ListadoUsuarios />} />
-        <Route path="/usuarios/nuevo" element={<NuevoUsuario />} />
-        <Route path="/usuarios/:id" element={<VerUsuario />} />
-        <Route path="/usuarios/:id/editar" element={<EditarUsuarioPage />} />
+
+        <Route path="/"element={<Navigate to="/usuarios" replace />}/>
+
+        <Route path="/login"element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }/>
+        <Route path="/usuarios"element={
+            <ProtectedRoute>
+              <ListadoUsuarios />
+            </ProtectedRoute>
+          }/>
+        <Route path="/usuarios/nuevo"element={
+            <ProtectedRoute roles={["Administrador"]} permissions={["usuarios.crear"]}>
+              <NuevoUsuario />
+            </ProtectedRoute>
+          }/>
+        <Route path="/usuarios/:id"element={
+            <ProtectedRoute>
+              <VerUsuario />
+            </ProtectedRoute>
+          }/>
+        <Route path="/usuarios/:id/editar" element={
+            <ProtectedRoute roles={["Administrador"]} >
+              <EditarUsuarioPage />
+            </ProtectedRoute>
+          }/>
+
       </Routes>
     </>
   );

@@ -21,9 +21,13 @@ import {
 import { getListadoUsuarios } from "../services/usuariosService.js";
 import { formatearId } from "../utils/format.js";
 
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext.jsx";
+
 export default function ListadoUsuarios() {
   // Estados
 
+  const { hasPermission } = useContext(AuthContext);
   // Listado completo obtenido desde el backend.
   const [usuarios, setUsuarios] = useState([]);
 
@@ -189,11 +193,12 @@ const hasta = Math.min(indiceFin, total);
             </select>
 
           </div>
-
-          <Link to="/usuarios/nuevo" className="btn-bomberos shrink-0">
-            <span className="text-lg leading-none">+</span>
-            Nuevo usuario
-          </Link>
+          {hasPermission("usuarios.crear") && (
+            <Link to="/usuarios/nuevo" className="btn-bomberos shrink-0">
+              <span className="text-lg leading-none">+</span>
+              Nuevo usuario
+            </Link>            
+          )}
         </div>
 
         {cargando ? (
@@ -244,6 +249,8 @@ const hasta = Math.min(indiceFin, total);
                     </td>
                     <td className="table-td">
                       <div className="flex items-center gap-4">
+
+                        {hasPermission("usuarios.ver")&& (
                         <Link
                           to={`/usuarios/${usuario.id_usuario}`}
                           className="action-link action-ver"
@@ -251,14 +258,20 @@ const hasta = Math.min(indiceFin, total);
                           <IconEye />
                           Ver
                         </Link>
-                        <Link
+                        ) }
+
+                        {hasPermission("usuarios.editar")&& (
+                          <Link
                           to={`/usuarios/${usuario.id_usuario}/editar`}
                           className="action-link action-editar"
                         >
                           <IconPencil />
                           Editar
                         </Link>
-                        <button
+                        )}
+                        
+                        {hasPermission("usuarios.eliminar")&& (
+                          <button
                           type="button"
                           onClick={() => setEliminarTarget(usuario)}
                           className="action-link action-eliminar"
@@ -266,6 +279,7 @@ const hasta = Math.min(indiceFin, total);
                           <IconTrash />
                           Eliminar
                         </button>
+                        )}
                       </div>
                     </td>
                   </tr>
