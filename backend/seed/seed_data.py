@@ -7,6 +7,8 @@ from models.usuario import (
 )
 from models.rol import Rol
 from models.rol_usuario import RolUsuario
+from werkzeug.security import generate_password_hash
+from models.credencial_model import Credencial
 
 def seed_data():
     ahora = datetime.now(timezone.utc)
@@ -56,6 +58,28 @@ def seed_data():
         db.session.flush()
 
     usuarios = {usuario.id_persona: usuario for usuario in Usuario.query.all()}
+    
+# Escenario de prueba: usuario 1 password correcta, usuario 2 password distinta, usuario 3 sin credencial.
+    credenciales_existentes = {c.id_usuario for c in Credencial.query.all()}
+    credenciales_a_crear = []
+
+    passwords_test = {1: "123456", 2: "shiraoki123"}
+
+    for id_persona, password_plano in passwords_test.items():
+        usuario = usuarios.get(id_persona)
+        if usuario and usuario.id_usuario not in credenciales_existentes:
+            credenciales_a_crear.append(
+                Credencial(
+                    id_usuario=usuario.id_usuario,
+                    password_hash=generate_password_hash(password_plano),
+                    created_by=1,
+                    created_at=ahora
+                )
+            )
+
+    if credenciales_a_crear:
+        db.session.add_all(credenciales_a_crear)
+
 
     # Asignación de roles a usuarios: antes de cada insert se chequea si la relación ya existe en DB,
     # para que correr seed_data() varias veces sea idempotente.

@@ -120,14 +120,14 @@ export default function Login() {
             Usuario de prueba
           </p>
           <p>Email: operador@test.com</p>
-          <p>Contraseña: 123456</p>
+          <p>Contraseña: shiraoki123</p>
         </div>
                 <div className="mt-8 text-sm text-gray-500 border-t pt-4">
           <p className="font-semibold mb-2">
             Usuario de prueba
           </p>
           <p>Email: consultor@test.com</p>
-          <p>Contraseña: 123456</p>
+          <p>Contraseña: no hay.</p>
         </div>
 
       </div>

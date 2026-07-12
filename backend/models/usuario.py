@@ -32,6 +32,8 @@ class Usuario(db.Model):
     )
 
     roles_usuario = relationship("RolUsuario", back_populates="usuario")
+    #añado relación 1-1 con credenciales
+    credencial = relationship("Credencial", back_populates="usuario")
 
     created_by: Mapped[int] = mapped_column(Integer, nullable=False)
 
