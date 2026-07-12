@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from marshmallow import ValidationError
+import traceback
 from schemas.usuario_schemas import usuario_schema, usuarios_schema
 
 from services.usuario_service import (
@@ -18,20 +19,27 @@ usuarios_bp = Blueprint("usuarios", __name__, url_prefix="/usuarios")
 
 @usuarios_bp.route("", methods=["GET"])
 def listar_usuarios():
-    usuarios = obtener_todos()
-    data = usuarios_schema.dump(usuarios)
-
-    return respuesta_api(True, data)
+    try:
+        usuarios = obtener_todos()
+        data = usuarios_schema.dump(usuarios)
+        return respuesta_api(True, data)
+    except Exception as error:
+        traceback.print_exc()
+        return respuesta_api(False, [], str(error), 500)
 
 @usuarios_bp.route("/<int:id>", methods=["GET"])
 def obtener_usuario(id):
-    usuario = obtener_por_id(id)
+    try:
+        usuario = obtener_por_id(id)
 
-    if not usuario:
-        return respuesta_api(False, [], "Usuario no encontrado", 404)
+        if not usuario:
+            return respuesta_api(False, [], "Usuario no encontrado", 404)
 
-    data = usuario_schema.dump(usuario)
-    return respuesta_api(True, [data])
+        data = usuario_schema.dump(usuario)
+        return respuesta_api(True, [data])
+    except Exception as error:
+        traceback.print_exc()
+        return respuesta_api(False, [], str(error), 500)
 
 @usuarios_bp.route("", methods=["POST"])
 def crear_usuario():
@@ -41,8 +49,9 @@ def crear_usuario():
         nuevo_usuario = crear(req)
     except ValidationError as e:
         return respuesta_api(False, [], e.messages, 400)
-    except Exception as e:
-        return respuesta_api(False, [], str(e), 400)
+    except Exception as error:
+        traceback.print_exc()
+        return respuesta_api(False, [], str(error), 400)
 
     return respuesta_api(True, [usuario_schema.dump(nuevo_usuario)], "Usuario creado", 201)
     
@@ -57,21 +66,26 @@ def editar_usuario(id):
         actualizado = actualizar(usuario, request.get_json())
     except ValidationError as e:
         return respuesta_api(False, [], e.messages, 400)
-    except Exception as e:
-        return respuesta_api(False, [], str(e), 400)
+    except Exception as error:
+        traceback.print_exc()
+        return respuesta_api(False, [], str(error), 400)
     
     return respuesta_api(True, [usuario_schema.dump(actualizado)], "Usuario actualizado")
 
 @usuarios_bp.route("/<int:id>", methods=["DELETE"])  
 def eliminar_usuario(id):
-   usuario = obtener_por_id(id)
+    try:
+        usuario = obtener_por_id(id)
 
-   if not usuario:
-        return respuesta_api(False, [], "Usuario no encontrado", 404)
-   
-   eliminar(usuario)
+        if not usuario:
+            return respuesta_api(False, [], "Usuario no encontrado", 404)
+        
+        eliminar(usuario)
 
-   return respuesta_api(True, [], "Usuario eliminado", 200)
+        return respuesta_api(True, [], "Usuario eliminado", 200)
+    except Exception as error:
+        traceback.print_exc()
+        return respuesta_api(False, [], str(error), 500)
 
 # Helper para formatear las respuestas
 def respuesta_api(ok=True, data=None, message="", status=200):

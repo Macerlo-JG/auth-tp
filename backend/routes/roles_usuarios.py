@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from marshmallow import ValidationError
+import traceback
 from services.rol_usuario_service import (
     obtener_roles_usuario,
     asignar_roles,
@@ -21,12 +22,16 @@ roles_usuarios_bp = Blueprint("roles_usuarios", __name__, url_prefix="/usuarios"
 # Traer todos los roles disponibles y activos
 @roles_usuarios_bp.route("/roles", methods=["GET"])
 def listar_roles():
-    roles = Rol.query.filter_by(activo=True).all()
-    # .dump prepara los datos para convertir a json.
-    data = roles_schema.dump(roles)
+    try:
+        roles = Rol.query.filter_by(activo=True).all()
+        # .dump prepara los datos para convertir a json.
+        data = roles_schema.dump(roles)
 
-    # retorno exito y data serializada.
-    return respuesta_api(True, data)
+        # retorno exito y data serializada.
+        return respuesta_api(True, data)
+    except Exception as error:
+        traceback.print_exc()
+        return respuesta_api(False, [], str(error), 500)
 
 # va a la capa "servicio" y valida que el usuario exista. 
 # se obtienen roles del usuario.
@@ -37,6 +42,9 @@ def obtener_roles(id_usuario):
     except ValidationError as e:
         # si no hay nada, 404 (no encontrado), retorna error
         return respuesta_api(False, [], e.messages, 404)
+    except Exception as error:
+        traceback.print_exc()
+        return respuesta_api(False, [], str(error), 500)
 
     data = roles_schema.dump(roles)
     return respuesta_api(True, data)
@@ -51,9 +59,10 @@ def asignar_roles_usuario(id_usuario):
         asignar_roles(id_usuario, req)
     except ValidationError as e:
         return respuesta_api(False, [], e.messages, 400)
-    except Exception as e:
+    except Exception as error:
         # Catch genérico: útil como red de contención, pero  no es útil para un usuario.
-        return respuesta_api(False, [], str(e), 400)
+        traceback.print_exc()
+        return respuesta_api(False, [], str(error), 400)
 
     return respuesta_api(True, [], "Roles asignados correctamente", 201)
 
@@ -66,6 +75,9 @@ def revocar_rol_usuario(id_usuario, id_rol):
         revocar_rol(id_usuario, id_rol, req)
     except ValidationError as e:
         return respuesta_api(False, [], e.messages, 400)
+    except Exception as error:
+        traceback.print_exc()
+        return respuesta_api(False, [], str(error), 500)
 
     return respuesta_api(True, [], "Rol revocado correctamente")
 
@@ -79,6 +91,9 @@ def revocar_roles_usuario(id_usuario):
         revocar_roles(id_usuario, req)
     except ValidationError as e:
         return respuesta_api(False, [], e.messages, 400)
+    except Exception as error:
+        traceback.print_exc()
+        return respuesta_api(False, [], str(error), 500)
 
     return respuesta_api(True, [], "Roles revocados correctamente")
 
