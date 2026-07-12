@@ -15,7 +15,7 @@ const parseResponse = async (res) => {
 
 //export para poder ser usada de otros archivos,
 //async para asincronia
-//fetch: envia peticion http a la url 
+//fetch: envia peticion http a la url
 export const getRoles = async () => {
   const res = await fetch(ROLES_API);
   return parseResponse(res);

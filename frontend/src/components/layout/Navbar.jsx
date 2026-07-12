@@ -11,7 +11,7 @@ const [open, setOpen] = useState(false);
 const menuRef = useRef(null);
 
 useEffect(() => {
-  function handleClickOutside(event) {
+  function handleClickAfuera(event) {
     if (
       menuRef.current &&
       !menuRef.current.contains(event.target)
@@ -21,12 +21,12 @@ useEffect(() => {
   }
   document.addEventListener(
     "mousedown",
-    handleClickOutside
+    handleClickAfuera
   );
   return () =>
     document.removeEventListener(
       "mousedown",
-      handleClickOutside
+      handleClickAfuera
     );
 }, []);
 async function handleLogout() {
