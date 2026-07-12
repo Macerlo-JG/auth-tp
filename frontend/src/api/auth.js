@@ -1,6 +1,3 @@
-// Simula una pequeña demora como si fuera una petición HTTP, sirve para implementar la pantalla cargando
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
 // export async function login(credentials) {
 //    const response = await axios.post(
 //        "/login",
@@ -15,14 +12,34 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const API_URL = "http://localhost:5000";
 
 export const USUARIOS_MOCK = [
-  { id: 1, nombre: "Administrador", email: "admin@test.com", roles: [{ id: 1, nombre: "Administrador" }],
-    permisos: ["usuarios.ver", "usuarios.crear", "usuarios.editar", "usuarios.eliminar", "roles.asignar"] },
-  { id: 2, nombre: "Operador", email: "operador@test.com", roles: [{ id: 2, nombre: "Operador" }],
-    permisos: ["usuarios.ver", "usuarios.crear", "usuarios.editar"] },
-  { id: 3, nombre: "Consultor", email: "consultor@test.com", roles: [{ id: 3, nombre: "Consultor" }],
-    permisos: ["usuarios.ver"] },
+  {
+    id: 1,
+    nombre: "Administrador",
+    email: "admin@test.com",
+    roles: [{ id: 1, nombre: "Administrador" }],
+    permisos: [
+      "usuarios.ver",
+      "usuarios.crear",
+      "usuarios.editar",
+      "usuarios.eliminar",
+      "roles.asignar",
+    ],
+  },
+  {
+    id: 2,
+    nombre: "Operador",
+    email: "operador@test.com",
+    roles: [{ id: 2, nombre: "Operador" }],
+    permisos: ["usuarios.ver", "usuarios.crear", "usuarios.editar"],
+  },
+  {
+    id: 3,
+    nombre: "Consultor",
+    email: "consultor@test.com",
+    roles: [{ id: 3, nombre: "Consultor" }],
+    permisos: ["usuarios.ver"],
+  },
 ];
-
 
 // admin@test.com / 123456
 // operador@test.com / shiraoki123
@@ -56,8 +73,6 @@ export async function login({ email, password }) {
 // Simula el endpoint POST /logout
 
 export async function logout() {
-  await delay(300);
-
   return {
     success: true,
   };
