@@ -8,6 +8,7 @@ services:
       - "5000:5000"
     volumes:
       - ../backend:/app
+      - ../auth_common:/app/auth_common
     environment:
       - FLASK_ENV=development
       - DATABASE_URL=postgresql+psycopg2://postgres:postgres@postgres:5432/auth

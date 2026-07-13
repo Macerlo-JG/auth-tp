@@ -6,7 +6,8 @@ COPY backend/requirements.txt .
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY backend/ .
+COPY auth_common/ ./auth_common/
 
 EXPOSE 5000
 
