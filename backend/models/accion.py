@@ -4,21 +4,24 @@ from sqlalchemy import (
     Integer,
     Boolean,
     String,
-    DateTime
+    DateTime,
+    UniqueConstraint
 )
 from datetime import datetime
 from sqlalchemy.sql import func
 
-class Rol(db.Model):
-    __tablename__ = "roles"
+class Accion(db.Model):
+    __tablename__ = "acciones"
+    __table_args__ = (
+        UniqueConstraint("servicio", "nombre", name="uq_acciones_servicio_nombre"),
+    )
 
-    id_rol: Mapped[int] = mapped_column(Integer, primary_key=True)
-    nombre: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    id_accion: Mapped[int] = mapped_column(Integer, primary_key=True)
+    servicio: Mapped[str] = mapped_column(String(50), nullable=False)
+    nombre: Mapped[str] = mapped_column(String(100), nullable=False)
     descripcion: Mapped[str] = mapped_column(String(255), nullable=False)
 
-    roles_usuario = relationship("RolUsuario" ,back_populates="rol")
-    roles_accion = relationship("RolAccion", back_populates="rol")
-
+    roles_accion = relationship("RolAccion", back_populates="accion")
 
     created_by: Mapped[int] = mapped_column(Integer, nullable=False)
 
@@ -35,8 +38,8 @@ class Rol(db.Model):
         nullable=True,
         onupdate=func.now()
     )
-    
+
     activo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
     def __repr__(self):
-        return f"<Rol={self.nombre}>"
+        return f"<Accion={self.servicio}.{self.nombre}>"
