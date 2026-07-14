@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
+import { AuthContext } from "../context/AuthContext.jsx";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 
@@ -20,10 +21,6 @@ import {
 
 import { getListadoUsuarios } from "../services/usuariosService.js";
 import { formatearId } from "../utils/format.js";
-
-import { useContext } from "react";
-import { AuthContext } from "../context/AuthContext.jsx";
-
 export default function ListadoUsuarios() {
   // Estados
 
