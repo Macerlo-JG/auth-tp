@@ -1,5 +1,5 @@
-import { useEffect, useState, useContext } from "react";
-import { AuthContext } from "../context/AuthContext.jsx";
+import { useEffect, useState, } from "react";
+import useAuth from "../hooks/useAuth.js";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 
@@ -24,7 +24,7 @@ import { formatearId } from "../utils/format.js";
 export default function ListadoUsuarios() {
   // Estados
 
-  const { hasPermission } = useContext(AuthContext);
+  const { hasPermission } = useAuth();
   // Listado completo obtenido desde el backend.
   const [usuarios, setUsuarios] = useState([]);
 
