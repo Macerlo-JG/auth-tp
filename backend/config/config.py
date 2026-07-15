@@ -2,7 +2,8 @@
 Este archivo contiene la configuración principal de la aplicación
 
 Define la conexión a la base de datos (SQLAlchemy y PostgreSQL),
-la conexión a Redis (sesiones) y la configuración de JWT (Flask-JWT-Extended)
+la conexión a Redis (sesiones y rate limiting) y la configuración
+de JWT (Flask-JWT-Extended) y Flask-Limiter
 """
 
 from datetime import timedelta
@@ -20,3 +21,6 @@ class Config:
     JWT_SECRET_KEY = '811ea3c35704a634c6bd13710d919b63b79d76435321431ff7466facf89dcddf'
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=15)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=7)
+
+    # DB 1: separada de las sesiones (DB 0), mismo Redis.
+    RATELIMIT_STORAGE_URI = 'redis://redis:6379/1'

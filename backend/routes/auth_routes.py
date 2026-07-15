@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 import traceback
 from flask_jwt_extended import (
     create_access_token,
@@ -13,10 +13,26 @@ from models.usuario import Usuario, EstadoUsuario
 from services.credencial_service import verificar_password
 from services import auth_service
 from mocks import persona_mock_service
+from auth_common.respuesta_api import respuesta_api
+from db import limiter
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
+def clave_por_email():
+    # Segunda clave de rate limit para /login: por email, no por IP.
+    # Si el body no trae email, cae al comportamiento por defecto
+    # del limiter (IP).
+    body = request.get_json()
+    return body.get("email") or request.remote_addr
+
+
+def clave_por_usuario_refresh():
+    # Solo se llama después de que @jwt_required(refresh=True) ya corrió, así que get_jwt_identity() ya está disponible acá.
+    return get_jwt_identity()
+
 @auth_bp.route("/login", methods=["POST"])
+@limiter.limit("5/minute") # por IP
+@limiter.limit("10/minutes", key_func=clave_por_email) # por email
 def login():
     try:
         req = request.get_json()
@@ -86,7 +102,9 @@ def logout():
         return respuesta_api(False, [], str(error), 500)
     
 @auth_bp.route("/refresh", methods=["POST"])
+@limiter.limit("5/minute")  # por IP - corre antes de validar el token
 @jwt_required(refresh=True)
+@limiter.limit("10/minute", key_func=clave_por_usuario_refresh)  # por usuario
 def refresh():
     try:
         # jwt_required(refresh=True) exige específicamente un refresh token
@@ -111,11 +129,3 @@ def refresh():
     except Exception as error:
         traceback.print_exc()
         return respuesta_api(False, [], str(error), 500)
-
-def respuesta_api(ok=True, data=None, message="", status=200):
-    return jsonify({
-        "ok": ok,
-        "data": data if data is not None else [],
-        "count": len(data) if isinstance(data, list) else (1 if data else 0),
-        "message": message
-    }), status
