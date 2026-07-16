@@ -7,6 +7,7 @@ import ListadoUsuarios from "./pages/ListadoUsuarios.jsx";
 import NuevoUsuario from "./pages/NuevoUsuario.jsx";
 import EditarUsuarioPage from "./pages/EditarUsuarioPage.jsx";
 import VerUsuario from "./pages/VerUsuario.jsx";
+import CambiarContrasena from "./pages/CambiarContrasena.jsx";
 import "./index.css";
 
 function App() {
@@ -47,6 +48,11 @@ function App() {
         <Route path="/usuarios/:id/editar" element={
             <ProtectedRoute roles={["Administrador"]} >
               <EditarUsuarioPage />
+            </ProtectedRoute>
+          }/>
+        <Route path="/cambiar-contrasena" element={
+            <ProtectedRoute>
+              <CambiarContrasena />
             </ProtectedRoute>
           }/>
 
