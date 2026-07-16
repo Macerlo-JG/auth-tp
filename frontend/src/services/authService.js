@@ -8,9 +8,9 @@ function guardarSesion(data) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
-// Obtiene la sesión almacenada en el Local Storage si no existe, devuelve null
+// Obtiene la sesión almacenada en el Session Storage si no existe, devuelve null
 function obtenerSesion() {
-  const data = localStorage.getItem(STORAGE_KEY);
+  const data = sessionStorage.getItem(STORAGE_KEY);
 
   return data ? JSON.parse(data) : null;
 }
