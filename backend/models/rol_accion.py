@@ -9,18 +9,18 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 from db import db
 
-class RolUsuario(db.Model):
-    __tablename__ = "roles_usuarios"
+class RolAccion(db.Model):
+    __tablename__ = "roles_acciones"
 
-    id_rol_usuario: Mapped[int] = mapped_column(Integer, primary_key=True)
-
-    id_usuario: Mapped[int] = mapped_column(
-        ForeignKey("usuarios.id_usuario"),
-        nullable=False
-    )
+    id_rol_accion: Mapped[int] = mapped_column(Integer, primary_key=True)
 
     id_rol: Mapped[int] = mapped_column(
         ForeignKey("roles.id_rol"),
+        nullable=False
+    )
+
+    id_accion: Mapped[int] = mapped_column(
+        ForeignKey("acciones.id_accion"),
         nullable=False
     )
 
@@ -42,8 +42,8 @@ class RolUsuario(db.Model):
 
     activo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
-    usuario = relationship("Usuario", back_populates="roles_usuario")
-    rol = relationship("Rol", back_populates="roles_usuario")
+    rol = relationship("Rol", back_populates="roles_accion")
+    accion = relationship("Accion", back_populates="roles_accion")
 
     def __repr__(self):
-        return f"<RolUsuario usuario={self.id_usuario} rol={self.id_rol}>"
+        return f"<RolAccion rol={self.id_rol} accion={self.id_accion}>"

@@ -1,6 +1,7 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 import traceback
 from services.credencial_service import verificar_password
+from auth_common.respuesta_api import respuesta_api
 
 credenciales_bp = Blueprint("credenciales", __name__, url_prefix="/credenciales")
 
@@ -28,12 +29,3 @@ def verificar_credencial():
     except Exception as error:
         traceback.print_exc()
         return respuesta_api(False, [], str(error), 500)
-
-
-def respuesta_api(ok=True, data=None, message="", status=200):
-    return jsonify({
-        "ok": ok,
-        "data": data if data is not None else [],
-        "count": len(data) if isinstance(data, list) else (1 if data else 0),
-        "message": message
-    }), status
