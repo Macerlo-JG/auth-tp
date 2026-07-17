@@ -23,7 +23,7 @@ class Accion(db.Model):
 
     roles_accion = relationship("RolAccion", back_populates="accion")
 
-    created_by: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_by: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     updated_by: Mapped[int | None] = mapped_column(Integer, nullable=True)
 

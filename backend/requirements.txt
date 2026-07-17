@@ -18,3 +18,4 @@ psycopg2-binary==2.9.12
 flask-jwt-extended==4.7.4
 redis==8.0.1
 flask-limiter==4.1.1
+PyYAML==6.0.3
