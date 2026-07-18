@@ -1,0 +1,127 @@
+"""Rutas para el flujo de recuperación de contraseña mediante OTP."""
+from flask import Blueprint, request, jsonify
+import traceback
+
+from mock.emails_usuario import obtener_id_usuario_por_email
+from models.usuario import EstadoUsuario
+from services.usuario_service import obtener_por_id
+from services.otp_service import generar_otp, verificar_otp, eliminar_otp
+from services.email_service import enviar_otp_recuperacion
+from services.credencial_service import restablecer_password
+
+recuperacion_bp = Blueprint("recuperacion", __name__, url_prefix="/recuperacion")
+
+
+# Verificamos que el usuario exista y este ACTIVO.
+# Se usa antes de enviar el OTP para no filtrar usuarios inactivos o pendientes.
+def _usuario_activo_por_email(email):
+    id_usuario = obtener_id_usuario_por_email(email)
+    if not id_usuario:
+        return None
+
+    usuario = obtener_por_id(id_usuario)
+    if not usuario or usuario.estado_usuario != EstadoUsuario.ACTIVO:
+        return None
+
+    return usuario
+
+
+# Misma lógica y recorrido: solicito OTP con el tipo "recuperar contraseña"
+@recuperacion_bp.route("/solicitar-otp", methods=["POST"])
+def solicitar_otp():
+    try:
+        req = request.get_json() or {}
+        email = (req.get("email") or "").strip().lower()
+
+        if not email:
+            return respuesta_api(False, [], "email es requerido", 400)
+
+        usuario = _usuario_activo_por_email(email)
+        if usuario:
+            codigo = generar_otp("recuperacion", email)
+            enviar_otp_recuperacion(email, codigo)
+        else:
+            # No indicamos al cliente si el email existe.
+            print(
+                f"[recuperacion] No se envió mail: usuario inexistente o no activo ({email})",
+                flush=True,
+            )
+
+        return respuesta_api(
+            True,
+            [],
+            "Si el correo existe y la cuenta está activa, recibirá un código de recuperación.",
+        )
+
+    except Exception as error:
+        traceback.print_exc()
+        return respuesta_api(False, [], str(error), 500)
+
+
+@recuperacion_bp.route("/verificar-otp", methods=["POST"])
+def verificar_otp_endpoint():
+    try:
+        req = request.get_json() or {}
+        email = (req.get("email") or "").strip().lower()
+        otp = req.get("otp")
+
+        if not email or not otp:
+            return respuesta_api(False, [], "email y otp son requeridos", 400)
+
+        if not verificar_otp("recuperacion", email, otp):
+            return respuesta_api(False, [], "Código inválido o expirado.", 400)
+
+        return respuesta_api(True, [], "Código verificado. Puede ingresar su nueva contraseña.")
+
+    except Exception as error:
+        traceback.print_exc()
+        return respuesta_api(False, [], str(error), 500)
+
+
+@recuperacion_bp.route("/cambiar", methods=["POST"])
+def cambiar_contrasena():
+    try:
+        req = request.get_json() or {}
+        email = (req.get("email") or "").strip().lower()
+        otp = req.get("otp")
+        password_nueva = req.get("password_nueva")
+
+        if not email or not otp or not password_nueva:
+            return respuesta_api(
+                False,
+                [],
+                "email, otp y password_nueva son requeridos",
+                400,
+            )
+
+        id_usuario = obtener_id_usuario_por_email(email)
+        if not id_usuario:
+            return respuesta_api(False, [], "Código inválido.", 400)
+
+        usuario = obtener_por_id(id_usuario)
+        if not usuario or usuario.estado_usuario != EstadoUsuario.ACTIVO:
+            return respuesta_api(False, [], "La cuenta no puede recuperarse.", 400)
+
+        if not verificar_otp("recuperacion", email, otp):
+            return respuesta_api(False, [], "Código inválido o expirado.", 400)
+
+        # Si el OTP es válido, se restablece la nueva contraseña y se borra el OTP usado.
+        restablecer_password(id_usuario, password_nueva, id_usuario)
+        eliminar_otp("recuperacion", email)
+
+        return respuesta_api(True, [], "Contraseña restablecida correctamente.")
+
+    except ValueError as error:
+        return respuesta_api(False, [], str(error), 400)
+    except Exception as error:
+        traceback.print_exc()
+        return respuesta_api(False, [], str(error), 500)
+
+
+def respuesta_api(ok=True, data=None, message="", status=200):
+    return jsonify({
+        "ok": ok,
+        "data": data if data is not None else [],
+        "count": len(data) if isinstance(data, list) else (1 if data else 0),
+        "message": message,
+    }), status

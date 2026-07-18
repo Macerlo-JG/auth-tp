@@ -39,17 +39,21 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  // Inicia sesion utilizando el servicio de autenticacion
+  // Inicio sesion + correspondientes validaciones utilizando el servicio de autenticacion
   // Si las credenciales son validas, actualiza el estado global con la informacion del usuario
   const login = async (email, password) => {
-    const session = await authService.login(email, password);
+    try {
+      const session = await authService.login(email, password);
 
-    setUser(session.user);
-    setRoles(session.roles);
-    setPermissions(session.permisos);
-    setIsAuthenticated(true);
+      setUser(session.user);
+      setRoles(session.roles);
+      setPermissions(session.permisos);
+      setIsAuthenticated(true);
 
-    return session;
+      return session;
+    } catch (error) {
+      throw error;
+    }
   };
 
   // Cierra sesion
@@ -81,6 +85,7 @@ export function AuthProvider({ children }) {
     hasRole: (role) =>
       hasRole(roles, role),
   };
+
 
   // Proporciona el contexto de autenticacion a todos los componentes hijos
   return (

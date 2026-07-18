@@ -63,7 +63,7 @@ def seed_data():
     credenciales_existentes = {c.id_usuario for c in Credencial.query.all()}
     credenciales_a_crear = []
 
-    passwords_test = {1: "123456", 2: "shiraoki123"}
+    passwords_test = {1: "123456", 2: "shiraoki123", 4: "pendiente123"}
 
     for id_persona, password_plano in passwords_test.items():
         usuario = usuarios.get(id_persona)

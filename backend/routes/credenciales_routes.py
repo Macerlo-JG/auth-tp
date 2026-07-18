@@ -1,3 +1,10 @@
+"""Rutas para manejar contraseñas y credenciales.
+
+Este módulo expone endpoints para:
+    - verificar que una contraseña actual sea válida,
+    - cambiar la contraseña de un usuario,
+    - generar una contraseña temporal (por ejemplo, al crear un usuario nuevo).
+"""
 from flask import Blueprint, request, jsonify
 import traceback
 from services.credencial_service import (
@@ -13,7 +20,7 @@ credenciales_bp = Blueprint("credenciales", __name__, url_prefix="/credenciales"
 @credenciales_bp.route("/verificar", methods=["POST"])
 def verificar_credencial():
     try:
-        # solo necesitamos dos campos sueltos
+        # Solo se valida la existencia del usuario y la contraseña ingresada.
         req = request.get_json()
         id_usuario = req.get("id_usuario")
         password = req.get("password")
@@ -22,7 +29,7 @@ def verificar_credencial():
         if not id_usuario or not password:
             return respuesta_api(False, [], "id_usuario y password son requeridos", 400)
 
-        # logica de negocio en service
+        # Lógica de negocio delegada al servicio de credenciales.
         coincide = verificar_password(id_usuario, password)
 
         if not coincide:
@@ -80,6 +87,8 @@ def crear_credencial_temporal():
         if not usuario:
             return respuesta_api(False, [], "Usuario no encontrado", 404)
 
+        # Genera una contraseña temporal y desactiva la credencial anterior.
+        # Este endpoint se puede usar al crear un usuario o restablecer acceso.
         password_temporal = crear_password_temporal(id_usuario, created_by)
         return respuesta_api(
             True,

@@ -28,6 +28,15 @@ export const crearUsuario = async (data) => {
   return { ok: res.ok, status: res.status, body: await res.json() };
 };
 
+export const crearUsuarioCompleto = async (data) => {
+  const res = await fetch(`${API}/completo`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  return { ok: res.ok, status: res.status, body: await res.json() };
+};
+
 export const editarUsuario = async (id, data) => {
   const res = await fetch(`${API}/${id}`, {
     method: "PUT",

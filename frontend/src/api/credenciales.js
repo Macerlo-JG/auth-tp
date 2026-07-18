@@ -1,3 +1,5 @@
+// Llama al backend para operaciones con contraseñas:
+// cambiar la clave actual o pedir una contraseña temporal.
 const API = "http://localhost:5000/credenciales";
 
 export function parseApiError(message) {

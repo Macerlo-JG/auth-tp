@@ -1,3 +1,4 @@
+// Pantalla para que un usuario logueado cambie su contraseña actual.
 import { useState } from "react";
 import toast from "react-hot-toast";
 

@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import useAuth from "../hooks/useAuth";
+import ActivacionModal from "../components/ActivacionModal.jsx";
 
 export default function Login() {
   const navigate = useNavigate();
-
   const { login } = useAuth();
 
   const [form, setForm] = useState({
@@ -14,8 +14,8 @@ export default function Login() {
   });
 
   const [loading, setLoading] = useState(false);
-
-  const [showPassword, setShowPassword] = useState(false);
+  const [showActivacion, setShowActivacion] = useState(false);
+  const [emailActivacion, setEmailActivacion] = useState("");
 
   const handleChange = (e) => {
     setForm((prev) => ({
@@ -24,9 +24,11 @@ export default function Login() {
     }));
   };
 
+  // Al tocar "ingresar"
   const handleSubmit = async (e) => {
+    // evito recargar
     e.preventDefault();
-
+debugger
     if (!form.email.trim()) {
       toast.error("Ingrese un correo.");
       return;
@@ -40,12 +42,26 @@ export default function Login() {
     try {
       setLoading(true);
 
-      await login(form.email, form.password);
+      // Llamo a Login (AuthContext)
+      debugger
+      const session = await login(form.email, form.password);
+
+      if (session.aviso_cambio_contrasena) {
+        toast(
+          "Recuerde cambiar su contraseña periódicamente desde el menú de usuario.",
+          { icon: "ℹ️", duration: 5000 }
+        );
+      }
 
       toast.success("Bienvenido.");
-
       navigate("/usuarios");
     } catch (error) {
+      if (error.code === "CUENTA_PENDIENTE") {
+        setEmailActivacion(error.email || form.email);
+        setShowActivacion(true);
+        return;
+      }
+
       toast.error(error.message);
     } finally {
       setLoading(false);
@@ -63,14 +79,9 @@ export default function Login() {
           Sistema de Gestión Académica
         </p>
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-5"
-        >
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="form-label">
-              Correo electrónico
-            </label>
+            <label className="form-label">Correo electrónico</label>
             <input
               className="form-input"
               type="email"
@@ -80,22 +91,17 @@ export default function Login() {
               onChange={handleChange}
             />
           </div>
+
           <div>
-
-            <label className="form-label">
-              Contraseña
-            </label>
-
-            <div className="relative">
-              <input
-                className="form-input pr-12"
-                type={showPassword ? "text" : "password"}
-                name="password"
-                placeholder="********"
-                value={form.password}
-                onChange={handleChange}
-              />
-            </div>
+            <label className="form-label">Contraseña</label>
+            <input
+              className="form-input"
+              type="password"
+              name="password"
+              placeholder="********"
+              value={form.password}
+              onChange={handleChange}
+            />
           </div>
 
           <button
@@ -107,30 +113,53 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="mt-8 text-sm text-gray-500 border-t pt-4">
-          <p className="font-semibold mb-2">
-            Usuario de prueba
-          </p>
-          <p>Email: admin@test.com</p>
-          <p>Contraseña: 123456</p>
-        </div>
-                <div className="mt-8 text-sm text-gray-500 border-t pt-4">
-          <p className="font-semibold mb-2">
-            Usuario de prueba
-          </p>
-          <p>Email: operador@test.com</p>
-          <p>Contraseña: shiraoki123</p>
-        </div>
-                <div className="mt-8 text-sm text-gray-500 border-t pt-4">
-          <p className="font-semibold mb-2">
-            Usuario de prueba
-          </p>
-          <p>Email: consultor@test.com</p>
-          <p>Contraseña: no hay.</p>
+        <div className="mt-4 text-center space-y-2">
+          <Link
+            to="/recuperar-contrasena"
+            className="block text-sm text-bomberos hover:underline"
+          >
+            Recuperar contraseña
+          </Link>
+          <Link
+            to="/activar-cuenta"
+            className="block text-sm text-bomberos hover:underline"
+          >
+            Activar cuenta
+          </Link>
         </div>
 
+        <div className="mt-8 text-sm text-gray-500 border-t pt-4 space-y-4">
+          <div>
+            <p className="font-semibold mb-1">Administrador</p>
+            <p>Email: admin@test.com</p>
+            <p>Contraseña: 123456</p>
+          </div>
+          <div>
+            <p className="font-semibold mb-1">Alumno</p>
+            <p>Email: alumno@test.com</p>
+            <p>Contraseña: shiraoki123</p>
+          </div>
+          <div>
+            <p className="font-semibold mb-1">Docente</p>
+            <p>Email: docente@test.com</p>
+            <p>Contraseña: (sin credencial en seed)</p>
+          </div>
+          <div>
+            <p className="font-semibold mb-1">Pendiente (activar con OTP)</p>
+            <p>Email: pendiente@test.com</p>
+            <p>Contraseña: pendiente123</p>
+          </div>
+        </div>
       </div>
 
+      <ActivacionModal
+        email={emailActivacion}
+        open={showActivacion}
+        onClose={() => setShowActivacion(false)}
+        onActivado={() => {
+          toast.success("Ya puede iniciar sesión con su contraseña temporal.");
+        }}
+      />
     </div>
   );
 }

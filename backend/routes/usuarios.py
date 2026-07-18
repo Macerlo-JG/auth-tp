@@ -7,6 +7,7 @@ from services.usuario_service import (
     obtener_todos,
     obtener_por_id,
     crear,
+    crear_completo,
     actualizar,
     eliminar
 )
@@ -54,6 +55,40 @@ def crear_usuario():
         return respuesta_api(False, [], str(error), 400)
 
     return respuesta_api(True, [usuario_schema.dump(nuevo_usuario)], "Usuario creado", 201)
+
+# En esta función se crea el usuario y se envía el correo con la contraseña temporal.
+@usuarios_bp.route("/completo", methods=["POST"])
+def crear_usuario_completo():
+    req = request.get_json()
+
+    try:
+        # Almaceno los 2 return.
+        nuevo_usuario, password_temporal = crear_completo(req)
+    except ValidationError as e:
+        return respuesta_api(False, [], e.messages, 400)
+    except ValueError as error:
+        return respuesta_api(False, [], str(error), 400)
+    except Exception as error:
+        traceback.print_exc()
+        return respuesta_api(False, [], str(error), 400)
+
+    email = (req.get("email") or "").strip().lower()
+    link_activacion = f"http://localhost:5173/activar-cuenta?email={email}"
+    # devuelvo link de activación pasando de
+    # parametro el mail para que el usuario pueda ir desde el
+    # mail a su página de activación correspondiente para mayor comodidad y experencia de usuario
+
+    return respuesta_api(
+        True,
+        {
+            "usuario": usuario_schema.dump(nuevo_usuario),
+            "email": email,
+            "password_temporal": password_temporal,
+            "link_activacion": link_activacion,
+        },
+        "Usuario creado. Se envió un correo con la contraseña temporal.",
+        201,
+    )
     
 @usuarios_bp.route("/<int:id>", methods=["PUT"])   
 def editar_usuario(id):    

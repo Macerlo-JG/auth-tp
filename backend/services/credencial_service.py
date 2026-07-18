@@ -1,3 +1,10 @@
+"""Servicio de credenciales y contraseñas del backend.
+
+Este módulo maneja la verificación de la contraseña actual, el cambio
+de contraseña, la generación de contraseñas temporales y la reutilización
+de contraseñas anteriores.
+"""
+
 import secrets
 import string
 
@@ -10,22 +17,17 @@ LONGITUD_MINIMA_PASSWORD = 6
 LONGITUD_PASSWORD_TEMPORAL = 10
 
 
+# Devuelve la credencial actual activa del usuario.
 def obtener_por_usuario(id_usuario):
-    # revisamos filas históricas, y revisamos por activo=True. debe existir como máximo una fila activa por usuario.
     return Credencial.query.filter_by(id_usuario=id_usuario, activo=True).first()
 
-
+# compara hash con activa para saber si es contraseña correcta.
 def verificar_password(id_usuario, password_plano):
-    # recibe datos primitivos y devuelve un booleano.
-    credencial = obtener_por_usuario(id_usuario)
 
-    # Rechaza si no existe la credencial, o si está marcada inactiva
+    credencial = obtener_por_usuario(id_usuario)
     if not credencial or not credencial.activo:
         return False
 
-    # check_password_hash re-hashea el password recibido con el mismo salt/algoritmo
-    # embebido en el hash guardado, y compara resultado — nunca se descifra el hash original
-    # (PBKDF2 es de un solo sentido, no es reversible).
     return check_password_hash(credencial.password_hash, password_plano)
 
 
@@ -36,7 +38,9 @@ def _validar_longitud_password(password_plano):
         )
 
 
+# evito que use una contraseña anterior
 def _password_reutilizada(id_usuario, password_plano):
+
     historial = Credencial.query.filter_by(id_usuario=id_usuario).all()
     return any(
         check_password_hash(credencial.password_hash, password_plano)
@@ -44,11 +48,14 @@ def _password_reutilizada(id_usuario, password_plano):
     )
 
 
+# Genero contra temporal para cuando creo un usuario.
 def _generar_password_temporal():
+
     alfabeto = string.ascii_letters + string.digits
     return "".join(secrets.choice(alfabeto) for _ in range(LONGITUD_PASSWORD_TEMPORAL))
 
 
+# cambiar contraseña. 
 def cambiar_password(id_usuario, password_actual, password_nueva, updated_by):
     _validar_longitud_password(password_nueva)
 
@@ -58,6 +65,7 @@ def cambiar_password(id_usuario, password_actual, password_nueva, updated_by):
     if not verificar_password(id_usuario, password_actual):
         raise ValueError("La contraseña actual es incorrecta")
 
+    # Tal vez deberíamos de cambiar el mensaje de error.
     if _password_reutilizada(id_usuario, password_nueva):
         raise ValueError("La nueva contraseña no puede coincidir con una anterior")
 
@@ -78,10 +86,14 @@ def cambiar_password(id_usuario, password_actual, password_nueva, updated_by):
 
     return nueva_credencial
 
-
+# Retorno contraseña temporal que 
 def crear_password_temporal(id_usuario, created_by):
     password_temporal = _generar_password_temporal()
 
+
+    # Si por cualquier motivo hay una credencial actual
+    # (ej: el usuario olvidó su contraseña y necesitamos resettearla)
+    # se actualiza credencial actual a una temporal.
     credencial_actual = obtener_por_usuario(id_usuario)
     if credencial_actual:
         credencial_actual.activo = False
@@ -92,7 +104,35 @@ def crear_password_temporal(id_usuario, created_by):
         password_hash=generate_password_hash(password_temporal),
         created_by=created_by,
     )
+    
     db.session.add(nueva_credencial)
     db.session.commit()
 
     return password_temporal
+
+
+def restablecer_password(id_usuario, password_nueva, updated_by):
+    """Reemplaza la contraseña sin pedir la actual.
+
+    Este flujo se utiliza cuando el usuario recupera la contraseña mediante OTP.
+    """
+
+    _validar_longitud_password(password_nueva)
+
+    if _password_reutilizada(id_usuario, password_nueva):
+        raise ValueError("La nueva contraseña no puede coincidir con una anterior")
+
+    credencial_actual = obtener_por_usuario(id_usuario)
+    if credencial_actual:
+        credencial_actual.activo = False
+        credencial_actual.updated_by = updated_by
+
+    nueva_credencial = Credencial(
+        id_usuario=id_usuario,
+        password_hash=generate_password_hash(password_nueva),
+        created_by=updated_by,
+    )
+    db.session.add(nueva_credencial)
+    db.session.commit()
+
+    return nueva_credencial

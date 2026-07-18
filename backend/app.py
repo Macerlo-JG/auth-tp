@@ -6,6 +6,9 @@ from routes.usuarios import usuarios_bp
 from routes.roles_usuarios import roles_usuarios_bp
 from seed.seed_data import seed_data
 from routes.credenciales_routes import credenciales_bp
+from routes.auth_routes import auth_bp
+from routes.activacion_routes import activacion_bp
+from routes.recuperacion_routes import recuperacion_bp
 
 """
 Archivo principal de la aplicación:
@@ -30,6 +33,9 @@ with app.app_context():
 app.register_blueprint(usuarios_bp)    
 app.register_blueprint(roles_usuarios_bp)
 app.register_blueprint(credenciales_bp)
+app.register_blueprint(auth_bp)
+app.register_blueprint(activacion_bp)
+app.register_blueprint(recuperacion_bp)
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)

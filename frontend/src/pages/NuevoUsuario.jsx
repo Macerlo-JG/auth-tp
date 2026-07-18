@@ -1,9 +1,11 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 import Layout from "../components/layout/Layout.jsx";
 import Breadcrumbs from "../components/layout/Breadcrumbs.jsx";
+import UsuarioCreadoModal from "../components/UsuarioCreadoModal.jsx";
+import useAuth from "../hooks/useAuth.js";
 
 import {
   IconPerson,
@@ -13,75 +15,69 @@ import {
 } from "../components/icons.jsx";
 
 import {
-  crearUsuario,
+  crearUsuarioCompleto,
   parseApiError,
 } from "../api/usuarios.js";
 
 export default function NuevoUsuario() {
-  // Hooks
-
-  // Referencia al formulario para acceder a sus datos
-  // y utilizar las validaciones nativas del navegador.
   const formRef = useRef(null);
-
-  // Permite realizar redirecciones.
   const navigate = useNavigate();
-
-  // Guarda el nuevo usuario
+  const { user } = useAuth();
+  const [datosCreados, setDatosCreados] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   const handleGuardar = async () => {
-
     const form = formRef.current;
 
-    // Ejecuta las validaciones HTML antes de enviar
-    // la información al backend.
     if (!form.checkValidity()) {
       form.reportValidity();
       return;
     }
 
-    // Obtiene todos los datos del formulario.
     const data = Object.fromEntries(new FormData(form));
 
-    // Convierte los valores necesarios al formato
-    // esperado por la API.
     const jsonData = {
       id_persona: parseInt(data.id_persona, 10),
       created_by: parseInt(data.created_by, 10),
+      email: data.email.trim(),
     };
 
     try {
-
-      // Envía la solicitud de creación del usuario.
-      const { ok, body } = await crearUsuario(jsonData);
+      const { ok, body } = await crearUsuarioCompleto(jsonData);
 
       if (ok) {
-
-        // Informa si es correcto y vuelve al listado.
+        const info = body.data || {};
+        setDatosCreados({
+          id_usuario: info.usuario?.id_usuario,
+          email: info.email,
+          password_temporal: info.password_temporal,
+          link_activacion: info.link_activacion,
+        });
+        setShowModal(true);
         toast.success(body.message || "Usuario creado");
-        navigate("/usuarios");
-
       } else {
-        // Muestra el mensaje devuelto por la API
         toast.error(parseApiError(body.message));
       }
     } catch (error) {
-      // Error inesperado (red, servidor, etc.)
       console.error(error);
       toast.error("Error de conexión");
-
     }
+  };
+
+  const handleCerrarModal = () => {
+    setShowModal(false);
+    navigate("/usuarios");
   };
 
   return (
     <Layout>
-      {}
       <Breadcrumbs
         items={[
           { label: "Usuarios", to: "/usuarios" },
           { label: "Nuevo" },
-        ]}/>
-      {}
+        ]}
+      />
+
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-800">
           Nuevo Usuario
@@ -90,10 +86,9 @@ export default function NuevoUsuario() {
           Complete la información del nuevo usuario del sistema.
         </p>
       </div>
-      {}
+
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 md:p-8">
         <form ref={formRef}>
-          {}
           <section className="form-section">
             <h2 className="form-section-title">
               <IconPerson className="text-bomberos" />
@@ -110,18 +105,33 @@ export default function NuevoUsuario() {
                   min="1"
                   placeholder="Ingrese el ID de la persona"
                   className="form-input"
-                  required/>
+                  required
+                />
+              </div>
+              <div>
+                <label className="form-label">
+                  Correo electrónico <span className="required">*</span>
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="usuario@ejemplo.com"
+                  className="form-input"
+                  required
+                />
+                <p className="text-xs text-gray-400 mt-1">
+                  Se enviará la contraseña temporal a este correo (simulado en consola del backend).
+                </p>
               </div>
             </div>
           </section>
-          {}
+
           <section className="form-section">
             <h2 className="form-section-title">
               <IconBuilding className="text-bomberos" />
               Datos de registro
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {}
               <div>
                 <label className="form-label">
                   ID Usuario Creador
@@ -129,11 +139,11 @@ export default function NuevoUsuario() {
                 <input
                   type="number"
                   name="created_by"
-                  value={1} // value={usuario.id_usuario} dato temporal
+                  value={user?.id || 1}
                   readOnly
-                  className="form-input bg-gray-50 text-gray-500 cursor-not-allowed"/>
+                  className="form-input bg-gray-50 text-gray-500 cursor-not-allowed"
+                />
               </div>
-              {}
               <div>
                 <label className="form-label">
                   Estado inicial
@@ -142,11 +152,12 @@ export default function NuevoUsuario() {
                   type="text"
                   value="PENDIENTE"
                   disabled
-                  className="form-input bg-gray-50 text-gray-500 cursor-not-allowed"/>
+                  className="form-input bg-gray-50 text-gray-500 cursor-not-allowed"
+                />
               </div>
             </div>
           </section>
-          {}
+
           <section className="form-section">
             <h2 className="form-section-title">
               <IconHeart className="text-bomberos" />
@@ -160,27 +171,38 @@ export default function NuevoUsuario() {
                 <input
                   type="text"
                   disabled
-                  value="El estado se asigna automáticamente como PENDIENTE al crear el usuario."
-                  className="form-input bg-gray-50 text-gray-500 cursor-not-allowed"/>
+                  value="Tras crear, verás la contraseña temporal en pantalla. El OTP de activación se envía cuando el usuario lo solicite."
+                  className="form-input bg-gray-50 text-gray-500 cursor-not-allowed"
+                />
               </div>
             </div>
           </section>
-          {}
+
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
             <button
               type="button"
               onClick={() => navigate("/usuarios")}
-              className="btn-cancel">Cancelar</button>
+              className="btn-cancel"
+            >
+              Cancelar
+            </button>
             <button
               type="button"
               onClick={handleGuardar}
-              className="btn-save">
+              className="btn-save"
+            >
               <IconSave />
-              Guardar usuario
+              Crear usuario
             </button>
           </div>
         </form>
       </div>
+
+      <UsuarioCreadoModal
+        datos={datosCreados}
+        open={showModal}
+        onClose={handleCerrarModal}
+      />
     </Layout>
   );
 }

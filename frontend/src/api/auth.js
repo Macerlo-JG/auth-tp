@@ -1,79 +1,54 @@
-// export async function login(credentials) {
-//    const response = await axios.post(
-//        "/login",
-//        credentials
-//    );
+// Mapa de usuarios para login (MOCK).
+// La base de datos no guarda email; acá se relaciona cada correo con su id_usuario.
 //
-//    return response.data;
-//} para cuando agreguemos JWT
-
-//Permisos pueden ser constantes? ADMIN = "administrador" así hasRole(ROLES.ADMIN)
+// Al crear un usuario nuevo, agregá una entrada con:
+//   - id: el id_usuario que devolvió el backend al crearlo
+//   - email: el mismo correo que usaste en el formulario "Nuevo Usuario"
+//   - nombre, roles y permisos según corresponda
+//
+// También agregá el mismo email en backend/mock/emails_usuario.py → EMAIL_POR_ID_USUARIO
 
 const API_URL = "http://localhost:5000";
 
-export const USUARIOS_MOCK = [
-  {
-    id: 1,
-    nombre: "Administrador",
-    email: "admin@test.com",
-    roles: [{ id: 1, nombre: "Administrador" }],
-    permisos: [
-      "usuarios.ver",
-      "usuarios.crear",
-      "usuarios.editar",
-      "usuarios.eliminar",
-      "roles.asignar",
-    ],
-  },
-  {
-    id: 2,
-    nombre: "Operador",
-    email: "operador@test.com",
-    roles: [{ id: 2, nombre: "Operador" }],
-    permisos: ["usuarios.ver", "usuarios.crear", "usuarios.editar"],
-  },
-  {
-    id: 3,
-    nombre: "Consultor",
-    email: "consultor@test.com",
-    roles: [{ id: 3, nombre: "Consultor" }],
-    permisos: ["usuarios.ver"],
-  },
-];
-
 // admin@test.com / 123456
-// operador@test.com / shiraoki123
-// consultor@test.com / no hay.
-
-// Simula el endpoint POST /login
+// alumno@test.com / shiraoki123
+// docente@test.com / (sin credencial en seed)
 
 export async function login({ email, password }) {
-  const usuario = USUARIOS_MOCK.find((u) => u.email === email);
-  if (!usuario) throw new Error("Correo o contraseña incorrectos.");
-
-  const response = await fetch(`${API_URL}/credenciales/verificar`, {
+  const response = await fetch(`${API_URL}/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id_usuario: usuario.id, password }),
+    body: JSON.stringify({ email, password }),
   });
 
-  const data = await response.json();
-  if (!data.ok) throw new Error("Correo o contraseña incorrectos.");
+  const body = await response.json();
+
+  if (body.code === "CUENTA_PENDIENTE") {
+    const error = new Error(body.message);
+    error.code = "CUENTA_PENDIENTE";
+    error.email = body.data?.email || email;
+    error.id_usuario = body.data?.id_usuario;
+    throw error;
+  }
+
+  if (!response.ok || !body.ok) {
+    throw new Error(body.message || "Correo o contraseña incorrectos.");
+  }
+
+  const data = body.data;
 
   return {
     success: true,
-    access_token: "MOCK_ACCESS_TOKEN",
-    refresh_token: "MOCK_REFRESH_TOKEN",
-    user: { id: usuario.id, nombre: usuario.nombre, email: usuario.email },
-    roles: usuario.roles,
-    permisos: usuario.permisos,
+    access_token: data.access_token,
+    refresh_token: data.refresh_token,
+    user: data.user,
+    roles: data.roles,
+    permisos: data.permisos,
+    aviso_cambio_contrasena: data.aviso_cambio_contrasena,
   };
 }
 
-// Simula el endpoint POST /logout
-
 export async function logout() {
-  return {
-    success: true,
-  };
+  await fetch(`${API_URL}/logout`, { method: "POST" });
+  return { success: true };
 }

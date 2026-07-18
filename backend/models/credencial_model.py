@@ -4,6 +4,8 @@ from sqlalchemy import Integer, String, Boolean, DateTime, ForeignKey
 from sqlalchemy.sql import func
 from datetime import datetime
 
+# Guardamos la contraseña de acceso de cada usuario en la base de datos.
+# Solo hay una contraseña "vigente" por persona, las anteriores quedan archivadas.
 
 class Credencial(db.Model):
     __tablename__ = "credenciales"
