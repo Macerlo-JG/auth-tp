@@ -11,6 +11,7 @@ from services.usuario_service import (
     eliminar
 )
 from auth_common.respuesta_api import respuesta_api
+from auth_common.decorador import requires_permission
 
 """
 Este archivo define los endpoints del CRUD de usuario
@@ -19,6 +20,7 @@ Este archivo define los endpoints del CRUD de usuario
 usuarios_bp = Blueprint("usuarios", __name__, url_prefix="/usuarios")
 
 @usuarios_bp.route("", methods=["GET"])
+@requires_permission("auth.usuarios.ver")
 def listar_usuarios():
     try:
         usuarios = obtener_todos()
@@ -29,6 +31,7 @@ def listar_usuarios():
         return respuesta_api(False, [], str(error), 500)
 
 @usuarios_bp.route("/<int:id>", methods=["GET"])
+@requires_permission("auth.usuarios.ver")
 def obtener_usuario(id):
     try:
         usuario = obtener_por_id(id)
@@ -43,6 +46,7 @@ def obtener_usuario(id):
         return respuesta_api(False, [], str(error), 500)
 
 @usuarios_bp.route("", methods=["POST"])
+@requires_permission("auth.usuarios.control_parcial")
 def crear_usuario():
     req = request.get_json()
 
@@ -57,6 +61,7 @@ def crear_usuario():
     return respuesta_api(True, [usuario_schema.dump(nuevo_usuario)], "Usuario creado", 201)
     
 @usuarios_bp.route("/<int:id>", methods=["PUT"])   
+@requires_permission("auth.usuarios.control_parcial")
 def editar_usuario(id):    
     usuario = obtener_por_id(id)
 
@@ -74,6 +79,7 @@ def editar_usuario(id):
     return respuesta_api(True, [usuario_schema.dump(actualizado)], "Usuario actualizado")
 
 @usuarios_bp.route("/<int:id>", methods=["DELETE"])  
+@requires_permission("auth.usuarios.eliminar")
 def eliminar_usuario(id):
     try:
         usuario = obtener_por_id(id)

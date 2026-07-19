@@ -10,6 +10,7 @@ from routes.credenciales_routes import credenciales_bp
 from routes.auth_routes import auth_bp
 from routes.acciones_routes import acciones_bp
 from auth_common.respuesta_api import respuesta_api
+from auth_common.decorador import validar_sesion
 
 """
 Archivo principal de la aplicación:
@@ -26,8 +27,26 @@ CORS(app)
 
 db.init_app(app)
 ma.init_app(app)
-JWTManager(app)
+jwt_manager = JWTManager(app)
 limiter.init_app(app)
+
+# Validación de sesión centralizada: corre antes de cada request, menos en los
+# endpoints en ENDPOINTS_EXCEPTUADOS.
+app.before_request(validar_sesion)
+
+# Normaliza las respuestas por defecto de Flask-JWT-Extended al formato
+# respuesta_api.
+@jwt_manager.unauthorized_loader
+def token_ausente(razon):
+    return respuesta_api(False, [], "No se encontró un token de autenticación", 401)
+
+@jwt_manager.invalid_token_loader
+def token_invalido(razon):
+    return respuesta_api(False, [], "El token de autenticación es inválido", 401)
+
+@jwt_manager.expired_token_loader
+def token_vencido(jwt_header, jwt_payload):
+    return respuesta_api(False, [], "El token de autenticación venció, iniciá sesión de nuevo", 401)
 
 @app.errorhandler(429)
 def limite_excedido(error):

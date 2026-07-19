@@ -5,7 +5,10 @@ acciones:
     descripcion: Ver listado y detalle de usuarios
     activo: true
   - nombre: usuarios.control_parcial
-    descripcion: Crear nuevos usuarios
+    descripcion: Crear o editar usuarios
+    activo: true
+  - nombre: usuarios.eliminar
+    descripcion: Eliminar usuarios
     activo: true
   - nombre: roles.asignar
     descripcion: Asignar o revocar roles de un usuario
@@ -20,6 +23,7 @@ rol_accion:
     acciones:
       - usuarios.ver
       - usuarios.control_parcial
+      - usuarios.eliminar
       - roles.asignar
   - rol: GESTIÓN ACADÉMICA
     acciones:

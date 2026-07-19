@@ -10,6 +10,7 @@ from services.rol_usuario_service import (
 from schemas.rol_schemas import roles_schema
 from models.rol import Rol
 from auth_common.respuesta_api import respuesta_api
+from auth_common.decorador import requires_permission
 
 """
 Este archivo define los endpoints relacionados a asignación y revocación de roles a usuarios.
@@ -21,6 +22,7 @@ roles_usuarios_bp = Blueprint("roles_usuarios", __name__, url_prefix="/usuarios"
 
 # Traer todos los roles disponibles y activos
 @roles_usuarios_bp.route("/roles", methods=["GET"])
+@requires_permission("auth.usuarios.ver", "auth.roles.asignar", policy="ANY")
 def listar_roles():
     try:
         roles = Rol.query.filter_by(activo=True).all()
@@ -36,6 +38,7 @@ def listar_roles():
 # va a la capa "servicio" y valida que el usuario exista. 
 # se obtienen roles del usuario.
 @roles_usuarios_bp.route("/<int:id_usuario>/roles", methods=["GET"])
+@requires_permission("auth.usuarios.ver", "auth.roles.asignar", policy="ANY")
 def obtener_roles(id_usuario):
     try:
         roles = obtener_roles_usuario(id_usuario)
@@ -50,6 +53,7 @@ def obtener_roles(id_usuario):
     return respuesta_api(True, data)
 
 @roles_usuarios_bp.route("/<int:id_usuario>/roles", methods=["POST"])
+@requires_permission("auth.roles.asignar")
 def asignar_roles_usuario(id_usuario):
     req = request.get_json()
 
@@ -68,6 +72,7 @@ def asignar_roles_usuario(id_usuario):
 
 # Revoca rol puntual
 @roles_usuarios_bp.route("/<int:id_usuario>/roles/<int:id_rol>", methods=["DELETE"])
+@requires_permission("auth.roles.asignar")
 def revocar_rol_usuario(id_usuario, id_rol):
     req = request.get_json()
 
@@ -84,6 +89,7 @@ def revocar_rol_usuario(id_usuario, id_rol):
 
 # Revoca varios roles a la vez, se espera dentro de request (definido por el service).
 @roles_usuarios_bp.route("/<int:id_usuario>/roles", methods=["DELETE"])
+@requires_permission("auth.roles.asignar")
 def revocar_roles_usuario(id_usuario):
     req = request.get_json()
 
