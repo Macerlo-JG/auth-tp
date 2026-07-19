@@ -10,7 +10,9 @@ No genera tokens JWT: eso es responsabilidad del endpoint (blueprints/auth_bp.py
 que tiene acceso al contexto de Flask-JWT-Extended.
 """
 
+from datetime import datetime, timedelta
 from models.usuario import EstadoUsuario, Usuario
+from models.credencial_model import Credencial
 from services.credencial_service import verificar_password
 from auth_common import sesion_common
 from models.rol_usuario import RolUsuario
@@ -103,6 +105,22 @@ def renovar_sesion_usuario(id_usuario, refresh_jti_recibido):
 # ---------------------------------------------------------------------------
 # Login
 # ---------------------------------------------------------------------------
+
+    # Verifico si la contra tiene más de 30 días
+    # Retorno True si debe mostrar el aviso
+    
+def verificar_aviso_cambio_contrasena(id_usuario):
+    credencial = Credencial.query.filter_by(
+        id_usuario=id_usuario,
+        activo=True
+    ).first()
+
+    if not credencial or not credencial.created_at:
+        return False
+
+    dias_desde_creacion = (datetime.now(credencial.created_at.tzinfo) - credencial.created_at).days
+    return dias_desde_creacion > 30
+
 
 def login(id_persona, password):
     """

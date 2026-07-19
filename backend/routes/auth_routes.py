@@ -25,6 +25,7 @@ from services.auth_service import (
     cerrar_sesion_usuario,
     renovar_sesion_usuario,
     CuentaPendienteError,
+    verificar_aviso_cambio_contrasena,
 )
 from auth_common.respuesta_api import respuesta_api
 from db import limiter
@@ -86,12 +87,21 @@ def iniciar_sesion():
             id_persona=usuario.id_persona,
             refresh_jti=refresh_jti,
         )
+        
+        # si pasaron 30 dias desde que el usuario no cambio su contraseña, se avisa.
+        aviso_cambio_contrasena = verificar_aviso_cambio_contrasena(usuario.id_usuario)
 
         return respuesta_api(True, {
             "access_token": access_token,
             "refresh_token": refresh_token,
             "roles": roles,
             "acciones": acciones,
+            "user": {
+                "id": usuario.id_usuario,
+                # "email": usuario.email,
+            },
+            "permisos": acciones,
+            "aviso_cambio_contrasena": aviso_cambio_contrasena,
         }, "Inicio de sesión exitoso")
 
     except CuentaPendienteError as error:
