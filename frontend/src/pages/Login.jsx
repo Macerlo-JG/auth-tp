@@ -28,7 +28,7 @@ export default function Login() {
   const handleSubmit = async (e) => {
     // evito recargar
     e.preventDefault();
-debugger
+    
     if (!form.email.trim()) {
       toast.error("Ingrese un correo.");
       return;
@@ -43,7 +43,6 @@ debugger
       setLoading(true);
 
       // Llamo a Login (AuthContext)
-      debugger
       const session = await login(form.email, form.password);
 
       if (session.aviso_cambio_contrasena) {

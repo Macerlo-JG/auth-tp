@@ -1,0 +1,37 @@
+servicio: auth
+
+acciones:
+  - nombre: usuarios.ver
+    descripcion: Ver listado y detalle de usuarios
+    activo: true
+  - nombre: usuarios.control_parcial
+    descripcion: Crear nuevos usuarios
+    activo: true
+  - nombre: roles.asignar
+    descripcion: Asignar o revocar roles de un usuario
+    activo: true
+
+roles:
+  - nombre: administrador roles
+    descripcion: Administra la asignación de roles y acciones de usuarios
+
+rol_accion:
+  - rol: ADMINISTRADOR
+    acciones:
+      - usuarios.ver
+      - usuarios.control_parcial
+      - roles.asignar
+  - rol: GESTIÓN ACADÉMICA
+    acciones:
+      - usuarios.ver
+      - usuarios.control_parcial
+  - rol: DOCENTE
+    acciones:
+      - usuarios.ver
+  - rol: AUDITOR
+    acciones:
+      - usuarios.ver
+  - rol: administrador roles
+    acciones:
+      - usuarios.ver
+      - roles.asignar

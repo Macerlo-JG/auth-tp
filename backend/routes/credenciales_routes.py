@@ -13,6 +13,10 @@ from services.credencial_service import (
     crear_password_temporal,
 )
 from services.usuario_service import obtener_por_id
+from flask import Blueprint, request
+import traceback
+from services.credencial_service import verificar_password
+from auth_common.respuesta_api import respuesta_api
 
 credenciales_bp = Blueprint("credenciales", __name__, url_prefix="/credenciales")
 
@@ -111,3 +115,4 @@ def respuesta_api(ok=True, data=None, message="", status=200):
         "count": len(data) if isinstance(data, list) else (1 if data else 0),
         "message": message
     }), status
+        

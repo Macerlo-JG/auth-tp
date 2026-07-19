@@ -43,6 +43,7 @@ export function AuthProvider({ children }) {
   // Si las credenciales son validas, actualiza el estado global con la informacion del usuario
   const login = async (email, password) => {
     try {
+      debugger
       const session = await authService.login(email, password);
 
       setUser(session.user);

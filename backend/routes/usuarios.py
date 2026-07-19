@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 from marshmallow import ValidationError
 import traceback
 from schemas.usuario_schemas import usuario_schema, usuarios_schema
@@ -11,6 +11,7 @@ from services.usuario_service import (
     actualizar,
     eliminar
 )
+from auth_common.respuesta_api import respuesta_api
 
 """
 Este archivo define los endpoints del CRUD de usuario
@@ -121,12 +122,3 @@ def eliminar_usuario(id):
     except Exception as error:
         traceback.print_exc()
         return respuesta_api(False, [], str(error), 500)
-
-# Helper para formatear las respuestas
-def respuesta_api(ok=True, data=None, message="", status=200):
-    return jsonify({
-        "ok": ok,
-        "data": data if data is not None else [],
-        "count": len(data) if isinstance(data,list) else (1 if data else 0),
-        "message": message
-    }), status

@@ -1,5 +1,4 @@
 services:
-
   backend:
     container_name: backend
     build:
@@ -15,6 +14,8 @@ services:
       - DATABASE_URL=postgresql+psycopg2://postgres:postgres@postgres:5432/auth
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - red-usuarios
@@ -54,6 +55,20 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - red-usuarios
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "6379:6379"
     networks:
       - red-usuarios
 

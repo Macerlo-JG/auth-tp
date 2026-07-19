@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
 
+import yaml
+
 from db import db
 from models.usuario import (
     Usuario,
@@ -9,6 +11,11 @@ from models.rol import Rol
 from models.rol_usuario import RolUsuario
 from werkzeug.security import generate_password_hash
 from models.credencial_model import Credencial
+from services.acciones_service import registrar_acciones
+
+def cargar_acciones_yml(ruta="acciones.yml"):
+    with open(ruta, encoding="utf-8") as archivo:
+        return yaml.safe_load(archivo)
 
 def seed_data():
     ahora = datetime.now(timezone.utc)
@@ -35,6 +42,11 @@ def seed_data():
 
     # Se vuelve a leer de la bdd para tener roles ya existentes y los recién creados, todos con id_rol asignado.
     roles = {rol.nombre: rol for rol in Rol.query.all()}
+
+    # Acciones de Auth y sus vínculos a roles: se registran a través del
+    # mismo mecanismo que usa POST /acciones (llamada directa, sin HTTP),
+    # con el payload leído de acciones.yml.
+    registrar_acciones(cargar_acciones_yml())
 
     # crear usuarios como datos MOCK en base si no existen
     # checkea, guarda en una array, y si hay contenido en el array hace un "agregar todos" y flushea

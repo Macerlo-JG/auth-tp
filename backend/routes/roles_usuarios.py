@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request
 from marshmallow import ValidationError
 import traceback
 from services.rol_usuario_service import (
@@ -7,9 +7,9 @@ from services.rol_usuario_service import (
     revocar_rol,
     revocar_roles
 )
-from schemas.rol_usuario_schemas import roles_usuarios_schema, roles_usuario_schema
 from schemas.rol_schemas import roles_schema
 from models.rol import Rol
+from auth_common.respuesta_api import respuesta_api
 
 """
 Este archivo define los endpoints relacionados a asignación y revocación de roles a usuarios.
@@ -96,12 +96,3 @@ def revocar_roles_usuario(id_usuario):
         return respuesta_api(False, [], str(error), 500)
 
     return respuesta_api(True, [], "Roles revocados correctamente")
-
-    # normalización de respuesta entre todos los endpoints
-def respuesta_api(ok=True, data=None, message="", status=200):
-    return jsonify({
-        "ok": ok,
-        "data": data if data is not None else [],
-        "count": len(data) if isinstance(data, list) else (1 if data else 0),
-        "message": message
-    }), status
