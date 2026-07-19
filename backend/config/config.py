@@ -7,6 +7,7 @@ de JWT (Flask-JWT-Extended) y Flask-Limiter
 """
 
 from datetime import timedelta
+import os
 
 class Config:
     SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://postgres:postgres@postgres:5432/auth'
@@ -24,3 +25,19 @@ class Config:
 
     # DB 1: separada de las sesiones (DB 0), mismo Redis.
     RATELIMIT_STORAGE_URI = 'redis://redis:6379/1'
+
+    # Flask-Mail: Configuración de envío de correos
+    # Para usar Gmail: usar contraseña de aplicación (no la contraseña de la cuenta)
+    # Variables de entorno disponibles:
+    # - MAIL_SERVER: servidor SMTP (ej: smtp.gmail.com)
+    # - MAIL_PORT: puerto SMTP (ej: 587 para TLS, 465 para SSL)
+    # - MAIL_USE_TLS: True para TLS
+    # - MAIL_USERNAME: email del remitente
+    # - MAIL_PASSWORD: contraseña o token de la aplicación
+    # - MAIL_DEFAULT_SENDER: email que aparece como remitente
+    MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
+    MAIL_PORT = int(os.getenv('MAIL_PORT', 587))
+    MAIL_USE_TLS = os.getenv('MAIL_USE_TLS', 'True').lower() == 'true'
+    MAIL_USERNAME = os.getenv('MAIL_USERNAME', '')
+    MAIL_PASSWORD = os.getenv('MAIL_PASSWORD', '')
+    MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER', os.getenv('MAIL_USERNAME', 'noreply@academia.local'))

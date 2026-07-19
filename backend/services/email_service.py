@@ -1,36 +1,81 @@
 """
-Simula el envío de correos (no hay llamadas a mails reales aun).
+Servicio de envío de correos electrónicos.
 
-Se imprimen en consola del backend y quedan guardados
-en _ultimos_envios para consulta durante desarrollo.
+Utiliza Flask-Mail para enviar correos mediante SMTP.
+Si no hay configuración disponible, registra en consola para desarrollo.
 """
+
+from flask_mail import Mail, Message
+from flask import current_app
+import traceback
 
 _ultimos_envios = []
 
 
-# mail falso por consola.
+def _mail_disponible():
+    """Verifica si hay configuración de correo disponible."""
+    return (
+        current_app.config.get('MAIL_SERVER') 
+        and current_app.config.get('MAIL_USERNAME')
+        and current_app.config.get('MAIL_PASSWORD')
+    )
+
+
 def enviar_mail(destinatario, asunto, cuerpo):
-    mail = {
+    """
+    Envía un correo electrónico.
+    
+    Si hay configuración de SMTP, lo envía por correo real.
+    Si no, lo registra en consola (útil para desarrollo).
+    """
+    mail_record = {
         "destinatario": destinatario,
         "asunto": asunto,
         "cuerpo": cuerpo,
     }
-    _ultimos_envios.append(mail)
+    _ultimos_envios.append(mail_record)
 
-    mensaje = (
-        f"\n{'=' * 50}\n"
-        f"MAIL → {destinatario}\n"
-        f"Asunto: {asunto}\n"
-        f"{cuerpo}\n"
-        f"{'=' * 50}\n"
-    )
-    print(mensaje, flush=True)
+    if not _mail_disponible():
+        # Modo desarrollo: mostrar en consola
+        mensaje = (
+            f"\n{'=' * 60}\n"
+            f"📧 CORREO (MODO DESARROLLO - CONSOLA)\n"
+            f"{'=' * 60}\n"
+            f"Para: {destinatario}\n"
+            f"Asunto: {asunto}\n"
+            f"{'-' * 60}\n"
+            f"{cuerpo}\n"
+            f"{'=' * 60}\n"
+        )
+        print(mensaje, flush=True)
+        return True
 
-    return True
+    try:
+        # Envío real por SMTP
+        msg = Message(
+            subject=asunto,
+            recipients=[destinatario],
+            body=cuerpo,
+            sender=current_app.config.get('MAIL_DEFAULT_SENDER')
+        )
+        
+        mail = current_app.extensions.get('mail')
+        if mail:
+            mail.send(msg)
+            print(f"✅ Correo enviado a {destinatario}", flush=True)
+            return True
+        else:
+            print(f"⚠️ Flask-Mail no inicializado", flush=True)
+            return False
+            
+    except Exception as e:
+        print(f"❌ Error al enviar correo a {destinatario}: {str(e)}", flush=True)
+        traceback.print_exc()
+        return False
 
 
-# mail falso por consola que incluye contraseña temporal y link de activacion.
 def enviar_bienvenida(destinatario, password_temporal, link_activacion):
+    """Envía correo de bienvenida con contraseña temporal."""
     cuerpo = (
         f"Bienvenido al Sistema de Gestión Académica.\n\n"
         f"Su contraseña temporal es: {password_temporal}\n\n"
@@ -42,25 +87,26 @@ def enviar_bienvenida(destinatario, password_temporal, link_activacion):
     return enviar_mail(destinatario, "Bienvenida - Acceso al sistema", cuerpo)
 
 
-# Envio OTP.
-# Envio por Consola para simular envio por mail.
 def enviar_otp_activacion(destinatario, codigo):
+    """Envía correo con código OTP para activación de cuenta."""
     cuerpo = (
         f"Su código de activación es: {codigo}\n\n"
-        f"El código dura {10} minutos.\n"
+        f"El código dura 10 minutos.\n\n"
         f"Para pruebas también puede usar el código: temporal"
     )
     return enviar_mail(destinatario, "Código de activación de cuenta", cuerpo)
 
 
 def enviar_otp_recuperacion(destinatario, codigo):
+    """Envía correo con código OTP para recuperación de contraseña."""
     cuerpo = (
         f"Su código para recuperar la contraseña es: {codigo}\n\n"
-        f"El código dura {10} minutos.\n"
+        f"El código dura 10 minutos.\n\n"
         f"Para pruebas también puede usar el código: temporal"
     )
     return enviar_mail(destinatario, "Recuperación de contraseña", cuerpo)
 
 
 def obtener_ultimos_envios():
+    """Devuelve el registro de últimos correos enviados (para debugging)."""
     return list(_ultimos_envios)

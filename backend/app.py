@@ -3,6 +3,7 @@ from db import db, ma, limiter
 from flask_cors import CORS
 from config.config import Config
 from flask_jwt_extended import JWTManager
+from flask_mail import Mail
 from routes.usuarios import usuarios_bp
 from routes.roles_usuarios import roles_usuarios_bp
 from seed.seed_data import seed_data
@@ -30,6 +31,7 @@ db.init_app(app)
 ma.init_app(app)
 JWTManager(app)
 limiter.init_app(app)
+mail = Mail(app)
 
 @app.errorhandler(429)
 def limite_excedido(error):

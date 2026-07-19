@@ -12,6 +12,13 @@ services:
       - FLASK_ENV=development
       - PYTHONUNBUFFERED=1
       - DATABASE_URL=postgresql+psycopg2://postgres:postgres@postgres:5432/auth
+      # Variables para Flask-Mail (opcional, dejá vacío para modo consola)
+      - MAIL_SERVER=${MAIL_SERVER:-}
+      - MAIL_PORT=${MAIL_PORT:-587}
+      - MAIL_USE_TLS=${MAIL_USE_TLS:-True}
+      - MAIL_USERNAME=${MAIL_USERNAME:-}
+      - MAIL_PASSWORD=${MAIL_PASSWORD:-}
+      - MAIL_DEFAULT_SENDER=${MAIL_DEFAULT_SENDER:-}
     depends_on:
       postgres:
         condition: service_healthy
