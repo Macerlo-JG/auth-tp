@@ -1,5 +1,7 @@
-const API = "http://localhost:5000/usuarios";
-const ROLES_API = "http://localhost:5000/usuarios/roles";
+import { API_URL } from "./auth";
+
+const API = `${API_URL}/usuarios`;
+const ROLES_API = `${API_URL}/usuarios/roles`;
 
 // Normaliza respuesta del backend a una uniforme para facilidad del front
 const parseResponse = async (res) => {

@@ -1,4 +1,6 @@
-const API = "http://localhost:5000/usuarios";
+import { API_URL } from "./auth";
+
+const API = `${API_URL}/usuarios`;
 
 export function parseApiError(message) {
   if (!message) return "Error desconocido";

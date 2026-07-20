@@ -1,4 +1,6 @@
-const API = "http://localhost:5000/recuperacion";
+import { API_URL } from "./auth";
+
+const API = `${API_URL}//recuperacion`;
 
 export function parseApiError(message) {
   if (!message) return "Error desconocido";
@@ -29,7 +31,11 @@ export async function verificarOtpRecuperacion({ email, otp }) {
   return { ok: res.ok, status: res.status, body: await res.json() };
 }
 
-export async function cambiarContrasenaRecuperacion({ email, otp, password_nueva }) {
+export async function cambiarContrasenaRecuperacion({
+  email,
+  otp,
+  password_nueva,
+}) {
   const res = await fetch(`${API}/cambiar`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

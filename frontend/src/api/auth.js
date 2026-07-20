@@ -8,8 +8,7 @@
 //
 // También agregá el mismo email en backend/mock/emails_usuario.py → EMAIL_POR_ID_USUARIO
 
-
-const API_URL = "http://localhost:5000";
+export const API_URL = "http://localhost:5000";
 
 // admin@test.com / 123456
 // alumno@test.com / shiraoki123
@@ -51,7 +50,7 @@ export async function logout(accessToken) {
   await fetch(`${API_URL}/auth/logout`, {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${accessToken}`,
+      Authorization: `Bearer ${accessToken}`,
     },
   });
   return { success: true };
