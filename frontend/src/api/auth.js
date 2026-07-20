@@ -8,14 +8,15 @@
 //
 // También agregá el mismo email en backend/mock/emails_usuario.py → EMAIL_POR_ID_USUARIO
 
+
 const API_URL = "http://localhost:5000";
-const API_AUTH_URL = `${API_URL}/auth`;
+
 // admin@test.com / 123456
 // alumno@test.com / shiraoki123
-// docente@test.com / (sin credencial en seed)
+// docente@test.com / (sin credencial en seed)}
 
 export async function login({ email, password }) {
-  const response = await fetch(`${API_AUTH_URL}/login`, {
+  const response = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
@@ -41,14 +42,17 @@ export async function login({ email, password }) {
     success: true,
     access_token: data.access_token,
     refresh_token: data.refresh_token,
-    user: data.user,
     roles: data.roles,
-    permisos: data.permisos,
-    aviso_cambio_contrasena: data.aviso_cambio_contrasena,
+    acciones: data.acciones,
   };
 }
 
-export async function logout() {
-  await fetch(`${API_AUTH_URL}/logout`, { method: "POST" });
+export async function logout(accessToken) {
+  await fetch(`${API_URL}/auth/logout`, {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${accessToken}`,
+    },
+  });
   return { success: true };
 }

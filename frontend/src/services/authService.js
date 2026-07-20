@@ -10,8 +10,7 @@ function guardarSesion(data) {
 
 // Obtiene la sesión almacenada en el Session Storage si no existe, devuelve null
 function obtenerSesion() {
-  const data = sessionStorage.getItem(STORAGE_KEY);
-
+  const data = localStorage.getItem(STORAGE_KEY);
   return data ? JSON.parse(data) : null;
 }
 
@@ -35,11 +34,15 @@ async function login(email, password) {
 
 // Cierra la sesión del usuario. Notifica al backend y elimina la sesión almacenada localmente
 async function logout() {
-  await authApi.logout();
-
-  eliminarSesion();
+  const sesion = obtenerSesion();
+  // Intenta notificar al backend aunque no haya token local.
+  // Si falla, igual limpiamos la sesión local.
+  try {
+    await authApi.logout(sesion?.access_token);
+  } finally {
+    eliminarSesion();
+  }
 }
-
 // Devuelve la información de la sesión actual almacenada en el Local Storage
 function getSession() {
   return obtenerSesion();
