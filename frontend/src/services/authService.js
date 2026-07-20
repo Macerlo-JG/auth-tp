@@ -5,18 +5,18 @@ const STORAGE_KEY = "auth";
 
 // Guarda la información de la sesión (token y datos del usuario) en el almacenamiento local del navegador
 function guardarSesion(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
 // Obtiene la sesión almacenada en el Session Storage si no existe, devuelve null
 function obtenerSesion() {
-  const data = localStorage.getItem(STORAGE_KEY);
+  const data = sessionStorage.getItem(STORAGE_KEY);
   return data ? JSON.parse(data) : null;
 }
 
 // Elimina la sesión almacenada en el Local Storage
 function eliminarSesion() {
-  localStorage.removeItem(STORAGE_KEY);
+  sessionStorage.removeItem(STORAGE_KEY);
 }
 
 // Inicia sesión enviando las credenciales al backend

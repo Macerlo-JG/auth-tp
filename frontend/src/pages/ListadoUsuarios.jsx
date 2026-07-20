@@ -190,7 +190,7 @@ const hasta = Math.min(indiceFin, total);
             </select>
 
           </div>
-          {hasPermission("usuarios.crear") && (
+          {hasPermission("auth.usuarios.control_parcial") && (
             <Link to="/usuarios/nuevo" className="btn-bomberos shrink-0">
               <span className="text-lg leading-none">+</span>
               Nuevo usuario
@@ -247,7 +247,7 @@ const hasta = Math.min(indiceFin, total);
                     <td className="table-td">
                       <div className="flex items-center gap-4">
 
-                        {hasPermission("usuarios.ver")&& (
+                        {hasPermission("auth.usuarios.ver")&& (
                         <Link
                           to={`/usuarios/${usuario.id_usuario}`}
                           className="action-link action-ver"
@@ -257,7 +257,7 @@ const hasta = Math.min(indiceFin, total);
                         </Link>
                         ) }
 
-                        {hasPermission("usuarios.editar")&& (
+                        {hasPermission("auth.usuarios.control_parcial")&& (
                           <Link
                           to={`/usuarios/${usuario.id_usuario}/editar`}
                           className="action-link action-editar"
@@ -267,7 +267,7 @@ const hasta = Math.min(indiceFin, total);
                         </Link>
                         )}
                         
-                        {hasPermission("usuarios.eliminar")&& (
+                        {hasPermission("auth.usuarios.control_parcial")&& (
                           <button
                           type="button"
                           onClick={() => setEliminarTarget(usuario)}
