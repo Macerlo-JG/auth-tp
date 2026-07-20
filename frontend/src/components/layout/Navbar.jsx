@@ -1,7 +1,7 @@
 import { IconShield, IconFolder, IconUsers, IconChevronDown } from "../icons.jsx";
 import { useState, useRef, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import useAuth from "../../hooks/useAuth";
+import useAuth from "../../auth/hooks/useAuth.js";
 
 export default function Navbar() {
 

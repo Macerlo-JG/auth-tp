@@ -1,5 +1,7 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, Route } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
+import { LOGIN_ROUTE } from "../config";
+import { HOME_ROUTE } from "../config";
 
 export default function ProtectedRoute({
   children,
@@ -22,21 +24,21 @@ export default function ProtectedRoute({
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to = {LOGIN_ROUTE}  replace />;
   }
 
   if (
     permissions.length > 0 &&
     !permissions.some((permiso) => hasPermission(permiso))
   ) {
-    return <Navigate to="/usuarios" replace />;
+    return <Navigate to={HOME_ROUTE} replace />;
   }
 
   if (
     roles.length > 0 &&
     !roles.some((rol) => hasRole(rol))
   ) {
-    return <Navigate to="/usuarios" replace />;
+    return <Navigate to={HOME_ROUTE} replace />;
   }
 
   return children;

@@ -1,7 +1,8 @@
 // Llama al backend para operaciones con contraseñas:
 // cambiar la clave actual o pedir una contraseña temporal.
-import { API_URL } from "./auth";
-const API = `${API_URL}/credenciales`;
+import { AUTH_API } from "../auth/config";
+
+const API = `${AUTH_API}/credenciales`;
 
 export function parseApiError(message) {
   if (!message) return "Error desconocido";

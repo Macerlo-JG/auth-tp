@@ -1,5 +1,6 @@
 import { Navigate } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
+import { HOME_ROUTE } from "../config";
 
 // Componente que protege las rutas publicas.
 // Impide que un usuario autenticado acceda, por ejemplo, a la pantalla de inicio de sesion para iniciar sesion (si es que ya inico sesion)
@@ -20,7 +21,7 @@ export default function PublicRoute({ children }) {
 
   // Si el usuario ya inicio sesion, lo redirige al listado de usuarios para evitar que vuelva a la pantalla de login
   if (isAuthenticated) {
-    return <Navigate to="/usuarios" replace />;
+    return <Navigate to={HOME_ROUTE} replace />;
   }
 
   // Si el usuario no está autenticado, permite acceder a la ruta publica.

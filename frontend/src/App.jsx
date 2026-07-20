@@ -1,8 +1,8 @@
 import { Toaster } from "react-hot-toast";
 import { Routes, Route, Navigate } from "react-router-dom";
-import Login from "./pages/Login";
-import ProtectedRoute from "./routes/ProtectedRoute";
-import PublicRoute from "./routes/PublicRoute";
+import Login from "./pages/Login.jsx";
+import ProtectedRoute from "./auth/routes/ProtectedRoute.jsx";
+import PublicRoute from "./auth/routes/PublicRoute.jsx";
 import ListadoUsuarios from "./pages/ListadoUsuarios.jsx";
 import NuevoUsuario from "./pages/NuevoUsuario.jsx";
 import EditarUsuarioPage from "./pages/EditarUsuarioPage.jsx";
@@ -51,19 +51,19 @@ function App() {
           } />
 
         <Route path="/usuarios/nuevo" element={
-            <ProtectedRoute permissions={["usuarios.crear"]}>
+            <ProtectedRoute permissions={["auth.usuarios.control_parcial"]}>
               <NuevoUsuario />
             </ProtectedRoute>
           } />
 
         <Route path="/usuarios/:id" element={
-            <ProtectedRoute>
+            <ProtectedRoute permissions={["auth.usuarios.ver"]}>
               <VerUsuario />
             </ProtectedRoute>
           } />
 
         <Route path="/usuarios/:id/editar" element={
-            <ProtectedRoute roles={["ADMINISTRADOR"]}>
+            <ProtectedRoute permissions={["auth.usuarios.control_parcial"]}>
               <EditarUsuarioPage />
             </ProtectedRoute>
           } />

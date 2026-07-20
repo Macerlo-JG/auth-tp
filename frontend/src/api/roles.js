@@ -1,7 +1,7 @@
-import { API_URL } from "./auth";
+import { AUTH_API } from "../auth/config";
 
-const API = `${API_URL}/usuarios`;
-const ROLES_API = `${API_URL}/usuarios/roles`;
+const API = `${AUTH_API}/usuarios`;
+const ROLES_API = `${AUTH_API}/usuarios/roles`;
 
 // Normaliza respuesta del backend a una uniforme para facilidad del front
 const parseResponse = async (res) => {

@@ -7,8 +7,9 @@
 //   - nombre, roles y permisos según corresponda
 //
 // También agregá el mismo email en backend/mock/emails_usuario.py → EMAIL_POR_ID_USUARIO
+import { AUTH_API } from "../config";
 
-export const API_URL = "http://localhost:5000";
+export const API_URL = AUTH_API;
 
 // admin@test.com / 123456
 // alumno@test.com / shiraoki123

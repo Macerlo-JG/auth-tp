@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import Layout from "../components/layout/Layout.jsx";
 import Breadcrumbs from "../components/layout/Breadcrumbs.jsx";
 import UsuarioCreadoModal from "../components/UsuarioCreadoModal.jsx";
-import useAuth from "../hooks/useAuth.js";
+import useAuth from "../auth/hooks/useAuth.js";
 
 import {
   IconPerson,

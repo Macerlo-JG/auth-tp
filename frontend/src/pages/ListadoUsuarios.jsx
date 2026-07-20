@@ -1,5 +1,5 @@
 import { useEffect, useState, } from "react";
-import useAuth from "../hooks/useAuth.js";
+import useAuth from "../auth/hooks/useAuth.js";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 

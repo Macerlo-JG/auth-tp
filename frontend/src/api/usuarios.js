@@ -1,6 +1,6 @@
-import { API_URL } from "./auth";
+import { AUTH_API } from "../auth/config";
 
-const API = `${API_URL}/usuarios`;
+const API = `${AUTH_API}/usuarios`;
 
 export function parseApiError(message) {
   if (!message) return "Error desconocido";

@@ -4,7 +4,7 @@ import toast from "react-hot-toast";
 
 import Layout from "../components/layout/Layout.jsx";
 import Breadcrumbs from "../components/layout/Breadcrumbs.jsx";
-import useAuth from "../hooks/useAuth";
+import useAuth from "../auth/hooks/useAuth.js";
 import {
   cambiarContrasena,
   parseApiError,

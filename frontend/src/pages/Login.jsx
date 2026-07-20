@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import useAuth from "../hooks/useAuth";
+import useAuth from "../auth/hooks/useAuth.js";
 import ActivacionModal from "../components/ActivacionModal.jsx";
 
 export default function Login() {
