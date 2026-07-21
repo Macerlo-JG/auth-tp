@@ -170,7 +170,7 @@ export default function RecuperarContrasena() {
                 type="text"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
-                placeholder="Ej: 123456 o temporal"
+                placeholder="Ej: 123456"
                 required
               />
             </div>

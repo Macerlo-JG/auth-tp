@@ -100,7 +100,7 @@ export default function ActivacionModal({ email, open, onClose, onActivado }) {
             <input
               className="form-input"
               type="text"
-              placeholder="Ej: 123456 o temporal"
+              placeholder="Ej: 123456"
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
               autoFocus
