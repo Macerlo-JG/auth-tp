@@ -22,7 +22,11 @@ def obtener_roles_y_acciones(id_usuario):
         if asignacion.rol.activo
     })
 
-    ids_roles = [asignacion.id_rol for asignacion in asignaciones]
+    ids_roles = [
+        asignacion.id_rol 
+        for asignacion in asignaciones 
+        if asignacion.rol.activo
+    ]
 
     # Unión de las acciones de todos esos roles, sin duplicados.
     # El identificador que se guarda en Redis es "servicio.nombre" (ej.
@@ -75,3 +79,15 @@ def renovar_sesion_usuario(id_usuario, refresh_jti_recibido):
 
     sesion_common.renovar_sesion(id_usuario)
     return "ok"
+
+def propagar_cambio_roles(id_usuario):
+    """
+    Recalcula los roles/acciones vigentes de id_usuario y, si tiene una
+    sesión activa en Redis, la sobrescribe.
+
+    Si el usuario no tiene sesión activa, actualizar_permisos_sesion no
+    hace nada - el estado nuevo se arma solo, desde PostgreSQL, en su
+    próximo login.
+    """
+    roles, acciones = obtener_roles_y_acciones(id_usuario)
+    sesion_common.actualizar_permisos_sesion(id_usuario, roles, acciones)

@@ -15,19 +15,25 @@ def obtener_por_id(id_usuario):
         activo=True
     ).first()
 
-def crear(datos):
+def crear(datos, id_usuario_sesion):
     nuevo = usuario_create_schema.load(datos)
+
+    nuevo.created_by = id_usuario_sesion
 
     db.session.add(nuevo)
     db.session.commit()
 
     return nuevo
 
-def actualizar(usuario, datos):
+def actualizar(usuario, datos, id_usuario_sesion):
     usuario_update_schema.load(datos, instance=usuario, partial=True)
+
+    usuario.updated_by = id_usuario_sesion
+
     db.session.commit()
     return usuario
 
-def eliminar(usuario):
+def eliminar(usuario, id_usuario_sesion):
     usuario.activo = False
+    usuario.updated_by = id_usuario_sesion
     db.session.commit()

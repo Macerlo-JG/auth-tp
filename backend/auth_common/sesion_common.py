@@ -46,5 +46,29 @@ def renovar_sesion(id_usuario):
         redis_client.expire(clave_sesion(id_usuario), Config.JWT_ACCESS_TOKEN_EXPIRES)
     )
 
+def actualizar_permisos_sesion(id_usuario, roles, acciones):
+    """
+    Sobrescribe únicamente los campos roles/acciones de una sesión ya
+    existente. No toca refresh_jti, id_persona ni el TTL de la clave.
+
+    Devuelve True si la sesión existía y se actualizó, False si no existía
+    (no hay nada que hacer: el cambio se va a aplicar solo en el próximo
+    login).
+
+    El chequeo de existencia es necesario: HSET crea la key si no existe,
+    y eso dejaría en Redis un hash de sesión sin TTL para un usuario sin
+    sesión activa.
+    """
+    clave = clave_sesion(id_usuario)
+
+    if not redis_client.exists(clave):
+        return False
+
+    redis_client.hset(clave, mapping={
+        "roles": json.dumps(roles),
+        "acciones": json.dumps(acciones),
+    })
+    return True
+
 def eliminar_sesion(id_usuario):
     redis_client.delete(clave_sesion(id_usuario))

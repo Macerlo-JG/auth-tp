@@ -45,21 +45,9 @@ class UsuarioCreateSchema(UsuarioBaseSchema):
         }
     )
 
-    created_by = ma.auto_field(
-        required=True,
-        error_messages={
-            "required": "El usuario creador es obligatorio",
-            "null": "El usuario creador no puede ser null"
-        }
-    )
-
     estado_usuario = fields.Enum(
         EstadoUsuario,
         by_value=True,
-        dump_only=True
-    )
-
-    updated_by = ma.auto_field(
         dump_only=True
     )
 
@@ -98,23 +86,6 @@ class UsuarioUpdateSchema(UsuarioBaseSchema):
             "null": "El estado no puede ser null"
         }
     )
-
-    updated_by = ma.auto_field(
-        required=True,
-        error_messages={
-            "required": "El usuario modificador es obligatorio",
-            "null": "El usuario modificador no puede ser null"
-        }
-    )
-
-    @validates_schema
-    def validar_actualizacion(self, data, **kwargs):
-        if self.instance and "updated_by" not in data:
-            raise ValidationError({
-                "updated_by": [
-                    "El usuario modificador es obligatorio"
-                ]
-            })
 
 usuario_schema = UsuarioBaseSchema()
 usuarios_schema = UsuarioBaseSchema(many=True)

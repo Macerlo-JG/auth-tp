@@ -3,7 +3,8 @@ from db import db
 from models.usuario import Usuario
 from models.rol import Rol
 from models.rol_usuario import RolUsuario
-from schemas.rol_usuario_schemas import asignar_roles_schema, revocar_rol_schema, revocar_roles_schema
+from schemas.rol_usuario_schemas import asignar_roles_schema, revocar_roles_schema
+from services import auth_service
 
 """
 Este archivo contiene la lógica de negocio para la asignación y
@@ -29,7 +30,7 @@ def obtener_roles_usuario(id_usuario):
         if usuario_rol.activo
     ]
 
-def asignar_roles(id_usuario, datos):
+def asignar_roles(id_usuario, datos, id_usuario_sesion):
     # Valida la request utilizando el schema correspondiente
     datos = asignar_roles_schema.load(datos)
 
@@ -87,12 +88,14 @@ def asignar_roles(id_usuario, datos):
             ]
         })
 
-    # Crea las nuevas asignaciones usuario-rol
+    # Crea las nuevas asignaciones usuario-rol.
+    # created_by se deriva de la sesión autenticada (flask.g.id_usuario),
+    # nunca del body.
     nuevas_asignaciones = [
         RolUsuario(
             id_usuario=id_usuario,
             id_rol=rol.id_rol,
-            created_by=datos["created_by"]
+            created_by=id_usuario_sesion
         )
         for rol in roles
     ]
@@ -101,11 +104,13 @@ def asignar_roles(id_usuario, datos):
     db.session.add_all(nuevas_asignaciones)
     db.session.commit()
 
+    # Si el usuario afectado tiene sesión activa en Redis, propaga el
+    # cambio para que tenga efecto en su siguiente request.
+    auth_service.propagar_cambio_roles(id_usuario)
+
     return nuevas_asignaciones
 
-def revocar_rol(id_usuario, id_rol, datos):
-    # Valida la request 
-    datos = revocar_rol_schema.load(datos)
+def revocar_rol(id_usuario, id_rol, id_usuario_sesion):
 
     # Verifica que el usuario exista y esté activo
     usuario = Usuario.query.filter_by(
@@ -163,13 +168,15 @@ def revocar_rol(id_usuario, id_rol, datos):
         })
 
     asignacion.activo = False
-    asignacion.updated_by = datos["updated_by"]
+    asignacion.updated_by = id_usuario_sesion
     db.session.commit()
+
+    auth_service.propagar_cambio_roles(id_usuario)
 
     return asignacion
 
 
-def revocar_roles(id_usuario, datos):
+def revocar_roles(id_usuario, datos, id_usuario_sesion):
     # Valida la request
     datos = revocar_roles_schema.load(datos)
 
@@ -232,8 +239,10 @@ def revocar_roles(id_usuario, datos):
 
     for asignacion in asignaciones:
         asignacion.activo = False
-        asignacion.updated_by = datos["updated_by"]
+        asignacion.updated_by = id_usuario_sesion
 
     db.session.commit()
+
+    auth_service.propagar_cambio_roles(id_usuario)
 
     return asignaciones

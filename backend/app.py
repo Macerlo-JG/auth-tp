@@ -5,6 +5,7 @@ from config.config import Config
 from flask_jwt_extended import JWTManager
 from routes.usuarios import usuarios_bp
 from routes.roles_usuarios import roles_usuarios_bp
+from routes.roles import roles_bp
 from seed.seed_data import seed_data
 from routes.credenciales_routes import credenciales_bp
 from routes.auth_routes import auth_bp
@@ -62,6 +63,7 @@ app.register_blueprint(roles_usuarios_bp)
 app.register_blueprint(credenciales_bp)
 app.register_blueprint(auth_bp)
 app.register_blueprint(acciones_bp)
+app.register_blueprint(roles_bp)
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)

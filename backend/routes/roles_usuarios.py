@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, g
 from marshmallow import ValidationError
 import traceback
 from services.rol_usuario_service import (
@@ -58,15 +58,13 @@ def asignar_roles_usuario(id_usuario):
     req = request.get_json()
 
     try:
-        # request trae  json { "id_roles": [...], "created_by": ... }.
         # La validación de forma y reglas de negocio ocurre en el service.
-        asignar_roles(id_usuario, req)
+        asignar_roles(id_usuario, req, g.id_usuario)
     except ValidationError as e:
         return respuesta_api(False, [], e.messages, 400)
     except Exception as error:
-        # Catch genérico: útil como red de contención, pero  no es útil para un usuario.
         traceback.print_exc()
-        return respuesta_api(False, [], str(error), 400)
+        return respuesta_api(False, [], str(error), 500)
 
     return respuesta_api(True, [], "Roles asignados correctamente", 201)
 
@@ -74,10 +72,8 @@ def asignar_roles_usuario(id_usuario):
 @roles_usuarios_bp.route("/<int:id_usuario>/roles/<int:id_rol>", methods=["DELETE"])
 @requires_permission("auth.roles.asignar")
 def revocar_rol_usuario(id_usuario, id_rol):
-    req = request.get_json()
-
     try:
-        revocar_rol(id_usuario, id_rol, req)
+        revocar_rol(id_usuario, id_rol, g.id_usuario)
     except ValidationError as e:
         return respuesta_api(False, [], e.messages, 400)
     except Exception as error:
@@ -94,7 +90,7 @@ def revocar_roles_usuario(id_usuario):
     req = request.get_json()
 
     try:
-        revocar_roles(id_usuario, req)
+        revocar_roles(id_usuario, req, g.id_usuario)
     except ValidationError as e:
         return respuesta_api(False, [], e.messages, 400)
     except Exception as error:
