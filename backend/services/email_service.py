@@ -47,8 +47,7 @@ def enviar_bienvenida(destinatario, password_temporal, link_activacion):
 def enviar_otp_activacion(destinatario, codigo):
     cuerpo = (
         f"Su código de activación es: {codigo}\n\n"
-        f"El código dura {10} minutos.\n"
-        f"Para pruebas también puede usar el código: temporal"
+        f"El código dura {15} minutos.\n"
     )
     return enviar_mail(destinatario, "Código de activación de cuenta", cuerpo)
 
@@ -56,8 +55,7 @@ def enviar_otp_activacion(destinatario, codigo):
 def enviar_otp_recuperacion(destinatario, codigo):
     cuerpo = (
         f"Su código para recuperar la contraseña es: {codigo}\n\n"
-        f"El código dura {10} minutos.\n"
-        f"Para pruebas también puede usar el código: temporal"
+        f"El código dura {15} minutos.\n"
     )
     return enviar_mail(destinatario, "Recuperación de contraseña", cuerpo)
 

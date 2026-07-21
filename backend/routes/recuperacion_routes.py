@@ -2,31 +2,31 @@
 from flask import Blueprint, request, jsonify
 import traceback
 
-from mock.emails_usuario import obtener_id_usuario_por_email
+from mock.emails_usuario import obtener_id_persona_por_email
 from models.usuario import EstadoUsuario
-from services.usuario_service import obtener_por_id
-from services.otp_service import generar_otp, verificar_otp, eliminar_otp
+from services.usuario_service import obtener_por_id_persona
+from services.otp_service import generar_otp, verificar_otp
 from services.email_service import enviar_otp_recuperacion
 from services.credencial_service import restablecer_password
 
 recuperacion_bp = Blueprint("recuperacion", __name__, url_prefix="/recuperacion")
 
 
-# Verificamos que el usuario exista y este ACTIVO.
-# Se usa antes de enviar el OTP para no filtrar usuarios inactivos o pendientes.
 def _usuario_activo_por_email(email):
-    id_usuario = obtener_id_usuario_por_email(email)
-    if not id_usuario:
+    """Verificamos que el usuario exista y esté ACTIVO.
+    Se usa antes de enviar el OTP para no filtrar usuarios inactivos o pendientes.
+    """
+    id_persona = obtener_id_persona_por_email(email)
+    if not id_persona:
         return None
 
-    usuario = obtener_por_id(id_usuario)
+    usuario = obtener_por_id_persona(id_persona)
     if not usuario or usuario.estado_usuario != EstadoUsuario.ACTIVO:
         return None
 
     return usuario
 
 
-# Misma lógica y recorrido: solicito OTP con el tipo "recuperar contraseña"
 @recuperacion_bp.route("/solicitar-otp", methods=["POST"])
 def solicitar_otp():
     try:
@@ -68,7 +68,10 @@ def verificar_otp_endpoint():
         if not email or not otp:
             return respuesta_api(False, [], "email y otp son requeridos", 400)
 
-        if not verificar_otp("recuperacion", email, otp):
+        # consumir=False: este paso solo habilita el formulario de nueva
+        # contraseña, no gasta el código. El OTP se consume de verdad en
+        # /recuperacion/cambiar (ver ese endpoint).
+        if not verificar_otp("recuperacion", email, otp, consumir=False):
             return respuesta_api(False, [], "Código inválido o expirado.", 400)
 
         return respuesta_api(True, [], "Código verificado. Puede ingresar su nueva contraseña.")
@@ -94,20 +97,20 @@ def cambiar_contrasena():
                 400,
             )
 
-        id_usuario = obtener_id_usuario_por_email(email)
-        if not id_usuario:
+        id_persona = obtener_id_persona_por_email(email)
+        if not id_persona:
             return respuesta_api(False, [], "Código inválido.", 400)
 
-        usuario = obtener_por_id(id_usuario)
+        usuario = obtener_por_id_persona(id_persona)
         if not usuario or usuario.estado_usuario != EstadoUsuario.ACTIVO:
             return respuesta_api(False, [], "La cuenta no puede recuperarse.", 400)
 
         if not verificar_otp("recuperacion", email, otp):
             return respuesta_api(False, [], "Código inválido o expirado.", 400)
 
-        # Si el OTP es válido, se restablece la nueva contraseña y se borra el OTP usado.
-        restablecer_password(id_usuario, password_nueva, id_usuario)
-        eliminar_otp("recuperacion", email)
+        # verificar_otp ya borró el OTP de Redis al validarlo con éxito
+        # (ver otp_service.py) -- no hace falta llamar eliminar_otp acá.
+        restablecer_password(usuario.id_usuario, password_nueva, usuario.id_usuario)
 
         return respuesta_api(True, [], "Contraseña restablecida correctamente.")
 

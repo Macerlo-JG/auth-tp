@@ -17,6 +17,11 @@ class Credencial(db.Model):
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     usuario = relationship("Usuario", back_populates="credencial")
 
+    # Indica si esta fila representa la contraseña que el usuario usa
+    # actualmente para loguearse. Se mantiene separada de `activo` que
+    # indica una baja/desactivación de la credencial.
+    es_actual: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+
     created_by: Mapped[int] = mapped_column(Integer, nullable=False)
     updated_by: Mapped[int | None] = mapped_column(Integer, nullable=True)
     created_at: Mapped[datetime] = mapped_column(

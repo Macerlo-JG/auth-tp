@@ -18,7 +18,7 @@ from flask_jwt_extended import (
     get_jwt,
 )
 
-from mocks import persona_mock_service
+from mock.emails_usuario import obtener_id_persona_por_email
 from services.auth_service import (
     login,
     crear_sesion_usuario,
@@ -68,9 +68,10 @@ def iniciar_sesion():
         if not email or not password:
             return respuesta_api(False, [], "email y password son requeridos", 400)
 
-        # MOCK: hasta que exista el servicio de Legajo, email → id_persona
-        # se resuelve contra un mapeo hardcodeado.
-        id_persona = persona_mock_service.obtener_id_persona_por_email(email)
+        # MOCK: hasta que exista el servicio de Legajo, email -> id_persona
+        # se resuelve contra el mock único (mock/personas_mock.py), el mismo
+        # que usan activación y recuperación.
+        id_persona = obtener_id_persona_por_email(email)
 
         if id_persona is None:
             return respuesta_api(False, [], "Credenciales inválidas", 401)
@@ -87,7 +88,7 @@ def iniciar_sesion():
             id_persona=usuario.id_persona,
             refresh_jti=refresh_jti,
         )
-        
+
         # si pasaron 30 dias desde que el usuario no cambio su contraseña, se avisa.
         aviso_cambio_contrasena = verificar_aviso_cambio_contrasena(usuario.id_usuario)
 
@@ -98,7 +99,6 @@ def iniciar_sesion():
             "acciones": acciones,
             "user": {
                 "id": usuario.id_usuario,
-                # "email": usuario.email,
             },
             "permisos": acciones,
             "aviso_cambio_contrasena": aviso_cambio_contrasena,
@@ -138,9 +138,9 @@ def cerrar_sesion():
 
 
 @auth_bp.route("/refresh", methods=["POST"])
-@limiter.limit("5/minute")
+@limiter.limit("100/minute")
 @jwt_required(refresh=True)
-@limiter.limit("10/minute", key_func=clave_por_usuario_refresh)
+@limiter.limit("100/minute", key_func=clave_por_usuario_refresh)
 def renovar_token():
     try:
         id_usuario = int(get_jwt_identity())

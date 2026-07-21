@@ -1,21 +1,20 @@
+"""
+Rutas para la activación de cuentas mediante OTP.
 
+El mismo servicio de OTP busca ser flexible para extenderse a otros flujos
+ej: recuperación de contraseña o edición de datos sensibles como mail de inicio de sesión.
+"""
 from flask import Blueprint, request, jsonify
 import traceback
 
-from mock.emails_usuario import obtener_id_usuario_por_email
+from mock.emails_usuario import obtener_id_persona_por_email
 from models.usuario import EstadoUsuario
-from services.usuario_service import obtener_por_id, activar_cuenta
-from services.otp_service import generar_otp, verificar_otp, eliminar_otp
+from services.usuario_service import obtener_por_id_persona, activar_cuenta
+from services.otp_service import generar_otp, verificar_otp
 from services.email_service import enviar_otp_activacion
 
 activacion_bp = Blueprint("activacion", __name__, url_prefix="/activacion")
 
-"""
-Rutas para la activación de cuentas mediante OTP.
-
-El mismo servicio de OTP buscar ser flexible para extenderse a otros flujos 
-ej: recuperación de contraseña o edición de datos sensibles como mail de inicio de sesión.
-"""
 
 # solicito un código de activación
 @activacion_bp.route("/solicitar-otp", methods=["POST"])
@@ -27,12 +26,13 @@ def solicitar_otp():
         if not email:
             return respuesta_api(False, [], "email es requerido", 400)
 
-        id_usuario = obtener_id_usuario_por_email(email)
-        if not id_usuario:
+        # MOCK: email -> id_persona a través del mock único (mismo que usa login).
+        id_persona = obtener_id_persona_por_email(email)
+        if not id_persona:
             # No revelamos si el correo existe para evitar enumeración de usuarios.
             return respuesta_api(True, [], "Si el correo existe, recibirá un código de activación.")
 
-        usuario = obtener_por_id(id_usuario)
+        usuario = obtener_por_id_persona(id_persona)
         if not usuario:
             return respuesta_api(True, [], "Si el correo existe, recibirá un código de activación.")
 
@@ -64,19 +64,19 @@ def verificar():
         if not email or not otp:
             return respuesta_api(False, [], "email y otp son requeridos", 400)
 
-        id_usuario = obtener_id_usuario_por_email(email)
-        if not id_usuario:
+        id_persona = obtener_id_persona_por_email(email)
+        if not id_persona:
             return respuesta_api(False, [], "Código inválido.", 400)
 
-
-        usuario = obtener_por_id(id_usuario)
+        usuario = obtener_por_id_persona(id_persona)
         if not usuario or usuario.estado_usuario != EstadoUsuario.PENDIENTE:
             return respuesta_api(False, [], "La cuenta no puede activarse.", 400)
 
         if not verificar_otp("activacion", email, otp):
             return respuesta_api(False, [], "Código inválido o expirado.", 400)
 
-        eliminar_otp("activacion", email)
+        # verificar_otp ya borró el OTP de Redis al validarlo con éxito
+        # (ver otp_service.py) -- no hace falta llamar eliminar_otp acá.
         activar_cuenta(usuario)
 
         return respuesta_api(True, [], "Cuenta activada correctamente. Ya puede iniciar sesión.")

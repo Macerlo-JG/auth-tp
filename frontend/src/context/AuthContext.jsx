@@ -12,6 +12,9 @@ export function AuthProvider({ children }) {
   // Almacena los roles asignados al usuario
   const [roles, setRoles] = useState([]);
 
+  // Almacena el objeto del usuario (id, email, etc.)
+  const [user, setUser] = useState(null);
+
   // Almacena los permisos del usuario
   const [acciones, setAcciones] = useState([]);
 
@@ -29,6 +32,7 @@ export function AuthProvider({ children }) {
     if (session) {
       setRoles(session.roles ?? []);
       setAcciones(session.acciones ?? []);
+      setUser(session.user ?? null);
       setIsAuthenticated(true);
     }
 
@@ -44,6 +48,7 @@ export function AuthProvider({ children }) {
 
       setRoles(session.roles ?? []);
       setAcciones(session.acciones ?? []);
+      setUser(session.user ?? null);
       setIsAuthenticated(true);
 
       return session;
@@ -68,6 +73,7 @@ export function AuthProvider({ children }) {
     acciones,
     loading,
     isAuthenticated,
+    user,
     login,
     logout,
 

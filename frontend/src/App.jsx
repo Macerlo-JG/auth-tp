@@ -51,7 +51,7 @@ function App() {
           } />
 
         <Route path="/usuarios/nuevo" element={
-            <ProtectedRoute permissions={["usuarios.crear"]}>
+            <ProtectedRoute permissions={["auth.usuarios.control_parcial"]}>
               <NuevoUsuario />
             </ProtectedRoute>
           } />

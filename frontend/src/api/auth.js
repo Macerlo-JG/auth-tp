@@ -43,6 +43,7 @@ export async function login({ email, password }) {
     refresh_token: data.refresh_token,
     roles: data.roles,
     acciones: data.acciones,
+    user: data.user,
   };
 }
 

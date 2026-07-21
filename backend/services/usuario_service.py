@@ -3,7 +3,7 @@ from schemas.usuario_schemas import usuario_create_schema, usuario_update_schema
 from db import db
 from services.credencial_service import crear_password_temporal
 from services.email_service import enviar_bienvenida
-from mock.emails_usuario import EMAIL_POR_ID_USUARIO
+from mock.emails_usuario import registrar_persona
 
 """Servicio de usuarios.
 
@@ -12,27 +12,36 @@ un flujo completo de creación que también genera credenciales temporales
 y envía el correo de bienvenida.
 """
 
+
 def obtener_todos():
     return Usuario.query.filter_by(activo=True).all()
 
+
 def obtener_por_id(id_usuario):
-    return Usuario.query.filter_by(
-        id_usuario=id_usuario,
-        activo=True
-    ).first()
+    return Usuario.query.filter_by(id_usuario=id_usuario, activo=True).first()
+
+
+def obtener_por_id_persona(id_persona):
+    """Busca el usuario a partir de su id_persona (el dato "externo",
+    ver mock/personas_mock.py). Lo usan activación y recuperación, que
+    resuelven email -> id_persona a través del mock y necesitan llegar
+    al Usuario real de la base.
+    """
+    return Usuario.query.filter_by(id_persona=id_persona, activo=True).first()
+
 
 def crear(datos):
     nuevo = usuario_create_schema.load(datos)
-
     db.session.add(nuevo)
     db.session.commit()
-
     return nuevo
+
 
 def actualizar(usuario, datos):
     usuario_update_schema.load(datos, instance=usuario, partial=True)
     db.session.commit()
     return usuario
+
 
 def eliminar(usuario):
     usuario.activo = False
@@ -45,11 +54,21 @@ def activar_cuenta(usuario):
     return usuario
 
 
-# Creo Usuario + Contraseña temporal + Mail de bienvenida.
-# ahora mismo el mail solo se usa para el envio de correo y login, no hay persistencia real
-# porque usamos mocks.
 def crear_completo(datos):
-    
+    """Crea un usuario junto con su credencial temporal y envía el mail de bienvenida.
+
+    Flujo:
+      1. Cargar y agregar el usuario a la sesión (sin comitear todavía).
+      2. flush() para que el usuario obtenga id_usuario sin cerrar la transacción,
+         ya que crear_password_temporal necesita ese id para crear la credencial.
+      3. Generar la credencial temporal (crear_password_temporal NO comitea
+         internamente, ver credencial_service.py).
+      4. Comitear usuario + credencial juntos, en una sola transacción atómica.
+         Si algo falla en el paso 3, se hace rollback y no queda ni el usuario
+         ni la credencial a medio crear.
+      5. Recién después de tener todo persistido: registrar el email en el
+         mock unificado de personas y enviar el mail de bienvenida.
+    """
     email = datos.pop("email", None)
     if not email or not str(email).strip():
         raise ValueError("El email es requerido para enviar las credenciales")
@@ -59,20 +78,25 @@ def crear_completo(datos):
 
     nuevo = usuario_create_schema.load(datos)
     db.session.add(nuevo)
-    db.session.flush()
+    db.session.flush()  # asigna id_usuario sin comitear la transacción
 
-    password_temporal = crear_password_temporal(nuevo.id_usuario, created_by)
+    try:
+        password_temporal = crear_password_temporal(nuevo.id_usuario, created_by)
+        db.session.commit()  # confirma usuario + credencial en una sola transacción
+    except Exception:
+        db.session.rollback()  # deshace también el usuario "flusheado" arriba
+        raise
 
-    # MOCK: registramos el email para login.
-    # Agregar acá también en frontend/src/api/auth.js → USUARIOS_MOCK.
-    # Lo estamos agregando al archivo "emails_usuario.py", en su correspondiente diccionario, para poder usarlo a futuro
-    # sin tener que almacenar en la base de datos.
-    EMAIL_POR_ID_USUARIO[nuevo.id_usuario] = email
+    # Registramos la persona en el ÚNICO mock de email <-> id_persona.
+    # Antes esto escribía en dos diccionarios separados (EMAIL_POR_ID_USUARIO
+    # y EMAILS_MOCK) que quedaban desincronizados si alguien se olvidaba de
+    # tocar uno de los dos -- fue la causa del bug de "pendiente@test.com".
+    registrar_persona(nuevo.id_persona, email)
 
     link_activacion = f"http://localhost:5173/activar-cuenta?email={email}"
-    # Enviamos "mail" que por ahora se envía por consola.
+
+    # El mail se envía DESPUÉS del commit: si el commit falla, no se llega
+    # a mandar un mail con credenciales de una cuenta que no existe.
     enviar_bienvenida(email, password_temporal, link_activacion)
 
-
-    # Devuelvo usuario nuevo y contra temporal.
     return nuevo, password_temporal

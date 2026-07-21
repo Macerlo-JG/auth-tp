@@ -10,10 +10,11 @@ No genera tokens JWT: eso es responsabilidad del endpoint (blueprints/auth_bp.py
 que tiene acceso al contexto de Flask-JWT-Extended.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from models.usuario import EstadoUsuario, Usuario
 from models.credencial_model import Credencial
 from services.credencial_service import verificar_password
+from mock.emails_usuario import obtener_email_por_id_persona
 from auth_common import sesion_common
 from models.rol_usuario import RolUsuario
 from models.rol_accion import RolAccion
@@ -106,13 +107,14 @@ def renovar_sesion_usuario(id_usuario, refresh_jti_recibido):
 # Login
 # ---------------------------------------------------------------------------
 
-    # Verifico si la contra tiene más de 30 días
-    # Retorno True si debe mostrar el aviso
-    
 def verificar_aviso_cambio_contrasena(id_usuario):
+    """Verifico si la contraseña actual tiene más de 30 días.
+    Retorno True si debe mostrarse el aviso.
+    """
     credencial = Credencial.query.filter_by(
         id_usuario=id_usuario,
-        activo=True
+        es_actual=True,
+        activo=True,
     ).first()
 
     if not credencial or not credencial.created_at:
@@ -147,10 +149,18 @@ def login(id_persona, password):
     # La verificación de PENDIENTE va después de verificar la contraseña:
     # no queremos confirmar que el email existe si la contraseña es incorrecta.
     if usuario.estado_usuario == EstadoUsuario.PENDIENTE:
+        # Antes acá se usaba `usuario.email`, pero el modelo Usuario NO
+        # guarda email (el email vive en el mock de personas). Eso iba a
+        # tirar AttributeError en cuanto un usuario PENDIENTE intentara
+        # loguearse con la contraseña correcta -- y como el endpoint solo
+        # atrapa ValueError explícitamente, el AttributeError caía en el
+        # handler genérico y devolvía 500 en vez del 403 CUENTA_PENDIENTE
+        # esperado por el frontend.
+        email = obtener_email_por_id_persona(usuario.id_persona)
         raise CuentaPendienteError(
             "Su cuenta aún no fue confirmada. Revise su correo e ingrese el código de activación.",
             id_usuario=usuario.id_usuario,
-            email=usuario.email,
+            email=email,
         )
 
     return usuario
