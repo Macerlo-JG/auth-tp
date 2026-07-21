@@ -39,7 +39,7 @@ auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
 def clave_por_email():
     """Segunda clave de rate limit para /login: por email en lugar de IP."""
-    body = request.get_json() or {}
+    body = request.get_json(silent=True) or {}
     return body.get("email") or request.remote_addr
 
 

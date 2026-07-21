@@ -20,11 +20,11 @@ from auth_common.respuesta_api import respuesta_api
 
 # Endpoints que no pasan por la validación de sesión centralizada.
 ENDPOINTS_EXCEPTUADOS = {
-    "auth.login",
-    "auth.refresh",
-    "auth.logout",
+    "auth.iniciar_sesion",
+    "auth.renovar_token",
+    "auth.cerrar_sesion",
     "acciones.registrar",
-    "credenciales.verificar_credencial"
+    "credenciales.verificar_credencial",
 }
 
 def validar_sesion():
@@ -33,22 +33,20 @@ def validar_sesion():
     el access token y la sesión en Redis, y carga flask.g.id_usuario,
     flask.g.acciones (set) y flask.g.roles para el resto de la request.
     """
+    if request.method == "OPTIONS":
+        return None
 
     if request.endpoint in ENDPOINTS_EXCEPTUADOS:
         return None
-    
+
     verify_jwt_in_request()
     id_usuario = int(get_jwt_identity())
-
     sesion = obtener_sesion(id_usuario)
-
     if sesion is None:
         return respuesta_api(False, [], "Sesión inválida o expirada", 401)
-
     g.id_usuario = id_usuario
     g.acciones = set(sesion["acciones"])
     g.roles = sesion["roles"]
-
     return None
 
 def requires_permission(*acciones, policy="ALL"):
