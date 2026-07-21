@@ -138,9 +138,9 @@ def cerrar_sesion():
 
 
 @auth_bp.route("/refresh", methods=["POST"])
-@limiter.limit("100/minute")
+@limiter.limit("10/minute")
 @jwt_required(refresh=True)
-@limiter.limit("100/minute", key_func=clave_por_usuario_refresh)
+@limiter.limit("10/minute", key_func=clave_por_usuario_refresh)
 def renovar_token():
     try:
         id_usuario = int(get_jwt_identity())
