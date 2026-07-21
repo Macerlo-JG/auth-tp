@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { getRolesDisponibles } from "../services/rolesService";
+import { getRolesDisponibles } from "../services/usuarioRolesService";
 
 // Modal para seleccionar y agregar un nuevo rol al usuario
 // Sólo muestra los roles que el usuario todavía no posee

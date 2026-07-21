@@ -21,6 +21,7 @@ import {
 
 import { getListadoUsuarios } from "../services/usuariosService.js";
 import { formatearId } from "../utils/format.js";
+import { HOME_ROUTE } from "../auth/config.js";
 export default function ListadoUsuarios() {
   // Estados
 
@@ -191,7 +192,7 @@ const hasta = Math.min(indiceFin, total);
 
           </div>
           {hasPermission("auth.usuarios.control_parcial") && (
-            <Link to="/usuarios/nuevo" className="btn-bomberos shrink-0">
+            <Link to={`${HOME_ROUTE}/nuevo`} className="btn-bomberos shrink-0">
               <span className="text-lg leading-none">+</span>
               Nuevo usuario
             </Link>            
@@ -249,7 +250,7 @@ const hasta = Math.min(indiceFin, total);
 
                         {hasPermission("auth.usuarios.ver")&& (
                         <Link
-                          to={`/usuarios/${usuario.id_usuario}`}
+                          to={`${HOME_ROUTE}/${usuario.id_usuario}`}
                           className="action-link action-ver"
                         >
                           <IconEye />
@@ -259,7 +260,7 @@ const hasta = Math.min(indiceFin, total);
 
                         {hasPermission("auth.usuarios.control_parcial")&& (
                           <Link
-                          to={`/usuarios/${usuario.id_usuario}/editar`}
+                          to={`${HOME_ROUTE}/${usuario.id_usuario}/editar`}
                           className="action-link action-editar"
                         >
                           <IconPencil />

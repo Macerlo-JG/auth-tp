@@ -1,12 +1,10 @@
 import { AUTH_API } from "../auth/config";
 
-const API = `${AUTH_API}/usuarios`;
-const ROLES_API = `${AUTH_API}/usuarios/roles`;
+const API = `${AUTH_API}/roles`;
 
-// Normaliza respuesta del backend a una uniforme para facilidad del front
 const parseResponse = async (res) => {
-  // Si el body no es JSON parseable, cae a {} en vez de romper.
   const body = await res.json().catch(() => ({}));
+
   return {
     ok: res.ok,
     status: res.status,
@@ -15,39 +13,48 @@ const parseResponse = async (res) => {
   };
 };
 
-//export para poder ser usada de otros archivos,
-//async para asincronia
-//fetch: envia peticion http a la url
+// Obtener todos los roles
 export const getRoles = async () => {
-  const res = await fetch(ROLES_API);
+  const res = await fetch(API);
   return parseResponse(res);
 };
 
-export const getRolesUsuario = async (idUsuario) => {
-  const res = await fetch(`${API}/${idUsuario}/roles`);
+// Obtener un rol
+export const getRol = async (idRol) => {
+  const res = await fetch(`${API}/${idRol}`);
   return parseResponse(res);
 };
 
-// el back end acepta una lista, pero lo enviamos de a uno.
-export const agregarRolUsuario = async (idUsuario, idRol) => {
-  const res = await fetch(`${API}/${idUsuario}/roles`, {
+// Crear rol
+export const createRol = async (rol) => {
+  const res = await fetch(API, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      id_roles: [Number(idRol)],
-      created_by: 1, //  hardcodeado: no hay usuario autenticado real todavía ((cambiar a futuro))
-    }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(rol),
   });
 
   return parseResponse(res);
 };
 
-// revoca un rol puntual.
-export const eliminarRolUsuario = async (idUsuario, idRol) => {
-  const res = await fetch(`${API}/${idUsuario}/roles/${idRol}`, {
+// Actualizar rol
+export const updateRol = async (idRol, rol) => {
+  const res = await fetch(`${API}/${idRol}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(rol),
+  });
+
+  return parseResponse(res);
+};
+
+// Eliminar rol
+export const deleteRol = async (idRol) => {
+  const res = await fetch(`${API}/${idRol}`, {
     method: "DELETE",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ updated_by: 1 }), // cambiar hardocodeo
   });
 
   return parseResponse(res);

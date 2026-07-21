@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import Layout from "../components/layout/Layout.jsx";
 import Breadcrumbs from "../components/layout/Breadcrumbs.jsx";
 import EstadoBadge from "../components/EstadoBadge.jsx";
-import RolBadge from "../components/RolBadge.jsx";
+import RolBadge from "../components/roles/RolBadge.jsx";
 import { IconPencil } from "../components/icons.jsx";
 
 import { getUsuarioDetalle } from "../services/usuariosService.js";

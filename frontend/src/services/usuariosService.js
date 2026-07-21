@@ -1,6 +1,6 @@
 import { getUsuarios } from "../api/usuarios";
 import { getPersonas } from "../api/personas";
-import { getRolesUsuarioDetalle } from "./rolesService";
+import { getRolesUsuarioDetalle } from "./usuarioRolesService";
 
 // Se Obtiene el listado de usuarios junto con sus datos personales (nombre, apellido y email)
 

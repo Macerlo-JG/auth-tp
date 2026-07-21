@@ -13,8 +13,8 @@ import {getUsuario,editarUsuario,ESTADOS_USUARIO,parseApiError,} from "../api/us
 import { formatearId, formatearFecha } from "../utils/format.js";
 import UsuarioRoles from "../components/UsuarioRoles.jsx";
 import { getUsuarioDetalle } from "../services/usuariosService";
-import { getRolesUsuarioDetalle } from "../services/rolesService.js";
-import { guardarRolesUsuario } from "../services/rolesService";
+import { getRolesUsuarioDetalle, guardarRolesUsuario } from "../services/usuarioRolesService.js";
+import { HOME_ROUTE } from "../auth/config.js";
 
 export default function EditarUsuarioPage() {
 // Hooks
@@ -77,7 +77,7 @@ useEffect(() => {
         // Si ocurre un error cualquiera se informa al usuario y se vuelve al listado.
       console.error(error);
       toast.error("Error al cargar usuario");
-      navigate("/usuarios");
+      navigate({HOME_ROUTE});
 
     } finally {
       // Finaliza el estado de carga.
