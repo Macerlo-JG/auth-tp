@@ -44,7 +44,11 @@ def obtener_roles_y_acciones(id_usuario):
         if asignacion.rol.activo
     })
 
-    ids_roles = [asignacion.id_rol for asignacion in asignaciones]
+    ids_roles = [
+        asignacion.id_rol 
+        for asignacion in asignaciones 
+        if asignacion.rol.activo
+    ]
 
     permisos = (
         RolAccion.query
@@ -101,14 +105,13 @@ def renovar_sesion_usuario(id_usuario, refresh_jti_recibido):
     sesion_common.renovar_sesion(id_usuario)
     return "ok"
 
-
 # ---------------------------------------------------------------------------
 # Login
 # ---------------------------------------------------------------------------
 
     # Verifico si la contra tiene más de 30 días
     # Retorno True si debe mostrar el aviso
-    
+
 def verificar_aviso_cambio_contrasena(id_usuario):
     credencial = Credencial.query.filter_by(
         id_usuario=id_usuario,
@@ -154,6 +157,19 @@ def login(id_persona, password):
         )
 
     return usuario
+
+
+def propagar_cambio_roles(id_usuario):
+    """
+    Recalcula los roles/acciones vigentes de id_usuario y, si tiene una
+    sesión activa en Redis, la sobrescribe.
+
+    Si el usuario no tiene sesión activa, actualizar_permisos_sesion no
+    hace nada - el estado nuevo se arma solo, desde PostgreSQL, en su
+    próximo login.
+    """
+    roles, acciones = obtener_roles_y_acciones(id_usuario)
+    sesion_common.actualizar_permisos_sesion(id_usuario, roles, acciones)
 
 
 # ---------------------------------------------------------------------------

@@ -50,41 +50,12 @@ class AsignarRolesSchema(ma.Schema):
         }
     )
 
-    created_by = fields.Integer(
-        required=True,
-        validate=[
-            validate.Range(
-                min=1,
-                error="El usuario creador debe ser mayor a 0"
-            )
-        ],
-        error_messages={
-            "required": "El usuario creador es obligatorio",
-            "null": "El usuario creador no puede ser null",
-        }
-    )
-
     @validates("id_roles")
     def validar_roles_unicos(self, value, **kwargs):
         if len(value) != len(set(value)):
             raise ValidationError(
                 "La lista de roles contiene roles duplicados"
             )
-        
-class RevocarRolSchema(ma.Schema):
-    updated_by = fields.Integer(
-        required=True,
-        validate=[
-            validate.Range(
-                min=1,
-                error="El usuario modificador debe ser mayor a 0"
-            )
-        ],
-        error_messages={
-            "required": "El usuario modificador es obligatorio",
-            "null": "El usuario modificador no puede ser null"
-        }
-    )
 
 class RevocarRolesSchema(ma.Schema):
     id_roles = fields.List(
@@ -110,20 +81,6 @@ class RevocarRolesSchema(ma.Schema):
         }
     )
 
-    updated_by = fields.Integer(
-        required=True,
-        validate=[
-            validate.Range(
-                min=1,
-                error="El usuario modificador debe ser mayor a 0"
-            )
-        ],
-        error_messages={
-            "required": "El usuario modificador es obligatorio",
-            "null": "El usuario modificador no puede ser null"
-        }
-    )
-
     @validates("id_roles")
     def validar_roles_unicos(self, value, **kwargs):
         if len(value) != len(set(value)):
@@ -135,5 +92,4 @@ roles_usuario_schema = RolUsuarioBaseSchema()
 roles_usuarios_schema = RolUsuarioBaseSchema(many=True)
 
 asignar_roles_schema = AsignarRolesSchema()
-revocar_rol_schema = RevocarRolSchema()
 revocar_roles_schema = RevocarRolesSchema()

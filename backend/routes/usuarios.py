@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, g
 from marshmallow import ValidationError
 import traceback
 from schemas.usuario_schemas import usuario_schema, usuarios_schema
@@ -12,6 +12,7 @@ from services.usuario_service import (
     eliminar
 )
 from auth_common.respuesta_api import respuesta_api
+from auth_common.decorador import requires_permission
 
 """
 Este archivo define los endpoints del CRUD de usuario
@@ -20,6 +21,7 @@ Este archivo define los endpoints del CRUD de usuario
 usuarios_bp = Blueprint("usuarios", __name__, url_prefix="/usuarios")
 
 @usuarios_bp.route("", methods=["GET"])
+@requires_permission("auth.usuarios.ver")
 def listar_usuarios():
     try:
         usuarios = obtener_todos()
@@ -30,6 +32,7 @@ def listar_usuarios():
         return respuesta_api(False, [], str(error), 500)
 
 @usuarios_bp.route("/<int:id>", methods=["GET"])
+@requires_permission("auth.usuarios.ver")
 def obtener_usuario(id):
     try:
         usuario = obtener_por_id(id)
@@ -44,11 +47,12 @@ def obtener_usuario(id):
         return respuesta_api(False, [], str(error), 500)
 
 @usuarios_bp.route("", methods=["POST"])
+@requires_permission("auth.usuarios.control_parcial")
 def crear_usuario():
     req = request.get_json()
 
     try:
-        nuevo_usuario = crear(req)
+        nuevo_usuario = crear(req, g.id_usuario)
     except ValidationError as e:
         return respuesta_api(False, [], e.messages, 400)
     except Exception as error:
@@ -92,6 +96,7 @@ def crear_usuario_completo():
     )
     
 @usuarios_bp.route("/<int:id>", methods=["PUT"])   
+@requires_permission("auth.usuarios.control_parcial")
 def editar_usuario(id):    
     usuario = obtener_por_id(id)
 
@@ -99,7 +104,7 @@ def editar_usuario(id):
         return respuesta_api(False, [], "Usuario no encontrado", 404)
 
     try:
-        actualizado = actualizar(usuario, request.get_json())
+        actualizado = actualizar(usuario, request.get_json(), g.id_usuario)
     except ValidationError as e:
         return respuesta_api(False, [], e.messages, 400)
     except Exception as error:
@@ -109,6 +114,7 @@ def editar_usuario(id):
     return respuesta_api(True, [usuario_schema.dump(actualizado)], "Usuario actualizado")
 
 @usuarios_bp.route("/<int:id>", methods=["DELETE"])  
+@requires_permission("auth.usuarios.eliminar")
 def eliminar_usuario(id):
     try:
         usuario = obtener_por_id(id)
@@ -116,7 +122,7 @@ def eliminar_usuario(id):
         if not usuario:
             return respuesta_api(False, [], "Usuario no encontrado", 404)
         
-        eliminar(usuario)
+        eliminar(usuario, g.id_usuario)
 
         return respuesta_api(True, [], "Usuario eliminado", 200)
     except Exception as error:

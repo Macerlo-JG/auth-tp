@@ -21,58 +21,51 @@ def obtener_por_id(id_usuario):
         activo=True
     ).first()
 
-def crear(datos):
+def crear(datos, id_usuario_sesion):
     nuevo = usuario_create_schema.load(datos)
+
+    nuevo.created_by = id_usuario_sesion
 
     db.session.add(nuevo)
     db.session.commit()
 
     return nuevo
 
-def actualizar(usuario, datos):
+def actualizar(usuario, datos, id_usuario_sesion):
     usuario_update_schema.load(datos, instance=usuario, partial=True)
+
+    usuario.updated_by = id_usuario_sesion
+
     db.session.commit()
     return usuario
 
-def eliminar(usuario):
+def eliminar(usuario, id_usuario_sesion):
     usuario.activo = False
+    usuario.updated_by = id_usuario_sesion
     db.session.commit()
-
-
-def activar_cuenta(usuario):
-    usuario.estado_usuario = EstadoUsuario.ACTIVO
-    db.session.commit()
-    return usuario
-
 
 # Creo Usuario + Contraseña temporal + Mail de bienvenida.
-# ahora mismo el mail solo se usa para el envio de correo y login, no hay persistencia real
-# porque usamos mocks.
-def crear_completo(datos):
-    
+def crear_completo(datos, id_usuario_sesion):
     email = datos.pop("email", None)
     if not email or not str(email).strip():
         raise ValueError("El email es requerido para enviar las credenciales")
-
     email = str(email).strip().lower()
-    created_by = datos.get("created_by")
 
     nuevo = usuario_create_schema.load(datos)
+    nuevo.created_by = id_usuario_sesion
     db.session.add(nuevo)
     db.session.flush()
 
-    password_temporal = crear_password_temporal(nuevo.id_usuario, created_by)
-
-    # MOCK: registramos el email para login.
-    # Agregar acá también en frontend/src/api/auth.js → USUARIOS_MOCK.
-    # Lo estamos agregando al archivo "emails_usuario.py", en su correspondiente diccionario, para poder usarlo a futuro
-    # sin tener que almacenar en la base de datos.
+    password_temporal = crear_password_temporal(nuevo.id_usuario, id_usuario_sesion)
     EMAIL_POR_ID_USUARIO[nuevo.id_usuario] = email
-
     link_activacion = f"http://localhost:5173/activar-cuenta?email={email}"
-    # Enviamos "mail" que por ahora se envía por consola.
     enviar_bienvenida(email, password_temporal, link_activacion)
 
-
-    # Devuelvo usuario nuevo y contra temporal.
     return nuevo, password_temporal
+
+
+def activar_cuenta(usuario, id_usuario_sesion=None):
+    usuario.estado_usuario = EstadoUsuario.ACTIVO
+    usuario.updated_by = id_usuario_sesion if id_usuario_sesion is not None else usuario.id_usuario
+    db.session.commit()
+    return usuario
