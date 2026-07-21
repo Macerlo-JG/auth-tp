@@ -1,11 +1,7 @@
-import { AUTH_API } from "../auth/config";
+import { authFetch } from "./cliente";
+import authService from "../auth/services/authService";
 
-const API = `${AUTH_API}/usuarios`;
-const ROLES_API = `${AUTH_API}/usuarios/roles`;
-
-// Normaliza respuesta del backend a una uniforme para facilidad del front
 const parseResponse = async (res) => {
-  // Si el body no es JSON parseable, cae a {} en vez de romper.
   const body = await res.json().catch(() => ({}));
   return {
     ok: res.ok,
@@ -15,27 +11,25 @@ const parseResponse = async (res) => {
   };
 };
 
-//export para poder ser usada de otros archivos,
-//async para asincronia
-//fetch: envia peticion http a la url
 export const getRoles = async () => {
-  const res = await fetch(ROLES_API);
+  const res = await authFetch("/usuarios/roles");
   return parseResponse(res);
 };
 
 export const getRolesUsuario = async (idUsuario) => {
-  const res = await fetch(`${API}/${idUsuario}/roles`);
+  const res = await authFetch(`/usuarios/${idUsuario}/roles`);
   return parseResponse(res);
 };
 
-// el back end acepta una lista, pero lo enviamos de a uno.
+// el backend acepta una lista, pero lo enviamos de a uno.
 export const agregarRolUsuario = async (idUsuario, idRol) => {
-  const res = await fetch(`${API}/${idUsuario}/roles`, {
+  const idUsuarioSesion = authService.getSession()?.user?.id;
+
+  const res = await authFetch(`/usuarios/${idUsuario}/roles`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       id_roles: [Number(idRol)],
-      created_by: 1, //  hardcodeado: no hay usuario autenticado real todavía ((cambiar a futuro))
+      created_by: idUsuarioSesion,
     }),
   });
 
@@ -44,10 +38,11 @@ export const agregarRolUsuario = async (idUsuario, idRol) => {
 
 // revoca un rol puntual.
 export const eliminarRolUsuario = async (idUsuario, idRol) => {
-  const res = await fetch(`${API}/${idUsuario}/roles/${idRol}`, {
+  const idUsuarioSesion = authService.getSession()?.user?.id;
+
+  const res = await authFetch(`/usuarios/${idUsuario}/roles/${idRol}`, {
     method: "DELETE",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ updated_by: 1 }), // cambiar hardocodeo
+    body: JSON.stringify({ updated_by: idUsuarioSesion }),
   });
 
   return parseResponse(res);

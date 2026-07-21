@@ -1,8 +1,4 @@
-// Llama al backend para operaciones con contraseñas:
-// cambiar la clave actual o pedir una contraseña temporal.
-import { AUTH_API } from "../auth/config";
-
-const API = `${AUTH_API}/credenciales`;
+import { authFetch } from "./cliente";
 
 export function parseApiError(message) {
   if (!message) return "Error desconocido";
@@ -19,9 +15,8 @@ export async function cambiarContrasena({
   password_nueva,
   updated_by,
 }) {
-  const res = await fetch(`${API}/cambiar`, {
+  const res = await authFetch("/credenciales/cambiar", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       id_usuario,
       password_actual,
@@ -33,10 +28,9 @@ export async function cambiarContrasena({
   return { ok: res.ok, status: res.status, body: await res.json() };
 }
 
-export async function crearContrasenaTemporal({ id_usuario, created_by = 1 }) {
-  const res = await fetch(`${API}/temporal`, {
+export async function crearContrasenaTemporal({ id_usuario, created_by }) {
+  const res = await authFetch("/credenciales/temporal", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id_usuario, created_by }),
   });
 

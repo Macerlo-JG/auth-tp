@@ -1,6 +1,4 @@
-import { AUTH_API } from "../auth/config";
-
-const API = `${AUTH_API}/roles`;
+import { authFetch } from "./cliente";
 
 const parseResponse = async (res) => {
   const body = await res.json().catch(() => ({}));
@@ -15,23 +13,20 @@ const parseResponse = async (res) => {
 
 // Obtener todos los roles
 export const getRoles = async () => {
-  const res = await fetch(API);
+  const res = await authFetch("/roles");
   return parseResponse(res);
 };
 
 // Obtener un rol
 export const getRol = async (idRol) => {
-  const res = await fetch(`${API}/${idRol}`);
+  const res = await authFetch(`/roles/${idRol}`);
   return parseResponse(res);
 };
 
 // Crear rol
 export const createRol = async (rol) => {
-  const res = await fetch(API, {
+  const res = await authFetch("/roles", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify(rol),
   });
 
@@ -40,11 +35,8 @@ export const createRol = async (rol) => {
 
 // Actualizar rol
 export const updateRol = async (idRol, rol) => {
-  const res = await fetch(`${API}/${idRol}`, {
+  const res = await authFetch(`/roles/${idRol}`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify(rol),
   });
 
@@ -53,7 +45,7 @@ export const updateRol = async (idRol, rol) => {
 
 // Eliminar rol
 export const deleteRol = async (idRol) => {
-  const res = await fetch(`${API}/${idRol}`, {
+  const res = await authFetch(`/roles/${idRol}`, {
     method: "DELETE",
   });
 
