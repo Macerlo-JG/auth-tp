@@ -3,19 +3,11 @@ import toast from "react-hot-toast";
 
 /**
  * Popup genérico para confirmar una acción sensible con OTP.
- * A diferencia de ActivacionModal (que llama directo a la API de
- * activación), este recibe las funciones de solicitar/confirmar como
+ * Recibo funciones de solicitar/confirmar como
  * props, para poder reutilizarlo en cualquier flujo (cambio de
  * contraseña, edición de email, etc.) sin acoplarlo a un endpoint fijo.
- *
- * Props:
- *   open: boolean
- *   titulo, descripcion: textos del popup
- *   onSolicitarOtp: () => Promise<{ ok, body }>  -- dispara el envío del OTP
- *   onConfirmar: (otp) => Promise<{ ok, body }>  -- valida el OTP y ejecuta
- *                la acción real (ej: el cambio de contraseña)
- *   onClose: () => void
- *   onConfirmado: () => void  -- se llama tras un onConfirmar exitoso
+ * onSolicitarOtp: dispara el envío del OTP
+ * onConfirmar: valida el OTP y ejecuta la acción real (ej: el cambio de contraseña)
  */
 export default function ConfirmarOtpModal({
   open,

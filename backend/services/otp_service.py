@@ -31,9 +31,9 @@ def _clave_intentos(tipo, email):
 
 
 def generar_otp(tipo, email):
-    """Genera un OTP numérico de 6 dígitos, lo hashea y lo almacena en Redis.
+    """Genera un OTP, lo hashea y lo almacena en Redis.
 
-    Devuelve el código en claro (para enviarlo por mail/SMS).
+    Devuelve el código en claro para enviarlo por mail.
     Reinicia el contador de intentos fallidos: un código nuevo empieza
     con el cupo de intentos completo, aunque el anterior lo hubiera agotado.
     """
@@ -52,26 +52,11 @@ def generar_otp(tipo, email):
 
 def verificar_otp(tipo, email, codigo_ingresado, consumir=True):
     """Valida el código ingresado contra el hash guardado en Redis.
-
-    - Si no hay código vigente (vencido o inexistente): False.
-    - Si se superó MAX_INTENTOS: invalida el OTP y devuelve False, aunque
-      el código ingresado esa vez sea el correcto (fuerza bruta agotada).
-    - Si es correcto y consumir=True (default): BORRA el OTP y el contador
-      de intentos de Redis antes de devolver True. Un OTP es de un solo
-      uso; llamar de nuevo con el mismo código después de un True ya no
-      encuentra nada y devuelve False.
-    - Si es correcto y consumir=False: devuelve True SIN borrar el OTP.
-      Existe para flujos de dos pasos (ej: recuperación de contraseña),
-      donde primero se confirma que el código es válido para habilitar el
-      formulario de nueva contraseña (`/recuperacion/verificar-otp`, no
-      debe gastar el código), y recién en un segundo llamado -- el que
-      efectivamente aplica el cambio (`/recuperacion/cambiar`) -- se
-      consume de verdad. Si ambos pasos consumieran el código, el segundo
-      paso siempre fallaría con "código inválido o expirado" porque el
-      primero ya lo habría borrado.
-    - Si es incorrecto: incrementa el contador de intentos y devuelve False
-      (esto pasa siempre, consuma o no, para que el límite de intentos
-      cuente también los chequeos de "vista previa").
+    -Si el OTP no existe o está vencido devuelve False.
+    - Si se alcanzó el límite de intentos invalida el OTP y devuelve False.
+    - Si el código es correcto elimina el OTP y el contador de intentos.
+    Con consumir=False valida el código sin eliminarlo, permitiendo flujos de dos pasos donde se verifica primero y se consume después.
+    Si el código es incorrecto aumenta el contador de intentos y devuelve False, independientemente de si se consume o no.
     """
     if not codigo_ingresado:
         return False
@@ -85,8 +70,7 @@ def verificar_otp(tipo, email, codigo_ingresado, consumir=True):
     intentos_previos = int(redis_client.get(clave_intentos) or 0)
 
     if intentos_previos >= MAX_INTENTOS:
-        # Cupo de intentos agotado: se invalida el OTP directamente,
-        # el usuario tiene que pedir uno nuevo.
+        # intentos agotado.
         redis_client.delete(key)
         redis_client.delete(clave_intentos)
         return False
@@ -99,7 +83,7 @@ def verificar_otp(tipo, email, codigo_ingresado, consumir=True):
             redis_client.delete(clave_intentos)
         return True
 
-    # Intento fallido: se registra, conservando el mismo TTL que el OTP
+    # Intento fallido se registra, conservando el mismo TTL que el OTP
     # para que el contador no sobreviva más que el propio código.
     ttl_restante = redis_client.ttl(key)
     nuevos_intentos = intentos_previos + 1
@@ -113,11 +97,7 @@ def verificar_otp(tipo, email, codigo_ingresado, consumir=True):
 
 def eliminar_otp(tipo, email):
     """Invalida el OTP y su contador de intentos manualmente.
-
-    Ya no hace falta llamarla después de un verificar_otp exitoso (eso lo
-    hace la propia función). Sigue siendo útil para invalidar un código
-    vigente sin haberlo validado -- por ejemplo si se quiere cancelar un
-    flujo de activación/recuperación a mitad de camino.
+    Invalida un código vigente.
     """
     redis_client.delete(_clave(tipo, email))
     redis_client.delete(_clave_intentos(tipo, email))

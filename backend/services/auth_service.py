@@ -150,12 +150,7 @@ def login(id_persona, password):
     # no queremos confirmar que el email existe si la contraseña es incorrecta.
     if usuario.estado_usuario == EstadoUsuario.PENDIENTE:
         # Antes acá se usaba `usuario.email`, pero el modelo Usuario NO
-        # guarda email (el email vive en el mock de personas). Eso iba a
-        # tirar AttributeError en cuanto un usuario PENDIENTE intentara
-        # loguearse con la contraseña correcta -- y como el endpoint solo
-        # atrapa ValueError explícitamente, el AttributeError caía en el
-        # handler genérico y devolvía 500 en vez del 403 CUENTA_PENDIENTE
-        # esperado por el frontend.
+        # guarda email (el email vive en el mock de personas).
         email = obtener_email_por_id_persona(usuario.id_persona)
         raise CuentaPendienteError(
             "Su cuenta aún no fue confirmada. Revise su correo e ingrese el código de activación.",

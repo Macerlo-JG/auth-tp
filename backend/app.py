@@ -37,7 +37,7 @@ jwt = JWTManager(app)
 # refresh sigue siendo el mismo almacenado. Esto permite revocar tokens
 # inmediatamente al cerrar sesión.
 @jwt.token_in_blocklist_loader
-def check_if_token_revoked(jwt_header, jwt_payload):
+def check_token_revocado(jwt_header, jwt_payload):
     tipo = jwt_payload.get("type")
     identity = jwt_payload.get("sub") or jwt_payload.get("identity")
     if not identity:

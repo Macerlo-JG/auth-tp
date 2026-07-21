@@ -4,7 +4,6 @@ Este módulo maneja la verificación de la contraseña actual, el cambio
 de contraseña, la generación de contraseñas temporales y la reutilización
 de contraseñas anteriores.
 
-CONVENCIÓN (importante, quedó inconsistente en la versión anterior):
 Las funciones de este módulo NO hacen commit por su cuenta cuando forman
 parte de un flujo más grande (ej: crear_password_temporal, que se usa
 tanto standalone como dentro de crear_completo en usuario_service).

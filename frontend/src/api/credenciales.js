@@ -1,6 +1,3 @@
-// Llama al backend para operaciones con contraseñas:
-// cambiar la clave actual (con confirmación por OTP) o pedir una
-// contraseña temporal.
 import { API_URL } from "./auth";
 import authService from "../services/authService";
 
@@ -16,10 +13,6 @@ export function parseApiError(message) {
 }
 
 // Arma el header de autorización a partir de la sesión guardada.
-// /credenciales/cambiar y /credenciales/cambiar/solicitar-otp ahora están
-// protegidos con @jwt_required() en el backend (antes /cambiar recibía
-// id_usuario directo en el body, lo cual permitía -en teoría- pedir un
-// cambio de contraseña para cualquier id_usuario con solo armar el JSON).
 function headersAutenticados() {
   const token = authService.getSession()?.access_token;
   return {
@@ -28,9 +21,7 @@ function headersAutenticados() {
   };
 }
 
-// Paso 1 del flujo de cambio de contraseña: pide el OTP que se manda al
-// correo del usuario logueado (el backend resuelve el email a partir del
-// JWT, no hace falta mandar nada en el body).
+// Pido OTP que se manda al correo del usuario
 export async function solicitarOtpCambioContrasena() {
   const res = await fetch(`${API}/cambiar/solicitar-otp`, {
     method: "POST",
@@ -40,8 +31,7 @@ export async function solicitarOtpCambioContrasena() {
   return { ok: res.ok, status: res.status, body: await res.json() };
 }
 
-// Paso 2: aplica el cambio. Ahora requiere el otp del paso 1.
-// id_usuario/updated_by ya NO se mandan: el backend los toma del JWT.
+// Aplico el cambio. Requiero el otp de solicitarOtpCambioContrasena
 export async function cambiarContrasena({ password_actual, password_nueva, otp }) {
   const res = await fetch(`${API}/cambiar`, {
     method: "POST",
