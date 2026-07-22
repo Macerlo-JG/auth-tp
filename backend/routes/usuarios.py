@@ -63,12 +63,13 @@ def crear_usuario():
 
 # En esta función se crea el usuario y se envía el correo con la contraseña temporal.
 @usuarios_bp.route("/completo", methods=["POST"])
+@requires_permission("auth.usuarios.control_parcial")
 def crear_usuario_completo():
     req = request.get_json()
 
     try:
         # Almaceno los 2 return.
-        nuevo_usuario, password_temporal = crear_completo(req)
+        nuevo_usuario, password_temporal = crear_completo(req, g.id_usuario)
     except ValidationError as e:
         return respuesta_api(False, [], e.messages, 400)
     except ValueError as error:

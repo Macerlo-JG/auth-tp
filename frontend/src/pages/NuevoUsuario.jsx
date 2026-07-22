@@ -38,7 +38,6 @@ export default function NuevoUsuario() {
 
     const jsonData = {
       id_persona: parseInt(data.id_persona, 10),
-      created_by: parseInt(data.created_by, 10),
       email: data.email.trim(),
     };
 

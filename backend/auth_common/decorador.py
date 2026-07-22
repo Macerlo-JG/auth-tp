@@ -25,6 +25,11 @@ ENDPOINTS_EXCEPTUADOS = {
     "auth.cerrar_sesion",
     "acciones.registrar",
     "credenciales.verificar_credencial",
+    "activacion.solicitar_otp",
+    "activacion.verificar",
+    "recuperacion.solicitar_otp",
+    "recuperacion.verificar_otp_endpoint",
+    "recuperacion.cambiar_contrasena",
 }
 
 def validar_sesion():
