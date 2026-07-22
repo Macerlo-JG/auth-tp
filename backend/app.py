@@ -10,8 +10,8 @@ from seed.seed_data import seed_data
 from routes.credenciales_routes import credenciales_bp
 from routes.auth_routes import auth_bp
 from routes.acciones_routes import acciones_bp
+from auth_common import AuthCommon
 from auth_common.respuesta_api import respuesta_api
-from auth_common.decorador import validar_sesion
 
 """
 Archivo principal de la aplicación:
@@ -31,9 +31,7 @@ ma.init_app(app)
 jwt_manager = JWTManager(app)
 limiter.init_app(app)
 
-# Validación de sesión centralizada: corre antes de cada request, menos en los
-# endpoints en ENDPOINTS_EXCEPTUADOS.
-app.before_request(validar_sesion)
+AuthCommon(app)
 
 # Normaliza las respuestas por defecto de Flask-JWT-Extended al formato
 # respuesta_api.
