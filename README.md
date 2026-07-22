@@ -1,65 +1,72 @@
-body {
-  margin: 0;
-  font-family: system-ui;
-  background: #0f172a;
-  color: white;
-}
+# Auth
 
-.container {
-  max-width: 1000px;
-  margin: auto;
-  padding: 20px;
-}
+# Guía de instalación
 
-h1 {
-  text-align: center;
-  margin-bottom: 20px;
-}
+# Clonar el repositorio
 
-.form {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 30px;
-}
+```bash
+git clone https://github.com/unlz-programacion/2026-caba-1c-auth.git
 
-input, select {
-  padding: 10px;
-  border-radius: 8px;
-  border: none;
-  outline: none;
-  background: #1e293b;
-  color: white;
-}
+cd auth-tp
+```
 
-button {
-  grid-column: span 2;
-  padding: 10px;
-  background: #2563eb;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-}
+# Levantar el proyecto
 
-button:hover {
-  background: #1d4ed8;
-}
+Actualmente el archivo `docker-compose.yml` se encuentra dentro de la carpeta `deploy`.
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 15px;
-}
+Ingresar a dicha carpeta:
 
-.card {
-  background: #1e293b;
-  padding: 15px;
-  border-radius: 12px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-}
+```bash
+cd deploy
+```
 
-.card h3 {
-  margin: 0 0 10px;
-}
+Construir las imágenes y levantar los servicios:
+
+```bash
+docker compose up --build
+```
+
+# Servicios disponibles
+
+Una vez iniciado el proyecto estarán disponibles los siguientes servicios:
+
+| Servicio    | URL                   |
+| ----------- | --------------------- |
+| Frontend    | http://localhost:5173 |
+| Backend API | http://localhost:5000 |
+| PostgreSQL  | http:/localhost:5432  |
+| PgAdmin     | http://localhost:5050 |
+
+Para detener los contenedores:
+
+```bash
+docker compose down
+```
+
+Si además desea eliminar los volúmenes de la base de datos:
+
+```bash
+docker compose down -v
+```
+
+# Tecnologías utilizadas
+
+## Backend
+
+- Python 3.12
+- Flask
+- SQLAlchemy
+- PostgreSQL
+
+## Frontend
+
+- React
+- Vite
+- React Router
+- Axios
+
+## Infraestructura
+
+- Docker
+- Docker Compose
+- PgAdmin
