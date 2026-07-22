@@ -12,6 +12,7 @@ export function AuthProvider({ children }) {
   // Almacena los roles asignados al usuario
   const [roles, setRoles] = useState([]);
 
+
   // Almacena los permisos del usuario
   const [acciones, setAcciones] = useState([]);
 
@@ -75,6 +76,7 @@ export function AuthProvider({ children }) {
     acciones,
     loading,
     isAuthenticated,
+    user,
     login,
     logout,
 

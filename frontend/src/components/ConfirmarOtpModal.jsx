@@ -1,45 +1,46 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import {
-  solicitarOtpActivacion,
-  verificarActivacion,
-  parseApiError,
-} from "../api/activacion.js";
 
 /**
- * Popup reutilizable para activar una cuenta con OTP.
- * Se usa desde el login y desde /activar-cuenta.
+ * Popup genérico para confirmar una acción sensible con OTP.
+ * Recibo funciones de solicitar/confirmar como
+ * props, para poder reutilizarlo en cualquier flujo (cambio de
+ * contraseña, edición de email, etc.) sin acoplarlo a un endpoint fijo.
+ * onSolicitarOtp: dispara el envío del OTP
+ * onConfirmar: valida el OTP y ejecuta la acción real (ej: el cambio de contraseña)
  */
-export default function ActivacionModal({ email, open, onClose, onActivado }) {
-  // variable + función para cambiar lo que esta adentro de la funcion.
+export default function ConfirmarOtpModal({
+  open,
+  titulo = "Confirmar acción",
+  descripcion = "Ingrese el código que le enviamos por correo para confirmar.",
+  onSolicitarOtp,
+  onConfirmar,
+  onClose,
+  onConfirmado,
+}) {
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [otpEnviado, setOtpEnviado] = useState(false);
 
-  // Automaticamente pido OTP.
   useEffect(() => {
-    if (open && email) {
+    if (open) {
       setOtp("");
       setOtpEnviado(false);
       enviarOtp();
     }
-  }, [open, email]);
-  // escucho cambios y parametros
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
 
-
-  // voy al back end
   const enviarOtp = async () => {
-    if (!email) return;
-
+    if (!onSolicitarOtp) return;
     try {
       setLoading(true);
-      const { ok, body } = await solicitarOtpActivacion(email);
-
+      const { ok, body } = await onSolicitarOtp();
       if (ok) {
         setOtpEnviado(true);
-        toast.success(body.message || "Código enviado a su correo.");
+        toast.success(body?.message || "Código enviado a su correo.");
       } else {
-        toast.error(parseApiError(body.message));
+        toast.error(body?.message || "No se pudo enviar el código.");
       }
     } catch (error) {
       console.error(error);
@@ -49,24 +50,24 @@ export default function ActivacionModal({ email, open, onClose, onActivado }) {
     }
   };
 
-  const handleVerificar = async (e) => {
+  const handleConfirmar = async (e) => {
     e.preventDefault();
 
     if (!otp.trim()) {
-      toast.error("Ingrese el código de activación.");
+      toast.error("Ingrese el código.");
       return;
     }
 
     try {
       setLoading(true);
-      const { ok, body } = await verificarActivacion({ email, otp });
+      const { ok, body } = await onConfirmar(otp.trim());
 
       if (ok) {
-        toast.success(body.message || "Cuenta activada.");
-        onActivado?.();
+        toast.success(body?.message || "Confirmado.");
+        onConfirmado?.();
         onClose?.();
       } else {
-        toast.error(parseApiError(body.message));
+        toast.error(body?.message || "Código inválido o expirado.");
       }
     } catch (error) {
       console.error(error);
@@ -81,22 +82,12 @@ export default function ActivacionModal({ email, open, onClose, onActivado }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-2">
-          Activar cuenta
-        </h2>
-        <p className="text-gray-500 text-sm mb-4">
-          Su cuenta aún no fue confirmada. Revise su correo e ingrese el código
-          de activación que le enviamos a <strong>{email}</strong>.
-        </p>
-        <p className="text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded p-2 mb-4">
-          En desarrollo, el código aparece en la consola Docker del contenedor{" "}
-          <strong>backend</strong>. Para pruebas rápidas puede usar:{" "}
-          <code>temporal</code>
-        </p>
+        <h2 className="text-xl font-bold text-gray-800 mb-2">{titulo}</h2>
+        <p className="text-gray-500 text-sm mb-4">{descripcion}</p>
 
-        <form onSubmit={handleVerificar} className="space-y-4">
+        <form onSubmit={handleConfirmar} className="space-y-4">
           <div>
-            <label className="form-label">Código de activación</label>
+            <label className="form-label">Código de confirmación</label>
             <input
               className="form-input"
               type="text"
@@ -113,7 +104,7 @@ export default function ActivacionModal({ email, open, onClose, onActivado }) {
               disabled={loading}
               className="w-full bg-bomberos hover:bg-bomberos-hover disabled:opacity-60 text-white rounded-lg py-2.5 font-semibold"
             >
-              {loading ? "Verificando..." : "Activar cuenta"}
+              {loading ? "Confirmando..." : "Confirmar"}
             </button>
 
             <button
@@ -130,7 +121,7 @@ export default function ActivacionModal({ email, open, onClose, onActivado }) {
               onClick={onClose}
               className="w-full text-gray-500 hover:text-gray-700 text-sm"
             >
-              Cerrar
+              Cancelar
             </button>
           </div>
         </form>

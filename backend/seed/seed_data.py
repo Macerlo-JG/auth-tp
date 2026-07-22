@@ -85,7 +85,8 @@ def seed_data():
                     id_usuario=usuario.id_usuario,
                     password_hash=generate_password_hash(password_plano),
                     created_by=1,
-                    created_at=ahora
+                    created_at=ahora,
+                    es_actual=True,
                 )
             )
 

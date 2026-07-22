@@ -3,6 +3,7 @@ from db import db, ma, limiter
 from flask_cors import CORS
 from config.config import Config
 from flask_jwt_extended import JWTManager
+from auth_common import sesion_common
 from routes.usuarios import usuarios_bp
 from routes.roles_usuarios import roles_usuarios_bp
 from routes.roles import roles_bp
@@ -31,6 +32,37 @@ CORS(app)
 db.init_app(app)
 ma.init_app(app)
 jwt_manager = JWTManager(app)
+
+
+# Validación centralizada de tokens: además de verificar la firma,
+# consultamos Redis para saber si la sesión existe y si el `jti` de
+# refresh sigue siendo el mismo almacenado. Esto permite revocar tokens
+# inmediatamente al cerrar sesión.
+@jwt_manager.token_in_blocklist_loader
+def check_token_revocado(jwt_header, jwt_payload):
+    tipo = jwt_payload.get("type")
+    identity = jwt_payload.get("sub") or jwt_payload.get("identity")
+    if not identity:
+        return True
+
+    try:
+        id_usuario = int(identity)
+    except Exception:
+        return True
+
+    sesion = sesion_common.obtener_sesion(id_usuario)
+
+    # Si no hay sesión en Redis, bloqueamos tanto access como refresh
+    if not sesion:
+        return True
+
+    # Para refresh tokens, validamos el jti registrado
+    if tipo == "refresh":
+        return sesion.get("refresh_jti") != jwt_payload.get("jti")
+
+    # Para access tokens, basta con que exista la sesión
+    return False
+
 limiter.init_app(app)
 
 # Validación de sesión centralizada: corre antes de cada request, menos en los

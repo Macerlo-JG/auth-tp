@@ -40,7 +40,7 @@ export default function UsuarioCreadoModal({ datos, open, onClose }) {
           <ol className="list-decimal list-inside space-y-1">
             <li>Recibe el mail de bienvenida con la contraseña temporal.</li>
             <li>Cuando quiera activarse, va a login y elige <strong>Activar cuenta</strong>, o usa el link del mail.</li>
-            <li>Recibe un <strong>segundo mail</strong> con el código OTP (o usa <code>temporal</code> en pruebas).</li>
+            <li>Recibe un <strong>segundo mail</strong> con el código OTP.</li>
             <li>Ingresa el OTP → la cuenta pasa a ACTIVO.</li>
             <li>Ya puede iniciar sesión con su correo y contraseña temporal.</li>
           </ol>
