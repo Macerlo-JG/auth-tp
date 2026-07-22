@@ -108,7 +108,6 @@ const handleGuardar = async () => {
   // Crea el objeto esperado por la API
   const jsonData = {
     estado_usuario: data.estado_usuario,
-    updated_by: parseInt(data.updated_by, 10),
   };
 
   // Incluye el id de la persona.
