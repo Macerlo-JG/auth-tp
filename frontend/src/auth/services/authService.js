@@ -43,6 +43,23 @@ async function logout() {
     eliminarSesion();
   }
 }
+// Pide un access_token nuevo usando el refresh_token guardado, y
+// actualiza la sesión local con el token renovado (mantiene el resto
+// de los datos de la sesión intactos: roles, acciones, user, etc.)
+async function renovarToken() {
+  const sesion = obtenerSesion();
+
+  if (!sesion?.refresh_token) {
+    throw new Error("No hay una sesión para renovar.");
+  }
+
+  const { access_token } = await authApi.refresh(sesion.refresh_token);
+
+  guardarSesion({ ...sesion, access_token });
+
+  return access_token;
+}
+
 // Devuelve la información de la sesión actual almacenada en el Local Storage
 function getSession() {
   return obtenerSesion();
@@ -60,4 +77,8 @@ export default {
   logout,
   getSession,
   isAuthenticated,
+  renovarToken,
+  // Limpieza local sin avisar al backend: se usa cuando el refresh_token
+  // también venció y no tiene sentido notificar un logout que ya no es válido.
+  clearSession: eliminarSesion,
 };

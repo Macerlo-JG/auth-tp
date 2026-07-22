@@ -49,6 +49,22 @@ export async function login({ email, password }) {
   };
 }
 
+export async function refresh(refreshToken) {
+  const response = await fetch(`${API_URL}/auth/refresh`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${refreshToken}` },
+  });
+
+  const body = await response.json();
+
+  if (!response.ok || !body.ok) {
+    throw new Error(body.message || "No se pudo renovar la sesión.");
+  }
+
+  // { access_token }
+  return body.data;
+}
+
 export async function logout(accessToken) {
   await fetch(`${API_URL}/auth/logout`, {
     method: "POST",
