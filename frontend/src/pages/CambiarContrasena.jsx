@@ -31,6 +31,11 @@ export default function CambiarContrasena() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!user) {
+      toast.error("No se pudo identificar al usuario. Volvé a iniciar sesión.");
+      return;
+    }
+
     if (!form.password_actual.trim()) {
       toast.error("Ingrese su contraseña actual.");
       return;

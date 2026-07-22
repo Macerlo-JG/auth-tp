@@ -10,6 +10,7 @@ import VerUsuario from "./pages/VerUsuario.jsx";
 import CambiarContrasena from "./pages/CambiarContrasena.jsx";
 import ActivarCuenta from "./pages/ActivarCuenta.jsx";
 import RecuperarContrasena from "./pages/RecuperarContrasena.jsx";
+import RolesPage from "./pages/RolesPage.jsx";
 import "./index.css";
 
 function App() {
@@ -71,6 +72,12 @@ function App() {
         <Route path="/cambiar-contrasena" element={
             <ProtectedRoute>
               <CambiarContrasena />
+            </ProtectedRoute>
+          } />
+
+        <Route path="/roles" element={
+            <ProtectedRoute permissions={["auth.roles.ver"]}>
+              <RolesPage />
             </ProtectedRoute>
           } />
 

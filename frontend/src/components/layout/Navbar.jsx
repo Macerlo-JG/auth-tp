@@ -1,4 +1,4 @@
-import { IconShield, IconFolder, IconUsers, IconChevronDown } from "../icons.jsx";
+import { IconShield, IconFolder, IconUsers, IconChevronDown, IconSettings } from "../icons.jsx";
 import { useState, useRef, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import useAuth from "../../auth/hooks/useAuth.js";
@@ -6,7 +6,7 @@ import useAuth from "../../auth/hooks/useAuth.js";
 export default function Navbar() {
 
 const navigate = useNavigate();
-const { user, logout } = useAuth();
+const { user, logout, hasPermission } = useAuth();
 const [open, setOpen] = useState(false);
 const menuRef = useRef(null);
 
@@ -59,6 +59,22 @@ async function handleLogout() {
               <IconFolder />
               Usuarios
             </NavLink>
+
+            {hasPermission("auth.roles.ver") && (
+              <NavLink
+                to="/roles"
+                className={({ isActive }) =>
+                  `flex items-center gap-1.5 px-3 py-2 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "text-white border-b-2 border-white"
+                      : "text-white/80 hover:text-white"
+                  }`
+                }
+              >
+                <IconSettings />
+                Roles
+              </NavLink>
+            )}
           </nav>
           <div
             ref={menuRef}

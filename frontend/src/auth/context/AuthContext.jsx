@@ -15,6 +15,9 @@ export function AuthProvider({ children }) {
   // Almacena los permisos del usuario
   const [acciones, setAcciones] = useState([]);
 
+  // Almacena los datos básicos del usuario logueado (por ahora, solo id).
+  const [user, setUser] = useState(null);
+
   // Indica si existe una sesion autenticada
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -29,6 +32,7 @@ export function AuthProvider({ children }) {
     if (session) {
       setRoles(session.roles ?? []);
       setAcciones(session.acciones ?? []);
+      setUser(session.user ?? null);
       setIsAuthenticated(true);
     }
 
@@ -44,6 +48,7 @@ export function AuthProvider({ children }) {
 
       setRoles(session.roles ?? []);
       setAcciones(session.acciones ?? []);
+      setUser(session.user ?? null);
       setIsAuthenticated(true);
 
       return session;
@@ -59,11 +64,13 @@ export function AuthProvider({ children }) {
  
     setRoles([]);
     setAcciones([]);
+    setUser(null);
     setIsAuthenticated(false);
   };
 
   // Objeto que expone el estado y las funciones disponibles para todos los componentes que consuman el contexto
   const value = {
+    user,
     roles,
     acciones,
     loading,

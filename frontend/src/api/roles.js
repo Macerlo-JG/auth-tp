@@ -1,5 +1,14 @@
 import { authFetch } from "./cliente";
 
+export function parseApiError(message) {
+  if (!message) return "Error desconocido";
+  if (typeof message === "string") return message;
+  if (typeof message === "object") {
+    return Object.values(message).flat().join(", ");
+  }
+  return "Error desconocido";
+}
+
 const parseResponse = async (res) => {
   const body = await res.json().catch(() => ({}));
 

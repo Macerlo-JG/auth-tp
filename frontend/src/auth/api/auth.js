@@ -44,6 +44,8 @@ export async function login({ email, password }) {
     refresh_token: data.refresh_token,
     roles: data.roles,
     acciones: data.acciones,
+    user: data.user,
+    aviso_cambio_contrasena: data.aviso_cambio_contrasena,
   };
 }
 
