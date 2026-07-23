@@ -24,3 +24,13 @@ class Config:
 
     # DB 1: separada de las sesiones (DB 0), mismo Redis.
     RATELIMIT_STORAGE_URI = 'redis://redis:6379/1'
+
+    # auth-common
+    AUTH_COMMON_REDIS_URL = REDIS_URL
+    AUTH_COMMON_SESSION_TTL = JWT_ACCESS_TOKEN_EXPIRES
+
+    AUTH_COMMON_ENDPOINTS_EXCEPTUADOS = [
+        "auth.login",
+        "auth.refresh",
+        "auth.logout"
+    ]

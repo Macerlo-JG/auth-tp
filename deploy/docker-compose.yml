@@ -4,10 +4,12 @@ services:
     build:
       context: ../backend
       dockerfile: Dockerfile
+    command: sh -c "pip install -e /auth-common --quiet && python app.py"
     ports:
       - "5000:5000"
     volumes:
       - ../backend:/app
+      - ../../auth-common:/auth-common
     environment:
       - FLASK_ENV=development
       - PYTHONUNBUFFERED=1

@@ -13,8 +13,8 @@ from routes.auth_routes import auth_bp
 from routes.activacion_routes import activacion_bp
 from routes.recuperacion_routes import recuperacion_bp
 from routes.acciones_routes import acciones_bp
+from auth_common import AuthCommon
 from auth_common.respuesta_api import respuesta_api
-from auth_common.decorador import validar_sesion
 
 """
 Archivo principal de la aplicación:
@@ -65,9 +65,7 @@ def check_token_revocado(jwt_header, jwt_payload):
 
 limiter.init_app(app)
 
-# Validación de sesión centralizada: corre antes de cada request, menos en los
-# endpoints en ENDPOINTS_EXCEPTUADOS.
-app.before_request(validar_sesion)
+AuthCommon(app)
 
 # Normaliza las respuestas por defecto de Flask-JWT-Extended al formato
 # respuesta_api.
