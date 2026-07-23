@@ -17,7 +17,7 @@ import {
 import {
   crearUsuarioCompleto,
 } from "../api/usuarios.js";
-import { parseApiError } from "../auth/utils/parseApiError.js";
+import { parseApiError } from "../auth/utils/parse";
 
 
 export default function NuevoUsuario() {

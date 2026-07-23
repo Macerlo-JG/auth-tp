@@ -6,7 +6,7 @@ import {
   verificarOtpRecuperacion,
   cambiarContrasenaRecuperacion,
 } from "../api/recuperacion.js";
-import { parseApiError } from "../auth/utils/parseApiError.js";
+import { parseApiError } from "../auth/utils/parse.js";
 
 export default function RecuperarContrasena() {
   const navigate = useNavigate();

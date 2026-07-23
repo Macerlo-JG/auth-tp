@@ -1,6 +1,6 @@
 import { AUTH_API } from "../auth/config";
 const API = `${AUTH_API}/recuperacion`;
-import { parseApiError } from "../auth/utils/parseApiError";
+import { parseApiError } from "../auth/utils/parse";
 
 // Solicita el envio de un codigo OTP al correo del usuario para iniciar el proceso de recuperacion de contrasena
 export async function solicitarOtpRecuperacion(email) {

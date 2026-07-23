@@ -1,5 +1,5 @@
 import { authFetch } from "./cliente";
-import { parseResponse } from "../auth/utils/parseApiError";
+import { parseResponse } from "../auth/utils/parse";
 
 // Obtiene el listado de todos los roles
 export const getRoles = async () => {
