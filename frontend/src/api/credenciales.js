@@ -1,19 +1,9 @@
 import { authFetch } from "./cliente";
 import { API_URL } from "../auth/api/auth";
-
+import { parseApiError } from "../auth/utils/parse";
 import authService from "../auth/services/authService";
 
-
 const API = `${API_URL}/credenciales`;
-export function parseApiError(message) {
-  if (!message) return "Error desconocido";
-  if (typeof message === "string") return message;
-  if (typeof message === "object") {
-    return Object.values(message).flat().join(", ");
-  }
-  return "Error desconocido";
-}
-
 // Arma el header de autorización a partir de la sesión guardada.
 function headersAutenticados() {
   const token = authService.getSession()?.access_token;
@@ -34,7 +24,11 @@ export async function solicitarOtpCambioContrasena() {
 }
 
 // Aplico el cambio. Requiero el otp de solicitarOtpCambioContrasena
-export async function cambiarContrasena({ password_actual, password_nueva, otp }) {
+export async function cambiarContrasena({
+  password_actual,
+  password_nueva,
+  otp,
+}) {
   const res = await fetch(`${API}/cambiar`, {
     method: "POST",
     headers: headersAutenticados(),

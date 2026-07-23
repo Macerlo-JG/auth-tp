@@ -16,8 +16,9 @@ import {
 
 import {
   crearUsuarioCompleto,
-  parseApiError,
 } from "../api/usuarios.js";
+import { parseApiError } from "../auth/utils/parseApiError.js";
+
 
 export default function NuevoUsuario() {
   const formRef = useRef(null);

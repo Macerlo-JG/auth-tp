@@ -3,8 +3,8 @@ import toast from "react-hot-toast";
 import {
   solicitarOtpActivacion,
   verificarActivacion,
-  parseApiError,
 } from "../api/activacion.js";
+import { parseApiError } from "../auth/utils/parse.js";
 
 /**
  * Popup reutilizable para activar una cuenta con OTP.

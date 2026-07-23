@@ -1,58 +1,45 @@
 import { authFetch } from "./cliente";
+import { parseResponse } from "../auth/utils/parseApiError";
 
-export function parseApiError(message) {
-  if (!message) return "Error desconocido";
-  if (typeof message === "string") return message;
-  if (typeof message === "object") {
-    return Object.values(message).flat().join(", ");
-  }
-  return "Error desconocido";
-}
-
-const parseResponse = async (res) => {
-  const body = await res.json().catch(() => ({}));
-
-  return {
-    ok: res.ok,
-    status: res.status,
-    data: body.data ?? [],
-    message: body.message ?? "",
-  };
-};
-
-// Obtener todos los roles
+// Obtiene el listado de todos los roles
 export const getRoles = async () => {
   const res = await authFetch("/roles");
+
   return parseResponse(res);
 };
 
-// Obtener un rol
+// Obtiene la informacion de un rol segun su identificador
 export const getRol = async (idRol) => {
   const res = await authFetch(`/roles/${idRol}`);
+
   return parseResponse(res);
 };
 
-// Crear rol
+// Crea un nuevo rol
 export const createRol = async (rol) => {
   const res = await authFetch("/roles", {
     method: "POST",
+
+    // Envia la informacion del rol en formato JSON
     body: JSON.stringify(rol),
   });
 
   return parseResponse(res);
 };
 
-// Actualizar rol
+// Actualiza la informacion de un rol existente
 export const updateRol = async (idRol, rol) => {
   const res = await authFetch(`/roles/${idRol}`, {
     method: "PUT",
+
+    // Envia los datos actualizados del rol
     body: JSON.stringify(rol),
   });
 
   return parseResponse(res);
 };
 
-// Eliminar rol
+// Elimina un rol segun su identificador
 export const deleteRol = async (idRol) => {
   const res = await authFetch(`/roles/${idRol}`, {
     method: "DELETE",

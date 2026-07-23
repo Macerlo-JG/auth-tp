@@ -41,8 +41,7 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  // Inicio sesion + correspondientes validaciones utilizando el servicio de autenticacion
-  // Si las credenciales son validas, actualiza el estado global con la informacion del usuario
+  // Inicio sesion
   const login = async (email, password) => {
     try {
       const session = await authService.login(email, password);
@@ -80,7 +79,7 @@ export function AuthProvider({ children }) {
     login,
     logout,
 
-    // hasPermission opera sobre acciones ("servicio.nombre").
+    // hasPermission trabaja sobre acciones ("servicio.nombre").
     hasPermission: (accion) => hasPermission(acciones, accion),
     hasRole: (role) => hasRole(roles, role),
   };

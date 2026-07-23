@@ -62,7 +62,7 @@ export default function VerUsuario() {
     cargarUsuario();
   }, [id, navigate]);
 
-  // Mientras se obtienen los datos se muestra un indicador de carga.
+  // Mientras se obtienen los datos se muestra un indicador de carga
   if (cargando) {
     return (
       <Layout>

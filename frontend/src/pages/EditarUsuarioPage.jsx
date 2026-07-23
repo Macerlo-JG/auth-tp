@@ -9,7 +9,8 @@ import {
   IconHeart,
   IconSave,
 } from "../components/icons.jsx";
-import {getUsuario,editarUsuario,ESTADOS_USUARIO,parseApiError,} from "../api/usuarios.js";
+import {getUsuario,editarUsuario,ESTADOS_USUARIO,} from "../api/usuarios.js";
+import { parseApiError } from "../auth/utils/parse.js";
 import { formatearId, formatearFecha } from "../utils/format.js";
 import UsuarioRoles from "../components/UsuarioRoles.jsx";
 import { getUsuarioDetalle } from "../services/usuariosService";

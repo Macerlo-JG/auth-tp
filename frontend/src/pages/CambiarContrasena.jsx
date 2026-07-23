@@ -8,8 +8,8 @@ import ConfirmarOtpModal from "../components/ConfirmarOtpModal.jsx";
 import {
   cambiarContrasena,
   solicitarOtpCambioContrasena, // TODO: agregar en api/credenciales.js
-  parseApiError,
 } from "../api/credenciales.js";
+import { parseApiError } from "../auth/utils/parse.js";
 import useAuth from "../auth/hooks/useAuth.js";
 
 export default function CambiarContrasena() {

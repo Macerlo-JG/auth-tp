@@ -1,39 +1,50 @@
 import { AUTH_API } from "../auth/config";
 import authService from "../auth/services/authService";
 
-// Evita disparar varios refresh en paralelo cuando dos o más peticiones
-// vencen al mismo tiempo (por ejemplo, un Promise.all de varios fetch).
+// Guarda la promesa del refresh en curso para evitar que varias peticiones renueven el token al mismo tiempo
 let refrescoEnCurso = null;
 
+// Renueva el Access Token utilizando el Refresh Token
+// Si ya existe una renovacion en curso, reutiliza la misma promesa
 function refrescarToken() {
   if (!refrescoEnCurso) {
-    refrescoEnCurso = authService
-      .renovarToken()
-      .finally(() => {
-        refrescoEnCurso = null;
-      });
+    refrescoEnCurso = authService.renovarToken().finally(() => {
+      // Permite que futuras peticiones puedan volver a renovar el token cuando sea necesario
+      refrescoEnCurso = null;
+    });
   }
+
   return refrescoEnCurso;
 }
 
+// Construye los encabezados de la peticion
 function construirHeaders(options, token) {
   return {
+    // Agrega el Content-Type cuando la peticion envia un body
     ...(options.body ? { "Content-Type": "application/json" } : {}),
+
+    // Conserva los encabezados enviados por el componente
     ...options.headers,
+
+    // Agrega el Access Token si existe una sesion activa
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 }
 
+// Realiza una peticion autenticada al backend
+// Si el Access Token expiro, intenta renovarlo automaticamente y reintenta la peticion
 export async function authFetch(path, options = {}) {
+  // Obtiene la sesion almacenada del usuario
   const sesion = authService.getSession();
 
+  // Realiza la peticion utilizando el Access Token actual
   let res = await fetch(`${AUTH_API}${path}`, {
     ...options,
     headers: construirHeaders(options, sesion?.access_token),
   });
 
-  // El access token vence a los 15 minutos. Si la petición vuelve 401 y
-  // tenemos refresh_token, intentamos renovar una sola vez y reintentar.
+  // Si el servidor responde con un 401 y existe un
+  // Refresh Token, intenta renovar la sesion
   if (res.status === 401 && sesion?.refresh_token) {
     try {
       const nuevoToken = await refrescarToken();
@@ -43,13 +54,14 @@ export async function authFetch(path, options = {}) {
         headers: construirHeaders(options, nuevoToken),
       });
     } catch (error) {
-      // El refresh_token también venció o es inválido (dura 7 días):
-      // no hay forma de recuperar la sesión, hay que loguearse de nuevo.
+      // Si no fue posible renovar la sesion, elimina la informacion local y redirige al login
       authService.clearSession();
       window.location.assign("/login");
+
       throw error;
     }
   }
 
+  // Devuelve la respuesta obtenida del backend.
   return res;
 }
