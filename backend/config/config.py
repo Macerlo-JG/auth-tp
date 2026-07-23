@@ -27,10 +27,10 @@ class Config:
 
     # auth-common
     AUTH_COMMON_REDIS_URL = REDIS_URL
-    AUTH_COMMON_SESSION_TTL = JWT_ACCESS_TOKEN_EXPIRES
+    AUTH_COMMON_SESSION_TTL = int(JWT_ACCESS_TOKEN_EXPIRES.total_seconds())
 
     AUTH_COMMON_ENDPOINTS_EXCEPTUADOS = [
-        "auth.login",
-        "auth.refresh",
-        "auth.logout"
+    "auth.iniciar_sesion",
+    "auth.cerrar_sesion",
+    "auth.renovar_token",
     ]

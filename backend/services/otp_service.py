@@ -11,15 +11,23 @@ Se usa para activación de cuenta y recuperación de contraseña. Cada OTP:
 import secrets
 import string
 
+from flask import current_app
 from werkzeug.security import generate_password_hash, check_password_hash
-
-from auth_common.redis_client import redis_client
 
 # Duración en minutos del OTP según requerimiento
 TTL_MINUTOS = 15
 
 # Intentos fallidos permitidos antes de invalidar el OTP
 MAX_INTENTOS = 5
+
+
+def _redis():
+    """Devuelve el cliente Redis que auth_common ya registró en la app.
+
+    Debe llamarse dentro de un contexto de aplicación activo (una request,
+    o un app.app_context() manual) porque depende de current_app.
+    """
+    return current_app.extensions["auth_common"]["redis_client"]
 
 
 def _clave(tipo, email):
@@ -42,6 +50,7 @@ def generar_otp(tipo, email):
 
     key = _clave(tipo, email)
     ttl_segundos = int(TTL_MINUTOS * 60)
+    redis_client = _redis()
     redis_client.setex(key, ttl_segundos, hashed)
 
     # Nuevo código -> nuevo cupo de intentos.
@@ -61,6 +70,7 @@ def verificar_otp(tipo, email, codigo_ingresado, consumir=True):
     if not codigo_ingresado:
         return False
 
+    redis_client = _redis()
     key = _clave(tipo, email)
     hashed = redis_client.get(key)
     if not hashed:
@@ -99,5 +109,6 @@ def eliminar_otp(tipo, email):
     """Invalida el OTP y su contador de intentos manualmente.
     Invalida un código vigente.
     """
+    redis_client = _redis()
     redis_client.delete(_clave(tipo, email))
     redis_client.delete(_clave_intentos(tipo, email))
