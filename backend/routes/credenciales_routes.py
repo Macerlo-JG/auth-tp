@@ -6,7 +6,7 @@ Este módulo expone endpoints para:
     - cambiar la contraseña de un usuario (ahora exige OTP válido),
     - generar una contraseña temporal (por ejemplo, al crear un usuario nuevo).
 """
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, g
 import traceback
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
@@ -20,27 +20,39 @@ from services.otp_service import generar_otp, verificar_otp
 from services.email_service import enviar_otp_recuperacion
 from mock.emails_usuario import obtener_email_por_id_persona
 from auth_common.respuesta_api import respuesta_api
+from auth_common.decorador import requires_permission
+from db import limiter
 
 credenciales_bp = Blueprint("credenciales", __name__, url_prefix="/credenciales")
+
 
 # Tipo de OTP propio para este flujo -- namespace separado en Redis del
 # de "recuperacion" y "activacion", así un código de uno no sirve para otro.
 TIPO_OTP_CAMBIO = "cambio_contrasena"
 
 
+def clave_por_usuario_jwt():
+    """Rate limit por identidad del JWT ya validado (no por IP)."""
+    return get_jwt_identity()
+
+
 @credenciales_bp.route("/verificar", methods=["POST"])
+@jwt_required()
+@limiter.limit("10/minute", key_func=clave_por_usuario_jwt)
 def verificar_credencial():
-    try:
-        # Solo se valida la existencia del usuario y la contraseña ingresada.
-        req = request.get_json()
-        id_usuario = req.get("id_usuario")
+    """
+    Verifica la contraseña del usuario AUTENTICADO. Ya no acepta un
+    id_usuario arbitrario en el body: se usa la identidad del token para
+    que un usuario no pueda sondear la contraseña de otra cuenta.
+    """
+    try:        # Solo se valida la existencia del usuario y la contraseña ingresada.
+        req = request.get_json() or {}
         password = req.get("password")
 
-        # Validación de presencia de datos
-        if not id_usuario or not password:
-            return respuesta_api(False, [], "id_usuario y password son requeridos", 400)
-
+        if not password:
+            return respuesta_api(False, [], "password es requerido", 400)
         # Lógica de negocio delegada al servicio de credenciales.
+        id_usuario = int(get_jwt_identity())
         coincide = verificar_password(id_usuario, password)
 
         if not coincide:
@@ -55,6 +67,7 @@ def verificar_credencial():
 
 @credenciales_bp.route("/cambiar/solicitar-otp", methods=["POST"])
 @jwt_required()
+@limiter.limit("5/minute", key_func=clave_por_usuario_jwt)
 def solicitar_otp_cambio():
     """Genera y envía el OTP que habilita el cambio de contraseña.
 
@@ -79,9 +92,7 @@ def solicitar_otp_cambio():
 
         codigo = generar_otp(TIPO_OTP_CAMBIO, email)
         # Reutilizamos el mismo mail "genérico" de envío de OTP que usa
-        # recuperación de contraseña. Si preferís un asunto/texto distinto
-        # para este flujo, agregá `enviar_otp_cambio_contrasena` en
-        # email_service.py con la misma firma y cambiá esta línea.
+        # recuperación de contraseña.
         enviar_otp_recuperacion(email, codigo)
 
         return respuesta_api(True, [], "Se envió un código a su correo para confirmar el cambio.")
@@ -93,6 +104,7 @@ def solicitar_otp_cambio():
 
 @credenciales_bp.route("/cambiar", methods=["POST"])
 @jwt_required()
+@limiter.limit("5/minute", key_func=clave_por_usuario_jwt)
 def cambiar_credencial():
     try:
         id_usuario_token = int(get_jwt_identity())
@@ -104,10 +116,7 @@ def cambiar_credencial():
 
         if not password_actual or not password_nueva or not otp:
             return respuesta_api(
-                False,
-                [],
-                "password_actual, password_nueva y otp son requeridos",
-                400,
+                False, [], "password_actual, password_nueva y otp son requeridos", 400,
             )
 
         usuario = obtener_por_id(id_usuario_token)
@@ -136,11 +145,19 @@ def cambiar_credencial():
 
 
 @credenciales_bp.route("/temporal", methods=["POST"])
+@requires_permission("auth.credenciales.temporal")
+@limiter.limit("20/minute", key_func=clave_por_usuario_jwt)
 def crear_credencial_temporal():
+    """
+    Genera una contraseña temporal para id_usuario. Requiere el permiso
+    administrativo auth.credenciales.temporal — no es de acceso libre
+    para cualquier usuario autenticado. created_by se toma de flask.g
+    (seteado por validar_sesion / requires_permission), no del body,
+    para no permitir suplantar la autoría de la acción.
+    """
     try:
         req = request.get_json() or {}
         id_usuario = req.get("id_usuario")
-        created_by = req.get("created_by", id_usuario)
 
         if not id_usuario:
             return respuesta_api(False, [], "id_usuario es requerido", 400)
@@ -149,9 +166,14 @@ def crear_credencial_temporal():
         if not usuario:
             return respuesta_api(False, [], "Usuario no encontrado", 404)
 
-        # Genera una contraseña temporal y desactiva la credencial anterior.
-        # Este endpoint se puede usar al crear un usuario o restablecer acceso.
+        created_by = g.id_usuario
         password_temporal = crear_password_temporal(id_usuario, created_by)
+
+        # crear_password_temporal no comitea (ver credencial_service.py);
+        # como este endpoint la usa standalone, el commit es su responsabilidad.
+        from db import db
+        db.session.commit()
+
         return respuesta_api(
             True,
             {"password_temporal": password_temporal},

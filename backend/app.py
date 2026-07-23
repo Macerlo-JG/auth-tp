@@ -15,6 +15,7 @@ from routes.recuperacion_routes import recuperacion_bp
 from routes.acciones_routes import acciones_bp
 from auth_common import AuthCommon
 from auth_common.respuesta_api import respuesta_api
+from db import db, ma, limiter, mail
 
 """
 Archivo principal de la aplicación:
@@ -31,6 +32,7 @@ CORS(app)
 
 db.init_app(app)
 ma.init_app(app)
+mail.init_app(app)
 jwt_manager = JWTManager(app)
 
 

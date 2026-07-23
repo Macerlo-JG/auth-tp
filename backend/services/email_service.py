@@ -1,35 +1,47 @@
 """
-Simula el envío de correos (no hay llamadas a mails reales aun).
+Envío de correos vía Flask-Mail.
 
-Se imprimen en consola del backend y quedan guardados
-en _ultimos_envios para consulta durante desarrollo.
+Mantiene exactamente la misma interfaz pública que la versión mock
+(enviar_bienvenida, enviar_otp_activacion, enviar_otp_recuperacion) para
+no romper a los callers (usuario_service, credenciales_routes, recuperacion_routes,
+activacion_routes).
+
+Los envíos NO deben tirar la operación de negocio si fallan: un error de
+SMTP no debería impedir, por ejemplo, que un usuario quede creado en la
+base. Se loguea el error y se devuelve False en vez de propagar la excepción.
+Si preferís fail-loud (que un fallo de mail rompa la transacción), avisame
+y lo cambio — es una decisión de producto, no solo técnica.
 """
 
-_ultimos_envios = []
+import traceback
+from flask import current_app
+from flask_mail import Message
+
+from db import mail
+
+_ultimos_envios = []  # se mantiene para debugging/tests, igual que el mock
 
 
-# mail falso por consola.
 def enviar_mail(destinatario, asunto, cuerpo):
-    mail = {
-        "destinatario": destinatario,
-        "asunto": asunto,
-        "cuerpo": cuerpo,
-    }
-    _ultimos_envios.append(mail)
-
-    mensaje = (
-        f"\n{'=' * 50}\n"
-        f"MAIL → {destinatario}\n"
-        f"Asunto: {asunto}\n"
-        f"{cuerpo}\n"
-        f"{'=' * 50}\n"
+    msg = Message(
+        subject=asunto,
+        recipients=[destinatario],
+        body=cuerpo,
+        sender=current_app.config.get("MAIL_DEFAULT_SENDER"),
     )
-    print(mensaje, flush=True)
+    try:
+        mail.send(msg)
+        _ultimos_envios.append({
+            "destinatario": destinatario,
+            "asunto": asunto,
+            "cuerpo": cuerpo,
+        })
+        return True
+    except Exception:
+        traceback.print_exc()
+        return False
 
-    return True
-
-
-# mail falso por consola que incluye contraseña temporal y link de activacion.
+# mail que incluye contraseña temporal y link de activacion.
 def enviar_bienvenida(destinatario, password_temporal, link_activacion):
     cuerpo = (
         f"Bienvenido al Sistema de Gestión Académica.\n\n"
@@ -43,11 +55,11 @@ def enviar_bienvenida(destinatario, password_temporal, link_activacion):
 
 
 # Envio OTP.
-# Envio por Consola para simular envio por mail.
+# Envio por mail.
 def enviar_otp_activacion(destinatario, codigo):
     cuerpo = (
         f"Su código de activación es: {codigo}\n\n"
-        f"El código dura {15} minutos.\n"
+        f"El código dura 15 minutos.\n"
     )
     return enviar_mail(destinatario, "Código de activación de cuenta", cuerpo)
 
@@ -55,7 +67,7 @@ def enviar_otp_activacion(destinatario, codigo):
 def enviar_otp_recuperacion(destinatario, codigo):
     cuerpo = (
         f"Su código para recuperar la contraseña es: {codigo}\n\n"
-        f"El código dura {15} minutos.\n"
+        f"El código dura 15 minutos.\n"
     )
     return enviar_mail(destinatario, "Recuperación de contraseña", cuerpo)
 
