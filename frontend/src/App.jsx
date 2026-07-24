@@ -11,8 +11,6 @@ import CambiarContrasena from "./pages/CambiarContrasena.jsx";
 import ActivarCuenta from "./pages/ActivarCuenta.jsx";
 import RecuperarContrasena from "./pages/RecuperarContrasena.jsx";
 import RolesPage from "./pages/RolesPage.jsx";
-import DocumentosLegalesPage from "./pages/DocumentosLegalesPage.jsx";
-import VerificarDocumentosLegales from "./components/documentosLegales/VerificarDocumentosLegales.jsx";
 import "./index.css";
 
 function App() {
@@ -25,7 +23,6 @@ function App() {
           style: { zIndex: 9999, yIndex: 8000 },
         }}
       />
-      <VerificarDocumentosLegales />
       <Routes>
 
         <Route path="/" element={<Navigate to="/usuarios" replace />} />
@@ -81,18 +78,6 @@ function App() {
         <Route path="/roles" element={
             <ProtectedRoute permissions={["auth.roles.ver"]}>
               <RolesPage />
-            </ProtectedRoute>
-          } />
-
-        {/*
-          TODO: cuando el backend de Documentos Legales exista, esto
-          debería usar permissions={["auth.documentos.ver"]} (o el que
-          se defina) en vez de roles={["ADMINISTRADOR"]}, igual que el
-          resto de las rutas de este archivo.
-        */}
-        <Route path="/documentos-legales" element={
-            <ProtectedRoute permissions={["auth.roles.ver"]}>
-              <DocumentosLegalesPage />
             </ProtectedRoute>
           } />
 
