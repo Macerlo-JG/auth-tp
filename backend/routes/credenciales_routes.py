@@ -17,7 +17,7 @@ from services.credencial_service import (
 )
 from services.usuario_service import obtener_por_id
 from services.otp_service import generar_otp, verificar_otp
-from services.email_service import enviar_otp_recuperacion
+from services.email_service import enviar_otp_cambio_contrasena
 from mock.emails_usuario import obtener_email_por_id_persona
 from auth_common.respuesta_api import respuesta_api
 from auth_common.decorador import requires_permission
@@ -74,9 +74,21 @@ def solicitar_otp_cambio():
     Protegido por JWT: se usa la identidad del token, no un id_usuario que
     venga en el body, para no permitir que alguien pida un OTP para la
     cuenta de otra persona.
+
+    Exige 'password_actual' en el body y la valida antes de generar y
+    enviar el OTP.
     """
     try:
         id_usuario = int(get_jwt_identity())
+
+        req = request.get_json() or {}
+        password_actual = req.get("password_actual")
+
+        if not password_actual:
+            return respuesta_api(False, [], "password_actual es requerido", 400)
+
+        if not verificar_password(id_usuario, password_actual):
+            return respuesta_api(False, [], "Credenciales inválidas", 401)
 
         usuario = obtener_por_id(id_usuario)
         if not usuario:
@@ -91,9 +103,7 @@ def solicitar_otp_cambio():
             )
 
         codigo = generar_otp(TIPO_OTP_CAMBIO, email)
-        # Reutilizamos el mismo mail "genérico" de envío de OTP que usa
-        # recuperación de contraseña.
-        enviar_otp_recuperacion(email, codigo)
+        enviar_otp_cambio_contrasena(email, codigo)
 
         return respuesta_api(True, [], "Se envió un código a su correo para confirmar el cambio.")
 

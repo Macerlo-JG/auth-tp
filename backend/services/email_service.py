@@ -2,15 +2,13 @@
 Envío de correos vía Flask-Mail.
 
 Mantiene exactamente la misma interfaz pública que la versión mock
-(enviar_bienvenida, enviar_otp_activacion, enviar_otp_recuperacion) para
-no romper a los callers (usuario_service, credenciales_routes, recuperacion_routes,
-activacion_routes).
+(enviar_bienvenida, enviar_otp_activacion, enviar_otp_recuperacion,
+enviar_otp_cambio_contrasena) para no romper a los callers (usuario_service,
+credenciales_routes, recuperacion_routes, activacion_routes).
 
 Los envíos NO deben tirar la operación de negocio si fallan: un error de
 SMTP no debería impedir, por ejemplo, que un usuario quede creado en la
 base. Se loguea el error y se devuelve False en vez de propagar la excepción.
-Si preferís fail-loud (que un fallo de mail rompa la transacción), avisame
-y lo cambio — es una decisión de producto, no solo técnica.
 """
 
 import traceback
@@ -70,6 +68,13 @@ def enviar_otp_recuperacion(destinatario, codigo):
         f"El código dura 15 minutos.\n"
     )
     return enviar_mail(destinatario, "Recuperación de contraseña", cuerpo)
+
+def enviar_otp_cambio_contrasena(destinatario, codigo):
+    cuerpo = (
+        f"Su código para confirmar el cambio de contraseña es: {codigo}\n\n"
+        f"El código dura 15 minutos.\n"
+    )
+    return enviar_mail(destinatario, "Cambio de contraseña", cuerpo)
 
 
 def obtener_ultimos_envios():

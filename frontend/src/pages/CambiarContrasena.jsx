@@ -7,13 +7,13 @@ import Breadcrumbs from "../components/layout/Breadcrumbs.jsx";
 import ConfirmarOtpModal from "../components/ConfirmarOtpModal.jsx";
 import {
   cambiarContrasena,
-  solicitarOtpCambioContrasena, // TODO: agregar en api/credenciales.js
+  solicitarOtpCambioContrasena,
+  verificarCredencial,
 } from "../api/credenciales.js";
 import { parseApiError } from "../auth/utils/parse.js";
 import useAuth from "../auth/hooks/useAuth.js";
 
 export default function CambiarContrasena() {
-
   const user = useAuth().user;
 
   const [form, setForm] = useState({
@@ -32,11 +32,12 @@ export default function CambiarContrasena() {
     }));
   };
 
-  // Antes: este submit llamaba directo a cambiarContrasena.
-  // Ahora solo valida el formulario y abre el popup de OTP; el cambio
-  // real se dispara desde handleConfirmarOtp una vez que el código es
-  // válido (ver ConfirmarOtpModal, que llama a onSolicitarOtp al abrirse).
-  const handleSubmit = (e) => {
+  // Este submit, además de validar el formulario, llama a verificarCredencial
+  // (POST /credenciales/verificar) y solo se abre el modal si la
+  // contraseña actual es correcta. El cambio real se sigue disparando
+  // desde handleConfirmarOtp una vez que el código es válido (ver
+  // ConfirmarOtpModal, que llama a onSolicitarOtp al abrirse).
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!user) {
@@ -64,7 +65,26 @@ export default function CambiarContrasena() {
       return;
     }
 
-    setShowOtpModal(true);
+    setLoading(true);
+    try {
+      const { ok, body } = await verificarCredencial({
+        password: form.password_actual,
+      });
+
+      if (!ok) {
+        toast.error(
+          parseApiError(body.message) || "Contraseña actual incorrecta.",
+        );
+        return;
+      }
+
+      setShowOtpModal(true);
+    } catch (error) {
+      console.error(error);
+      toast.error("Error de conexión");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleConfirmarOtp = async (otp) => {
@@ -86,8 +106,6 @@ export default function CambiarContrasena() {
           password_nueva: "",
           password_confirmacion: "",
         });
-      } else {
-        toast.error(parseApiError(body.message));
       }
 
       return { ok, body };
@@ -106,9 +124,7 @@ export default function CambiarContrasena() {
       />
 
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">
-          Cambiar contraseña
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-800">Cambiar contraseña</h1>
         <p className="text-gray-500 mt-1">
           Actualice su contraseña de acceso al sistema.
         </p>
@@ -180,7 +196,9 @@ export default function CambiarContrasena() {
         open={showOtpModal}
         titulo="Confirmar cambio de contraseña"
         descripcion="Por seguridad, ingrese el código que le enviamos a su correo para confirmar el cambio."
-        onSolicitarOtp={solicitarOtpCambioContrasena}
+        onSolicitarOtp={() =>
+          solicitarOtpCambioContrasena(form.password_actual)
+        }
         onConfirmar={handleConfirmarOtp}
         onClose={() => setShowOtpModal(false)}
       />

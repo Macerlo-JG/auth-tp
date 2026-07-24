@@ -13,11 +13,25 @@ function headersAutenticados() {
   };
 }
 
-// Pido OTP que se manda al correo del usuario
-export async function solicitarOtpCambioContrasena() {
+// Verifica la contraseña actual del usuario logueado. Se llama antes de
+// abrir el modal de OTP, para que un password incorrecto se muestre en el propio formulario,
+// sin llegar a generar ni enviar ningún código por mail.
+export async function verificarCredencial({ password }) {
+  const res = await fetch(`${API}/verificar`, {
+    method: "POST",
+    headers: headersAutenticados(),
+    body: JSON.stringify({ password }),
+  });
+
+  return { ok: res.ok, status: res.status, body: await res.json() };
+}
+
+// Pido OTP que se manda al correo del usuario.
+export async function solicitarOtpCambioContrasena(password_actual) {
   const res = await fetch(`${API}/cambiar/solicitar-otp`, {
     method: "POST",
     headers: headersAutenticados(),
+    body: JSON.stringify({ password_actual }),
   });
 
   return { ok: res.ok, status: res.status, body: await res.json() };
