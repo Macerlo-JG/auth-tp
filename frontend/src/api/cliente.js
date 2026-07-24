@@ -17,16 +17,14 @@ function refrescarToken() {
   return refrescoEnCurso;
 }
 
-// Construye los encabezados de la peticion
 function construirHeaders(options, token) {
+  const esFormData = options.body instanceof FormData;
+
   return {
-    // Agrega el Content-Type cuando la peticion envia un body
-    ...(options.body ? { "Content-Type": "application/json" } : {}),
-
-    // Conserva los encabezados enviados por el componente
+    // No forzar JSON si el body es FormData: el navegador necesita fijar
+    // su propio Content-Type con el boundary del multipart.
+    ...(options.body && !esFormData ? { "Content-Type": "application/json" } : {}),
     ...options.headers,
-
-    // Agrega el Access Token si existe una sesion activa
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 }

@@ -4,6 +4,7 @@ from db import db
 from services.credencial_service import crear_password_temporal
 from services.email_service import enviar_bienvenida
 from mock.emails_usuario import registrar_persona
+from auth_common import sesion_common
 
 """Servicio de usuarios.
 
@@ -11,6 +12,7 @@ Contiene funciones para crear, actualizar y activar usuarios, así como
 un flujo completo de creación que también genera credenciales temporales
 y envía el correo de bienvenida.
 """
+
 
 
 def obtener_todos():
@@ -106,3 +108,24 @@ def crear_completo(datos, id_usuario_sesion):
     enviar_bienvenida(email, password_temporal, link_activacion)
 
     return nuevo, password_temporal
+
+ESTADOS_QUE_REVOCAN_SESION = {EstadoUsuario.BLOQUEADO, EstadoUsuario.INACTIVO}
+
+def actualizar(usuario, datos, id_usuario_sesion):
+    estado_anterior = usuario.estado_usuario
+
+    usuario_update_schema.load(datos, instance=usuario, partial=True)
+    usuario.updated_by = id_usuario_sesion
+
+    db.session.commit()
+
+    # Si el nuevo estado es restrictivo y cambió respecto al anterior,
+    # se revoca la sesión activa (si existe) para que el usuario no pueda
+    # seguir operando con un access token todavía válido.
+    if (
+        usuario.estado_usuario in ESTADOS_QUE_REVOCAN_SESION
+        and usuario.estado_usuario != estado_anterior
+    ):
+        sesion_common.eliminar_sesion(usuario.id_usuario)
+
+    return usuario

@@ -11,17 +11,16 @@ import {
   obtenerTodosLosDocumentos,
   agruparDocumentosPorTipo,
 } from "../services/documentosLegalesService.js";
+import { authFetch } from "../api/cliente.js";
 
 export default function DocumentosLegalesPage() {
-  // Listado de tipos de documento (cada uno con su vigente + historial).
   const [grupos, setGrupos] = useState([]);
   const [cargando, setCargando] = useState(true);
 
-  // { tipo } para "nueva versión" de uno existente, {} para "nuevo tipo",
-  // null = modal cerrado.
   const [modalSubir, setModalSubir] = useState(null);
   const [modalHistorial, setModalHistorial] = useState(null);
   const [pdfAVer, setPdfAVer] = useState(null);
+  const [cargandoPdf, setCargandoPdf] = useState(false);
 
   const cargarDocumentos = async () => {
     try {
@@ -47,6 +46,39 @@ export default function DocumentosLegalesPage() {
     await cargarDocumentos();
   };
 
+  // Antes de mostrar el PDF, lo descargamos nosotros mismos con el token
+  // de sesión (authFetch) y armamos una URL local (blob) que VisorPdf
+  // puede usar como si fuera un archivo común, sin que el navegador
+  // tenga que pedirlo por su cuenta sin credenciales.
+  const handleVerPdf = async (documento) => {
+    setCargandoPdf(true);
+    try {
+      const res = await authFetch(documento.contenido);
+
+      if (!res.ok) {
+        throw new Error("No se pudo cargar el PDF");
+      }
+
+      const blob = await res.blob();
+      const urlLocal = URL.createObjectURL(blob);
+
+      setPdfAVer({ ...documento, contenido: urlLocal });
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message || "No se pudo abrir el documento");
+    } finally {
+      setCargandoPdf(false);
+    }
+  };
+
+  const handleCerrarPdf = () => {
+    // Libera la memoria del blob al cerrar, para no acumular URLs sueltas.
+    if (pdfAVer?.contenido?.startsWith("blob:")) {
+      URL.revokeObjectURL(pdfAVer.contenido);
+    }
+    setPdfAVer(null);
+  };
+
   return (
     <Layout>
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
@@ -64,7 +96,7 @@ export default function DocumentosLegalesPage() {
         ) : (
           <TablaDocumentosLegales
             grupos={grupos}
-            onVerPdf={setPdfAVer}
+            onVerPdf={handleVerPdf}
             onNuevaVersion={handleNuevaVersion}
             onVerHistorial={setModalHistorial}
           />
@@ -83,11 +115,17 @@ export default function DocumentosLegalesPage() {
         <ModalHistorialDocumento
           grupo={modalHistorial}
           onClose={() => setModalHistorial(null)}
-          onVerPdf={setPdfAVer}
+          onVerPdf={handleVerPdf}
         />
       )}
 
-      {pdfAVer && <ModalVerPdf documento={pdfAVer} onClose={() => setPdfAVer(null)} />}
+      {cargandoPdf && (
+        <div className="modal-overlay" style={{ zIndex: 1400 }}>
+          <p className="text-white">Cargando documento...</p>
+        </div>
+      )}
+
+      {pdfAVer && <ModalVerPdf documento={pdfAVer} onClose={handleCerrarPdf} />}
     </Layout>
   );
 }

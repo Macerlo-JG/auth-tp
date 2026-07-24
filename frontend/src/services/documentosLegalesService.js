@@ -1,100 +1,76 @@
-import {
-  getDocumentosPendientes,
-  getDocumentosLegales,
-  crearDocumentoLegal,
-  aceptarDocumentoLegal,
-  parseApiError,
-} from "../api/documentosLegales";
-import { archivoADataUrl } from "../utils/archivoUtils";
+import { authFetch } from "../api/cliente";
 
-// Documentos vigentes pendientes de aceptación para el usuario logueado.
+export function parseApiError(message) {
+  if (!message) return "Error desconocido";
+  if (typeof message === "string") return message;
+  if (typeof message === "object") return Object.values(message).flat().join(", ");
+  return "Error desconocido";
+}
+
+const parseResponse = async (res) => {
+  const body = await res.json().catch(() => ({}));
+  return {
+    ok: res.ok,
+    status: res.status,
+    data: body.data ?? [],
+    message: body.message ?? "",
+  };
+};
+
+// Documentos vigentes que el usuario logueado todavía no aceptó.
+// Renombrado de getDocumentosPendientes -> obtenerDocumentosPendientes
+// para coincidir con VerificarDocumentosLegales.jsx.
 export const obtenerDocumentosPendientes = async () => {
-  const response = await getDocumentosPendientes();
-
-  if (!response.ok) {
-    throw new Error(
-      parseApiError(response.message) || "No se pudieron obtener los documentos pendientes."
-    );
-  }
-
-  return response.data;
+  const res = await authFetch("/documentos-legales/pendientes");
+  const { ok, data, message } = await parseResponse(res);
+  if (!ok) throw new Error(parseApiError(message));
+  return data;
 };
 
-// Registra la aceptación de un documento puntual.
-export const aceptarDocumento = async (idDocumento) => {
-  const response = await aceptarDocumentoLegal(idDocumento);
-
-  if (!response.ok) {
-    throw new Error(
-      parseApiError(response.message) || "No se pudo registrar la aceptación."
-    );
-  }
-
-  return response.data;
-};
-
-// Todos los documentos (todas las versiones), para el panel de admin.
+// Todas las versiones de todos los tipos (panel de admin).
 export const obtenerTodosLosDocumentos = async () => {
-  const response = await getDocumentosLegales();
-
-  if (!response.ok) {
-    throw new Error(
-      parseApiError(response.message) || "No se pudieron obtener los documentos."
-    );
-  }
-
-  return response.data;
+  const res = await authFetch("/documentos-legales");
+  const { ok, data, message } = await parseResponse(res);
+  if (!ok) throw new Error(parseApiError(message));
+  return data;
 };
 
-// Agrupa el listado plano de documentos por tipo, separando la versión
-// vigente del resto (historial), para el panel de administración.
-export const agruparDocumentosPorTipo = (documentos) => {
-  const grupos = new Map();
+export function agruparDocumentosPorTipo(documentos) {
+  const porTipo = {};
 
   for (const doc of documentos) {
-    if (!grupos.has(doc.tipo)) {
-      grupos.set(doc.tipo, { tipo: doc.tipo, vigente: null, historial: [] });
+    if (!porTipo[doc.tipo]) {
+      porTipo[doc.tipo] = { tipo: doc.tipo, vigente: null, historial: [] };
     }
-
-    const grupo = grupos.get(doc.tipo);
-
     if (doc.vigente) {
-      grupo.vigente = doc;
+      porTipo[doc.tipo].vigente = doc;
     } else {
-      grupo.historial.push(doc);
+      porTipo[doc.tipo].historial.push(doc);
     }
   }
 
-  // Historial más reciente primero.
-  for (const grupo of grupos.values()) {
-    grupo.historial.sort(
-      (a, b) => new Date(b.fecha_publicacion) - new Date(a.fecha_publicacion)
-    );
-  }
+  return Object.values(porTipo);
+}
 
-  return Array.from(grupos.values());
+export const publicarDocumento = async ({ tipo, version, titulo, fechaPublicacion, archivo }) => {
+  const formData = new FormData();
+  formData.append("tipo", tipo);
+  formData.append("version", version);
+  formData.append("titulo", titulo);
+  if (fechaPublicacion) formData.append("fechaPublicacion", fechaPublicacion);
+  formData.append("archivo", archivo);
+
+  const res = await authFetch("/documentos-legales", { method: "POST", body: formData });
+  const { ok, data, message } = await parseResponse(res);
+  if (!ok) throw new Error(parseApiError(message));
+  return data;
 };
 
-// Publica una nueva versión (o un tipo nuevo) a partir del archivo PDF
-// seleccionado en el formulario. Convierte el PDF a data URL para que
-// viaje como "contenido" en el body, igual que lo describe la
-// documentación del modelo.
-export const publicarDocumento = async ({ tipo, version, titulo, fechaPublicacion, archivo }) => {
-  const contenido = await archivoADataUrl(archivo);
-
-  const response = await crearDocumentoLegal({
-    tipo,
-    version,
-    titulo,
-    fecha_publicacion: fechaPublicacion || undefined,
-    contenido,
-  });
-
-  if (!response.ok) {
-    throw new Error(
-      parseApiError(response.message) || "No se pudo publicar el documento."
-    );
-  }
-
-  return response.data;
+// Renombrado de aceptarDocumentoLegal -> aceptarDocumento para coincidir
+// con VerificarDocumentosLegales.jsx.
+export const aceptarDocumento = async (idDocumento) => {
+  const res = await authFetch(`/documentos-legales/${idDocumento}/aceptar`, { method: "POST" });
+  const { ok, data, message } = await parseResponse(res);
+  if (!ok) throw new Error(parseApiError(message));
+  return data;
 };

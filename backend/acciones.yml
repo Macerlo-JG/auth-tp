@@ -37,6 +37,8 @@ rol_accion:
       - roles.ver
       - roles.control_parcial
       - roles.eliminar
+      - credenciales.temporal
+      - documentos_legales.control_parcial
   - rol: GESTIÓN ACADÉMICA
     acciones:
       - usuarios.ver

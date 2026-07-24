@@ -16,6 +16,7 @@ from routes.acciones_routes import acciones_bp
 from auth_common import AuthCommon
 from auth_common.respuesta_api import respuesta_api
 from db import db, ma, limiter, mail
+from routes.documentos_legales_routes import documentos_legales_bp
 
 """
 Archivo principal de la aplicación:
@@ -100,6 +101,7 @@ app.register_blueprint(activacion_bp)
 app.register_blueprint(recuperacion_bp)
 app.register_blueprint(acciones_bp)
 app.register_blueprint(roles_bp)
+app.register_blueprint(documentos_legales_bp)
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
