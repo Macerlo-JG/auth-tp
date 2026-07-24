@@ -8,7 +8,7 @@ services:
       - "1025:1025" # SMTP
     networks:
       - red-usuarios
-  backend_auth:
+  backend:
     container_name: backend
     build:
       context: ../backend
