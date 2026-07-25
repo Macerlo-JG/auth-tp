@@ -3,6 +3,10 @@ import RolBadge from "./RolBadge.jsx";
 import { IconPencil, IconTrash } from "../icons.jsx";
 
 export default function TablaRoles({ roles, onEditar, onEliminar, onReactivar }) {
+
+  const ROLES_PROTEGIDOS = ["ADMINISTRADOR", "administrador roles"];
+
+
   const { hasPermission } = useAuth();
 
   if (roles.length === 0) {
@@ -46,7 +50,7 @@ export default function TablaRoles({ roles, onEditar, onEliminar, onReactivar })
                       Editar
                     </button>
                   )}
-                  {rol.activo && hasPermission("auth.roles.eliminar") && (
+                  {rol.activo && !ROLES_PROTEGIDOS.includes(rol.nombre) && hasPermission("auth.roles.eliminar") && (
                     <button type="button" onClick={() => onEliminar(rol)} className="action-link action-eliminar">
                       <IconTrash />
                       Eliminar

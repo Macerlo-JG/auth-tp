@@ -12,7 +12,6 @@ Este archivo contiene la lógica de negocio del CRUD de Rol, incluida la
 selección de acciones que se le vinculan (RolAccion).
 """
 
-
 def obtener_todos(incluir_inactivos=False):
     """Si incluir_inactivos es True, trae también los roles dados de baja
     (para el admin, que los puede ver y reactivar)."""
@@ -71,14 +70,22 @@ def actualizar(rol, datos, id_usuario_sesion):
     return rol
 
 
+# Agregar esta constante arriba del todo, después de los imports:
+ROLES_PROTEGIDOS = {"ADMINISTRADOR", "administrador roles"}
+
+
 def eliminar(rol, id_usuario_sesion):
+    # Estos dos roles son la base del sistema de permisos: si se
+    # eliminan, nadie podría volver a administrar roles ni usuarios.
+    if rol.nombre in ROLES_PROTEGIDOS:
+        raise ValueError(f"El rol '{rol.nombre}' no se puede eliminar")
+
     rol.activo = False
     rol.updated_by = id_usuario_sesion
 
     db.session.commit()
 
     propagar_a_usuarios_del_rol(rol.id_rol)
-
 
 def reactivar(rol, id_usuario_sesion):
     """Vuelve a activar un rol dado de baja."""

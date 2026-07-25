@@ -40,50 +40,50 @@ export default function PopupAceptarDocumento({ documento, onAceptar, onCancelar
 
   return (
     <div className="modal-overlay" style={{ zIndex: 1400 }}>
-      <div className="modal-card w-full max-w-3xl h-[90vh] sm:h-[85vh] max-h-none flex flex-col">
-        <div className="flex items-center gap-2 mb-2">
-          <IconFileText className="text-bomberos shrink-0" />
-          <div className="min-w-0">
-            <h2 className="text-base sm:text-lg font-bold text-gray-800 leading-tight truncate">
-              {documento.titulo}
-            </h2>
-            <p className="text-xs text-gray-500">
-              {obtenerLabelTipo(documento.tipo)} · versión {documento.version}
-            </p>
-          </div>
-        </div>
-
-        <p className="text-sm text-gray-600 mb-3">
-          Para continuar usando el sistema, necesitás leer y aceptar este documento.
-        </p>
-
-        <div className="flex-1 min-h-0 mb-4">
-          <VisorPdf contenido={documento.contenido} titulo={documento.titulo} />
-        </div>
-
-        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-3 border-t border-gray-100">
-          <button
-            type="button"
-            onClick={onCancelar}
-            className="btn-cancel w-full sm:w-auto justify-center"
-          >
-            <IconX />
-            Cancelar
-          </button>
-          <button
-            type="button"
-            onClick={handleAceptarClick}
-            disabled={!puedeAceptar}
-            className="btn-save w-full sm:w-auto justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {procesando
-              ? "Guardando..."
-              : segundosRestantes > 0
-              ? `Aceptar (${segundosRestantes}s)`
-              : "Aceptar"}
-          </button>
+      <div className="modal-card w-full max-w-[98vw] xl:max-w-[1600px] h-[90vh] sm:h-[85vh] max-h-none flex flex-col">
+      <div className="flex items-center gap-2 mb-2">
+        <IconFileText className="text-bomberos shrink-0" />
+        <div className="min-w-0">
+          <h2 className="text-base sm:text-lg font-bold text-gray-800 leading-tight truncate">
+            {documento.titulo}
+          </h2>
+          <p className="text-xs text-gray-500">
+            {obtenerLabelTipo(documento.tipo)} · versión {documento.version}
+          </p>
         </div>
       </div>
+
+      <p className="text-sm text-gray-600 mb-3">
+        Para continuar usando el sistema, necesitás leer y aceptar este documento.
+      </p>
+
+      <div className="flex-1 min-h-0 mb-4">
+        <VisorPdf contenido={documento.contenido} titulo={documento.titulo} />
+      </div>
+
+      <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-3 border-t border-gray-100">
+        <button
+          type="button"
+          onClick={onCancelar}
+          className="btn-cancel w-full sm:w-auto justify-center"
+        >
+          <IconX />
+          Cancelar
+        </button>
+        <button
+          type="button"
+          onClick={handleAceptarClick}
+          disabled={!puedeAceptar}
+          className="btn-save w-full sm:w-auto justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {procesando
+            ? "Guardando..."
+            : segundosRestantes > 0
+              ? `Aceptar (${segundosRestantes}s)`
+              : "Aceptar"}
+        </button>
+      </div>
+    </div>
     </div>
   );
 }

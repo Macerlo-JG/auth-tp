@@ -6,9 +6,11 @@ from schemas.rol_schemas import rol_schema, roles_schema
 from services.rol_service import (
     obtener_todos,
     obtener_por_id,
+    obtener_por_id_cualquiera,
     crear,
     actualizar,
-    eliminar
+    eliminar,
+    reactivar,
 )
 from auth_common.respuesta_api import respuesta_api
 from auth_common.decorador import requires_permission
@@ -23,7 +25,9 @@ roles_bp = Blueprint("roles", __name__, url_prefix="/roles")
 @requires_permission("auth.roles.ver")
 def listar_roles():
     try:
-        roles = obtener_todos()
+        # ?incluir_inactivos=true trae también los roles dados de baja.
+        incluir_inactivos = request.args.get("incluir_inactivos", "false").lower() == "true"
+        roles = obtener_todos(incluir_inactivos=incluir_inactivos)
         data = roles_schema.dump(roles)
         return respuesta_api(True, data)
     except Exception as error:
@@ -83,13 +87,29 @@ def editar_rol(id):
 def eliminar_rol(id):
     try:
         rol = obtener_por_id(id)
-
         if not rol:
             return respuesta_api(False, [], "Rol no encontrado", 404)
-
         eliminar(rol, g.id_usuario)
-
         return respuesta_api(True, [], "Rol eliminado", 200)
+    except ValueError as error:
+        return respuesta_api(False, [], str(error), 400)
+    except Exception as error:
+        traceback.print_exc()
+        return respuesta_api(False, [], str(error), 500)
+
+# Vuelve a activar un rol que estaba dado de baja.
+@roles_bp.route("/<int:id>/reactivar", methods=["PUT"])
+@requires_permission("auth.roles.control_parcial")
+def reactivar_rol(id):
+    try:
+        rol = obtener_por_id_cualquiera(id)
+        if not rol:
+            return respuesta_api(False, [], "Rol no encontrado", 404)
+        if rol.activo:
+            return respuesta_api(False, [], "El rol ya está activo", 400)
+
+        reactivado = reactivar(rol, g.id_usuario)
+        return respuesta_api(True, [rol_schema.dump(reactivado)], "Rol reactivado")
     except Exception as error:
         traceback.print_exc()
         return respuesta_api(False, [], str(error), 500)

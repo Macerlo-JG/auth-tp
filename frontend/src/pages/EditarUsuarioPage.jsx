@@ -16,6 +16,7 @@ import UsuarioRoles from "../components/UsuarioRoles.jsx";
 import { getUsuarioDetalle } from "../services/usuariosService";
 import { guardarRolesUsuario } from "../services/usuarioRolesService.js";
 import { HOME_ROUTE } from "../auth/config.js";
+import ConfirmarCambioEstado from "../components/ConfirmarCambioEstado.jsx";
 
 export default function EditarUsuarioPage() {
   // Hooks
@@ -37,6 +38,9 @@ export default function EditarUsuarioPage() {
 
   // Roles actualmente seleccionados en la interfaz.
   const [rolesUsuario, setRolesUsuario] = useState([]);
+
+  //notificación de bloquear usuario
+  const [estadoAConfirmar, setEstadoAConfirmar] = useState(null);
 
   // Carga la informacion del usuario al iniciar la pagina
   // y guarda una copia de los roles originales para compararlos con los cambios realizados durante la edición.
@@ -69,7 +73,7 @@ export default function EditarUsuarioPage() {
   // Guarda los cambios. Actualiza los datos generales y sincroniza los roles.
   const handleGuardar = async () => {
     const form = formRef.current;
-  
+
     //Validaciones de formulario
     if (!form.checkValidity()) {
       form.reportValidity();
@@ -106,13 +110,15 @@ export default function EditarUsuarioPage() {
     }
   };
 
-  const handleCambiarEstadoRapido = async (nuevoEstado) => {
-    const etiqueta = nuevoEstado === "BLOQUEADO" ? "bloquear" : "marcar como inactivo a";
 
-    const confirmado = window.confirm(
-      `¿Seguro que querés ${etiqueta} este usuario? Esto cerrará su sesión activa de inmediato.`
-    );
-    if (!confirmado) return;
+  // Reemplazar handleCambiarEstadoRapido por estas dos funciones:
+  const handlePedirConfirmacion = (nuevoEstado) => {
+    setEstadoAConfirmar(nuevoEstado);
+  };
+
+  const handleConfirmarCambioEstado = async () => {
+    const nuevoEstado = estadoAConfirmar;
+    setEstadoAConfirmar(null);
 
     try {
       const { ok, body } = await editarUsuario(usuario.id_usuario, {
@@ -130,6 +136,9 @@ export default function EditarUsuarioPage() {
       toast.error("Error de conexión");
     }
   };
+
+
+
 
   if (cargando) {
     return (
@@ -204,14 +213,14 @@ export default function EditarUsuarioPage() {
               <div className="flex flex-wrap gap-3 mt-4">
                 <button
                   type="button"
-                  onClick={() => handleCambiarEstadoRapido("BLOQUEADO")}
+                  onClick={() => handlePedirConfirmacion("BLOQUEADO")}
                   className="btn-cancel border border-red-300 text-red-700 hover:bg-red-50"
                 >
                   Bloquear usuario
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleCambiarEstadoRapido("INACTIVO")}
+                  onClick={() => handlePedirConfirmacion("INACTIVO")}
                   className="btn-cancel border border-gray-400 text-gray-700 hover:bg-gray-100"
                 >
                   Marcar como inactivo
@@ -250,6 +259,15 @@ export default function EditarUsuarioPage() {
           </div>
         </form>
       </div>
+
+      {estadoAConfirmar && (
+        <ConfirmarCambioEstado
+          nuevoEstado={estadoAConfirmar}
+          onCancelar={() => setEstadoAConfirmar(null)}
+          onConfirmar={handleConfirmarCambioEstado}
+        />
+      )}
+
     </Layout>
   );
 }

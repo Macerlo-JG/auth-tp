@@ -27,15 +27,11 @@ export const getListadoUsuarios = async () => {
     personasRes.data.map((persona) => [persona.id_persona, persona]),
   );
 
-  // Se combina cada usuario con los datos de su persona
-  // Si no existe se pone "-"
+  // Ya no hay nombre ni apellido reales: solo email. Si no se
+  // encuentra la persona, se muestra "—".
   return (usuariosRes.data || []).map((usuario) => ({
     ...usuario,
-    persona: personas.get(usuario.id_persona) ?? {
-      nombre: "-",
-      apellido: "-",
-      email: "-",
-    },
+    persona: personas.get(usuario.id_persona) ?? { email: "—" },
   }));
 };
 

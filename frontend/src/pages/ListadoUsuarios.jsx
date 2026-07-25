@@ -52,27 +52,24 @@ export default function ListadoUsuarios() {
       setCargando(false);
     }
   };
-  //Filtro de búsqueda y estado  de usuario/s.
+
   const aplicarFiltro = (lista, texto, estado) => {
-    const q = texto.toLowerCase().trim();
-    //Compruebo si el usuario coincide con lo buscado
-    const resultado = lista.filter((u) => {
-      const coincideTexto =
-        !q ||
-        formatearId(u.id_usuario).includes(q) ||
-        String(u.id_persona).includes(q) ||
-        u.persona?.nombre?.toLowerCase().includes(q) ||
-        u.persona?.apellido?.toLowerCase().includes(q) ||
-        u.persona?.email?.toLowerCase().includes(q) ||
-        `${u.persona?.nombre ?? ""} ${u.persona?.apellido ?? ""}`.toLowerCase().includes(q);
+  const q = texto.toLowerCase().trim();
 
-      const coincideEstado = !estado || u.estado_usuario === estado;
+  const resultado = lista.filter((u) => {
+    const coincideTexto =
+      !q ||
+      formatearId(u.id_usuario).includes(q) ||
+      String(u.id_persona).includes(q) ||
+      u.persona?.email?.toLowerCase().includes(q);
 
-      return coincideTexto && coincideEstado;
-    });
+    const coincideEstado = !estado || u.estado_usuario === estado;
 
-    setFiltro(resultado);
-  };
+    return coincideTexto && coincideEstado;
+  });
+
+  setFiltro(resultado);
+};
 
   // Carga inicial del listado.
   useEffect(() => {
@@ -114,16 +111,16 @@ export default function ListadoUsuarios() {
     }
   };
 
-// Cantidad total de registros
+  // Cantidad total de registros
   const total = filtro.length;
-// Número total de páginas
+  // Número total de páginas
   const totalPaginas = Math.ceil(total / itemsPorPagina);
-// Indices del primer y ultimo registro de la pagina
+  // Indices del primer y ultimo registro de la pagina
   const indiceInicio = (paginaActual - 1) * itemsPorPagina;
   const indiceFin = indiceInicio + itemsPorPagina;
-// Usuarios que se mostraran en la pagina actual
+  // Usuarios que se mostraran en la pagina actual
   const usuariosPagina = filtro.slice(indiceInicio, indiceFin);
-// Texto "Mostrando X a Y de Z"
+  // Texto "Mostrando X a Y de Z"
   const desde = total === 0 ? 0 : indiceInicio + 1;
   const hasta = Math.min(indiceFin, total);
 
@@ -171,8 +168,6 @@ export default function ListadoUsuarios() {
               <thead>
                 <tr>
                   <th className="table-th">N° Usuario</th>
-                  <th className="table-th">Nombre</th>
-                  <th className="table-th">Apellido</th>
                   <th className="table-th">Email</th>
                   <th className="table-th">ID Persona</th>
                   <th className="table-th">Estado</th>
@@ -180,16 +175,24 @@ export default function ListadoUsuarios() {
                   <th className="table-th">Modificado por</th>
                   <th className="table-th">Acciones</th>
                 </tr>
+
               </thead>
               <tbody>
                 {usuariosPagina.map((usuario) => (
                   <tr key={usuario.id_usuario} className="hover:bg-gray-50/80">
-                    <td className="table-td font-medium text-gray-800">{formatearId(usuario.id_usuario)}</td>
-                    <td className="table-td">{usuario.persona.nombre}</td>
-                    <td className="table-td">{usuario.persona.apellido}</td>
-                    <td className="table-td">{usuario.persona.email}</td>
-                    <td className="table-td">{usuario.id_persona}</td>
-                    <td className="table-td"><EstadoBadge estado={usuario.estado_usuario} /></td>
+                    <td className="table-td font-medium text-gray-800">
+                      {formatearId(usuario.id_usuario)}
+                    </td>
+                    <td className="table-td">
+                      {usuario.persona.email}
+                    </td>
+                    <td className="table-td">
+                      {usuario.id_persona}
+                    </td>
+                    <td className="table-td">
+                      <EstadoBadge estado={usuario.estado_usuario} />
+                    </td>
+
                     <td className="table-td">{usuario.created_by}</td>
                     <td className="table-td">{usuario.updated_by ?? "—"}</td>
                     <td className="table-td">
