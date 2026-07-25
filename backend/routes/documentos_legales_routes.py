@@ -1,5 +1,6 @@
 from flask import Blueprint, request, g, send_from_directory
 import traceback
+from datetime import datetime
 
 from services.documento_legal_service import (
     obtener_todos,
@@ -18,7 +19,7 @@ documentos_legales_bp = Blueprint(
 
 
 @documentos_legales_bp.route("", methods=["GET"])
-#@requires_permission("auth.documentos_legales.control_parcial")
+@requires_permission("auth.documentos_legales.control_parcial")
 def listar_documentos():
     try:
         documentos = obtener_todos()
@@ -39,21 +40,23 @@ def documentos_pendientes():
 
 
 @documentos_legales_bp.route("", methods=["POST"])
-#@requires_permission("auth.documentos_legales.control_parcial")
+@requires_permission("auth.documentos_legales.control_parcial")
 def crear_documento():
     try:
         tipo = request.form.get("tipo")
-        version = request.form.get("version")
         titulo = request.form.get("titulo")
-        fecha_publicacion = request.form.get("fechaPublicacion")
+        fecha_publicacion_raw = request.form.get("fechaPublicacion")
         archivo = request.files.get("archivo")
 
-        # Cada rol como un campo "roles" separado en el form-data.
         nombres_roles = request.form.getlist("roles")
 
+        fecha_publicacion = None
+        if fecha_publicacion_raw:
+            fecha_publicacion = datetime.fromisoformat(fecha_publicacion_raw.replace("Z", "+00:00"))
+
+        # La versión ya no viene del formulario: se calcula sola adentro.
         nuevo = publicar_documento(
             tipo=tipo,
-            version=version,
             titulo=titulo,
             archivo_werkzeug=archivo,
             created_by=g.id_usuario,

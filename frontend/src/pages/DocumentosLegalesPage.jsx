@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
 import Layout from "../components/layout/Layout.jsx";
@@ -22,6 +22,10 @@ export default function DocumentosLegalesPage() {
   const [pdfAVer, setPdfAVer] = useState(null);
   const [cargandoPdf, setCargandoPdf] = useState(false);
 
+  // Evita que la carga se dispare dos veces (React a veces la llama
+  // dos veces seguidas al iniciar la página) y el error salga duplicado.
+  const yaCargoRef = useRef(false);
+
   const cargarDocumentos = async () => {
     try {
       const documentos = await obtenerTodosLosDocumentos();
@@ -35,6 +39,8 @@ export default function DocumentosLegalesPage() {
   };
 
   useEffect(() => {
+    if (yaCargoRef.current) return;
+    yaCargoRef.current = true;
     cargarDocumentos();
   }, []);
 
@@ -46,18 +52,14 @@ export default function DocumentosLegalesPage() {
     await cargarDocumentos();
   };
 
-  // Antes de mostrar el PDF, lo descargamos nosotros mismos con el token
-  // de sesión (authFetch) y armamos una URL local (blob) que VisorPdf
+  // Descarga PDF con el token y armamos URL local (blob) que VisorPdf
   // puede usar como si fuera un archivo común, sin que el navegador
   // tenga que pedirlo por su cuenta sin credenciales.
   const handleVerPdf = async (documento) => {
     setCargandoPdf(true);
     try {
       const res = await authFetch(documento.contenido);
-
-      if (!res.ok) {
-        throw new Error("No se pudo cargar el PDF");
-      }
+      if (!res.ok) throw new Error("No se pudo cargar el PDF");
 
       const blob = await res.blob();
       const urlLocal = URL.createObjectURL(blob);
@@ -84,7 +86,6 @@ export default function DocumentosLegalesPage() {
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <h1 className="text-2xl font-bold text-gray-800">Documentos Legales</h1>
-
           <button type="button" onClick={handleNuevoTipo} className="btn-bomberos shrink-0 w-full sm:w-auto justify-center">
             <span className="text-lg leading-none">+</span>
             Nuevo tipo de documento

@@ -1,17 +1,16 @@
 """
 Servicio de documentos legales.
 
-Regla de negocio central: solo puede haber un documento con vigente=True
-por cada valor de `tipo`. Al publicar uno nuevo, el anterior (si existe)
-se marca vigente=False -- nunca se borra, se conserva como historial.
+Regla central: solo puede haber un documento con vigente=True por cada
+"tipo". Al publicar uno nuevo, el anterior pasa a no vigente (nunca se
+borra, queda como historial).
 
-Filtro por rol: `roles_requeridos` es un string separado por comas.
-Vacío/NULL = aplica a todos los usuarios. Sin integridad referencial
-contra la tabla `roles` (ver nota en el modelo).
+La versión ya no la elige quien publica: se calcula sola, contando
+cuántas veces se publicó ese tipo antes.
 """
 import os
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from werkzeug.utils import secure_filename
 
@@ -22,6 +21,9 @@ from models.rol import Rol
 
 CARPETA_UPLOADS = "/app/uploads/documentos_legales"
 EXTENSIONES_PERMITIDAS = {".pdf"}
+
+# Límite para la fecha "vigente desde": no puede ser muy lejana en el futuro.
+ANIOS_MAXIMO_A_FUTURO = 3
 
 
 def _guardar_archivo(archivo_werkzeug):
@@ -40,6 +42,30 @@ def _guardar_archivo(archivo_werkzeug):
     return f"/documentos-legales/archivos/{nombre_final}"
 
 
+def _siguiente_version(tipo):
+    """Cuenta cuántas veces se publicó este tipo de documento y devuelve
+    el número que sigue, como texto (ej: "1", "2", "3")."""
+    cantidad = DocumentoLegal.query.filter_by(tipo=tipo).count()
+    return str(cantidad + 1)
+
+
+def _validar_fecha_publicacion(fecha_publicacion):
+    """La fecha no puede ser anterior a hoy, ni más de
+    ANIOS_MAXIMO_A_FUTURO años posterior a hoy."""
+    ahora = datetime.now(timezone.utc)
+    hoy = ahora.replace(hour=0, minute=0, second=0, microsecond=0)
+    limite_futuro = hoy + timedelta(days=365 * ANIOS_MAXIMO_A_FUTURO)
+
+    fecha_comparar = fecha_publicacion
+    if fecha_comparar.tzinfo is None:
+        fecha_comparar = fecha_comparar.replace(tzinfo=timezone.utc)
+
+    if fecha_comparar < hoy:
+        raise ValueError("La fecha de vigencia no puede ser anterior a hoy")
+    if fecha_comparar > limite_futuro:
+        raise ValueError(f"La fecha de vigencia no puede ser más de {ANIOS_MAXIMO_A_FUTURO} años posterior a hoy")
+
+
 def obtener_todos():
     return (
         DocumentoLegal.query
@@ -54,10 +80,6 @@ def obtener_vigentes():
 
 
 def obtener_pendientes_para_usuario(id_usuario, roles_usuario):
-    """
-    roles_usuario: lista de nombres de rol del usuario (ej. ["ALUMNO"]),
-    tal como ya vive en flask.g.roles durante la request.
-    """
     vigentes = obtener_vigentes()
 
     ids_aceptados = {
@@ -78,8 +100,6 @@ def obtener_pendientes_para_usuario(id_usuario, roles_usuario):
 
 
 def _validar_y_normalizar_roles(nombres_roles):
-    """Valida que cada rol exista y devuelve el string listo para guardar
-    en la columna (o None si la lista queda vacía)."""
     if not nombres_roles:
         return None
 
@@ -95,23 +115,23 @@ def _validar_y_normalizar_roles(nombres_roles):
     return ",".join(limpios) if limpios else None
 
 
-def publicar_documento(tipo, version, titulo, archivo_werkzeug, created_by,
+def publicar_documento(tipo, titulo, archivo_werkzeug, created_by,
                         fecha_publicacion=None, nombres_roles=None):
+    """La versión ya no se recibe como parámetro: se calcula sola."""
     tipo = (tipo or "").strip().lower()
     if not tipo:
         raise ValueError("El tipo de documento es requerido")
-    if not version or not str(version).strip():
-        raise ValueError("La versión es requerida")
     if not titulo or not str(titulo).strip():
         raise ValueError("El título es requerido")
     if not archivo_werkzeug:
         raise ValueError("El archivo PDF es requerido")
 
-    # Se valida ANTES de guardar el archivo en disco: si un rol no existe,
-    # preferimos fallar rápido y no dejar un PDF huérfano en el filesystem.
-    roles_normalizados = _validar_y_normalizar_roles(nombres_roles)
+    fecha_final = fecha_publicacion or datetime.now(timezone.utc)
+    _validar_fecha_publicacion(fecha_final)
 
+    roles_normalizados = _validar_y_normalizar_roles(nombres_roles)
     ruta_contenido = _guardar_archivo(archivo_werkzeug)
+    version = _siguiente_version(tipo)
 
     with db.session.begin_nested():
         anterior = (
@@ -127,10 +147,10 @@ def publicar_documento(tipo, version, titulo, archivo_werkzeug, created_by,
 
         nuevo = DocumentoLegal(
             tipo=tipo,
-            version=str(version).strip(),
+            version=version,
             titulo=str(titulo).strip(),
             contenido=ruta_contenido,
-            fecha_de_publicacion=fecha_publicacion or datetime.now(timezone.utc),
+            fecha_de_publicacion=fecha_final,
             vigente=True,
             created_by=created_by,
             roles_requeridos=roles_normalizados,

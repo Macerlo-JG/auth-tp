@@ -20,9 +20,12 @@ function App() {
     <>
       <Toaster
         position="top-right"
+        // Se bajan un poco las notificaciones para que no tapen el
+        // botón de cerrar sesión de arriba a la derecha.
+        containerStyle={{ top: "10%" }}
         toastOptions={{
           duration: 2500,
-          style: { zIndex: 9999, yIndex: 8000 },
+          style: { zIndex: 9999 },
         }}
       />
       <VerificarDocumentosLegales />
@@ -30,32 +33,16 @@ function App() {
 
         <Route path="/" element={<Navigate to="/usuarios" replace />} />
 
-        <Route path="/login" element={
-            <PublicRoute>
-              <Login />
-            </PublicRoute>
-          } />
+        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+        <Route path="/activar-cuenta" element={<PublicRoute><ActivarCuenta /></PublicRoute>} />
+        <Route path="/recuperar-contrasena" element={<PublicRoute><RecuperarContrasena /></PublicRoute>} />
 
-        <Route path="/activar-cuenta" element={
-            <PublicRoute>
-              <ActivarCuenta />
-            </PublicRoute>
-          } />
+        <Route path="/usuarios" element={<ProtectedRoute><ListadoUsuarios /></ProtectedRoute>} />
 
-        <Route path="/recuperar-contrasena" element={
-            <PublicRoute>
-              <RecuperarContrasena />
-            </PublicRoute>
-          } />
-
-        <Route path="/usuarios" element={
-            <ProtectedRoute>
-              <ListadoUsuarios />
-            </ProtectedRoute>
-          } />
-
+        {/* Antes "usuarios.control_parcial" cubría crear y editar juntos.
+            Ahora son dos permisos separados, más precisos. */}
         <Route path="/usuarios/nuevo" element={
-            <ProtectedRoute permissions={["auth.usuarios.control_parcial"]}>
+            <ProtectedRoute permissions={["auth.usuarios.crear"]}>
               <NuevoUsuario />
             </ProtectedRoute>
           } />
@@ -67,16 +54,12 @@ function App() {
           } />
 
         <Route path="/usuarios/:id/editar" element={
-            <ProtectedRoute permissions={["auth.usuarios.control_parcial"]}>
+            <ProtectedRoute permissions={["auth.usuarios.editar"]}>
               <EditarUsuarioPage />
             </ProtectedRoute>
           } />
 
-        <Route path="/cambiar-contrasena" element={
-            <ProtectedRoute>
-              <CambiarContrasena />
-            </ProtectedRoute>
-          } />
+        <Route path="/cambiar-contrasena" element={<ProtectedRoute><CambiarContrasena /></ProtectedRoute>} />
 
         <Route path="/roles" element={
             <ProtectedRoute permissions={["auth.roles.ver"]}>
@@ -84,14 +67,11 @@ function App() {
             </ProtectedRoute>
           } />
 
-        {/*
-          TODO: cuando el backend de Documentos Legales exista, esto
-          debería usar permissions={["auth.documentos.ver"]} (o el que
-          se defina) en vez de roles={["ADMINISTRADOR"]}, igual que el
-          resto de las rutas de este archivo.
-        */}
+        {/* Antes decía "auth.roles.ver" por error: cualquiera que
+            pudiera ver roles entraba acá. Ahora pide el permiso real
+            de documentos legales. */}
         <Route path="/documentos-legales" element={
-            <ProtectedRoute permissions={["auth.roles.ver"]}>
+            <ProtectedRoute permissions={["auth.documentos_legales.control_parcial"]}>
               <DocumentosLegalesPage />
             </ProtectedRoute>
           } />

@@ -22,20 +22,12 @@ import {
 import { getListadoUsuarios } from "../services/usuariosService.js";
 import { formatearId } from "../utils/format.js";
 import { HOME_ROUTE } from "../auth/config.js";
+
 export default function ListadoUsuarios() {
-  // Estados
-
   const { hasPermission } = useAuth();
-  // Listado completo obtenido desde el backend.
   const [usuarios, setUsuarios] = useState([]);
-
-  // Resultado luego de aplicar búsqueda y filtros.
   const [filtro, setFiltro] = useState([]);
-
-  // Texto ingresado en el buscador.
   const [busqueda, setBusqueda] = useState("");
-
-  // Controla el indicador de carga.
   const [cargando, setCargando] = useState(true);
 
   // Usuario seleccionado para eliminar.
@@ -43,13 +35,8 @@ export default function ListadoUsuarios() {
 
   // Página actual de la tabla.
   const [paginaActual, setPaginaActual] = useState(1);
-
-  // Estado seleccionado en el filtro.
   const [usuariosFiltrados, setUsuariosFiltrados] = useState("");
-
-  // Cantidad de registros mostrados por página.
-  const itemsPorPagina = 8;
-
+  const itemsPorPagina = 10;
 
   // Obtiene el listado de usuarios desde el servicio
   // Despues aplica los filtros actuales
@@ -65,25 +52,10 @@ export default function ListadoUsuarios() {
       setCargando(false);
     }
   };
- 
-  // Filtra el listado de usuarios segun:
-  // - Texto de búsqueda
-  // - Estado seleccionado (desplegable)
-  // El resultado se almacena para mostrarlo en pantalla.
-
+  //Filtro de búsqueda y estado  de usuario/s.
   const aplicarFiltro = (lista, texto, estado) => {
     const q = texto.toLowerCase().trim();
-
-    // Comprueba si el usuario coincide con el texto buscado
-    // Se permite buscar por:
-    //
-    // - Número de usuario
-    // - ID de persona
-    // - Nombre
-    // - Apellido
-    // - Email
-    // - Nombre completo
-
+    //Compruebo si el usuario coincide con lo buscado
     const resultado = lista.filter((u) => {
       const coincideTexto =
         !q ||
@@ -92,13 +64,9 @@ export default function ListadoUsuarios() {
         u.persona?.nombre?.toLowerCase().includes(q) ||
         u.persona?.apellido?.toLowerCase().includes(q) ||
         u.persona?.email?.toLowerCase().includes(q) ||
-        `${u.persona?.nombre ?? ""} ${u.persona?.apellido ?? ""}`
-          .toLowerCase()
-          .includes(q);
+        `${u.persona?.nombre ?? ""} ${u.persona?.apellido ?? ""}`.toLowerCase().includes(q);
 
-      // Comprueba si coincide con el estado seleccionado.
-      const coincideEstado =
-        !estado || u.estado_usuario === estado;
+      const coincideEstado = !estado || u.estado_usuario === estado;
 
       return coincideTexto && coincideEstado;
     });
@@ -114,22 +82,17 @@ export default function ListadoUsuarios() {
   // Actualiza la busqueda y vuelve a aplicar los filtros y reinicia la paginacion
   const handleBusqueda = (e) => {
     const valor = e.target.value;
-
     setBusqueda(valor);
     setPaginaActual(1);
-
     aplicarFiltro(usuarios, valor, usuariosFiltrados);
   };
 
-
   // Actualiza el estado seleccionado y vuelve a filtrar el listado
   const handleEstado = (e) => {
-  const valor = e.target.value;
-
-  setUsuariosFiltrados(valor);
-  setPaginaActual(1);
-
-  aplicarFiltro(usuarios, busqueda, valor);
+    const valor = e.target.value;
+    setUsuariosFiltrados(valor);
+    setPaginaActual(1);
+    aplicarFiltro(usuarios, busqueda, valor);
   };
 
   // Elimina el usuario seleccionado y carga la lista
@@ -152,17 +115,17 @@ export default function ListadoUsuarios() {
   };
 
 // Cantidad total de registros
-const total = filtro.length;
+  const total = filtro.length;
 // Número total de páginas
-const totalPaginas = Math.ceil(total / itemsPorPagina);
+  const totalPaginas = Math.ceil(total / itemsPorPagina);
 // Indices del primer y ultimo registro de la pagina
-const indiceInicio = (paginaActual - 1) * itemsPorPagina;
-const indiceFin = indiceInicio + itemsPorPagina;
+  const indiceInicio = (paginaActual - 1) * itemsPorPagina;
+  const indiceFin = indiceInicio + itemsPorPagina;
 // Usuarios que se mostraran en la pagina actual
-const usuariosPagina = filtro.slice(indiceInicio, indiceFin);
+  const usuariosPagina = filtro.slice(indiceInicio, indiceFin);
 // Texto "Mostrando X a Y de Z"
-const desde = total === 0 ? 0 : indiceInicio + 1;
-const hasta = Math.min(indiceFin, total);
+  const desde = total === 0 ? 0 : indiceInicio + 1;
+  const hasta = Math.min(indiceFin, total);
 
   return (
     <Layout>
@@ -170,7 +133,6 @@ const hasta = Math.min(indiceFin, total);
         <h1 className="text-2xl font-bold text-gray-800 mb-6">Listado de Usuarios</h1>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div className="flex flex-col sm:flex-row gap-3 flex-1">
-
             <div className="relative flex-1">
               <IconSearch className="search-icon" />
               <input
@@ -178,24 +140,24 @@ const hasta = Math.min(indiceFin, total);
                 value={busqueda}
                 onChange={handleBusqueda}
                 placeholder="Buscar por usuario, persona o email"
-                className="form-input pl-10"/>
+                className="form-input pl-10" />
             </div>
 
-            <select value={usuariosFiltrados}onChange={handleEstado} className="form-input w-full sm:w-56">
+            <select value={usuariosFiltrados} onChange={handleEstado} className="form-input w-full sm:w-56">
               <option value="">Todos los estados</option>
               {ESTADOS_USUARIO.map((estado) => (
-                <option key={estado} value={estado}>
-                  {estado}
-                </option>
+                <option key={estado} value={estado}>{estado}</option>
               ))}
             </select>
-
           </div>
-          {hasPermission("auth.usuarios.control_parcial") && (
+
+          {/* Antes usaba "usuarios.control_parcial", que ya no existe:
+              ahora crear un usuario es un permiso propio. */}
+          {hasPermission("auth.usuarios.crear") && (
             <Link to={`${HOME_ROUTE}/nuevo`} className="btn-bomberos shrink-0">
               <span className="text-lg leading-none">+</span>
               Nuevo usuario
-            </Link>            
+            </Link>
           )}
         </div>
 
@@ -222,61 +184,43 @@ const hasta = Math.min(indiceFin, total);
               <tbody>
                 {usuariosPagina.map((usuario) => (
                   <tr key={usuario.id_usuario} className="hover:bg-gray-50/80">
-                    <td className="table-td font-medium text-gray-800">
-                      {formatearId(usuario.id_usuario)}
-                    </td>
-                    <td className="table-td">
-                      {usuario.persona.nombre}
-                    </td>
-                    <td className="table-td">
-                      {usuario.persona.apellido}
-                    </td>
-                    <td className="table-td">
-                      {usuario.persona.email}
-                    </td>
-                    <td className="table-td">
-                      {usuario.id_persona}</td>
-                    <td className="table-td">
-                      <EstadoBadge estado={usuario.estado_usuario}/>
-                    </td>
-                    <td className="table-td">
-                      {usuario.created_by}
-                    </td>
-                    <td className="table-td">
-                      {usuario.updated_by ?? "—"}
-                    </td>
+                    <td className="table-td font-medium text-gray-800">{formatearId(usuario.id_usuario)}</td>
+                    <td className="table-td">{usuario.persona.nombre}</td>
+                    <td className="table-td">{usuario.persona.apellido}</td>
+                    <td className="table-td">{usuario.persona.email}</td>
+                    <td className="table-td">{usuario.id_persona}</td>
+                    <td className="table-td"><EstadoBadge estado={usuario.estado_usuario} /></td>
+                    <td className="table-td">{usuario.created_by}</td>
+                    <td className="table-td">{usuario.updated_by ?? "—"}</td>
                     <td className="table-td">
                       <div className="flex items-center gap-4">
-
-                        {hasPermission("auth.usuarios.ver")&& (
-                        <Link
-                          to={`${HOME_ROUTE}/${usuario.id_usuario}`}
-                          className="action-link action-ver"
-                        >
-                          <IconEye />
-                          Ver
-                        </Link>
-                        ) }
-
-                        {hasPermission("auth.usuarios.control_parcial")&& (
-                          <Link
-                          to={`${HOME_ROUTE}/${usuario.id_usuario}/editar`}
-                          className="action-link action-editar"
-                        >
-                          <IconPencil />
-                          Editar
-                        </Link>
+                        {hasPermission("auth.usuarios.ver") && (
+                          <Link to={`${HOME_ROUTE}/${usuario.id_usuario}`} className="action-link action-ver">
+                            <IconEye />
+                            Ver
+                          </Link>
                         )}
-                        
-                        {hasPermission("auth.usuarios.control_parcial")&& (
+
+                        {/* Antes "usuarios.control_parcial", ahora
+                            "usuarios.editar" es su propio permiso. */}
+                        {hasPermission("auth.usuarios.editar") && (
+                          <Link to={`${HOME_ROUTE}/${usuario.id_usuario}/editar`} className="action-link action-editar">
+                            <IconPencil />
+                            Editar
+                          </Link>
+                        )}
+
+                        {/* Eliminar ya tenía su propio permiso
+                            ("usuarios.eliminar"), no cambió. */}
+                        {hasPermission("auth.usuarios.eliminar") && (
                           <button
-                          type="button"
-                          onClick={() => setEliminarTarget(usuario)}
-                          className="action-link action-eliminar"
-                        >
-                          <IconTrash />
-                          Eliminar
-                        </button>
+                            type="button"
+                            onClick={() => setEliminarTarget(usuario)}
+                            className="action-link action-eliminar"
+                          >
+                            <IconTrash />
+                            Eliminar
+                          </button>
                         )}
                       </div>
                     </td>
@@ -288,19 +232,13 @@ const hasta = Math.min(indiceFin, total);
         )}
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-6 pt-4 border-t border-gray-100">
-          <p className="text-sm text-gray-500">
-            Mostrando {desde} a {hasta} de {total} usuarios
-          </p>
+          <p className="text-sm text-gray-500">Mostrando {desde} a {hasta} de {total} usuarios</p>
           <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={() => setPaginaActual((p) => p - 1)}
               disabled={paginaActual === 1}
-              className={`w-8 h-8 flex items-center justify-center rounded border text-sm ${
-                paginaActual === 1
-                  ? "border-gray-200 text-gray-400"
-                  : "border-gray-300 hover:bg-gray-300"
-              }`}
+              className={`w-8 h-8 flex items-center justify-center rounded border text-sm ${paginaActual === 1 ? "border-gray-200 text-gray-400" : "border-gray-300 hover:bg-gray-300"}`}
             >
               ‹
             </button>
@@ -311,11 +249,7 @@ const hasta = Math.min(indiceFin, total);
               type="button"
               onClick={() => setPaginaActual((p) => p + 1)}
               disabled={paginaActual === totalPaginas}
-              className={`w-8 h-8 flex items-center justify-center rounded border text-sm ${
-                paginaActual === totalPaginas
-                  ? "border-gray-200 text-gray-400"
-                  : "border-gray-300 hover:bg-gray-300"
-              }`}
+              className={`w-8 h-8 flex items-center justify-center rounded border text-sm ${paginaActual === totalPaginas ? "border-gray-200 text-gray-400" : "border-gray-300 hover:bg-gray-300"}`}
             >
               ›
             </button>

@@ -4,8 +4,11 @@ acciones:
   - nombre: usuarios.ver
     descripcion: Ver listado y detalle de usuarios
     activo: true
-  - nombre: usuarios.control_parcial
-    descripcion: Crear o editar usuarios
+  - nombre: usuarios.crear
+    descripcion: Crear usuarios nuevos
+    activo: true
+  - nombre: usuarios.editar
+    descripcion: Editar usuarios existentes
     activo: true
   - nombre: usuarios.eliminar
     descripcion: Eliminar usuarios
@@ -22,6 +25,12 @@ acciones:
   - nombre: roles.eliminar
     descripcion: Eliminar un rol
     activo: true
+  - nombre: credenciales.temporal
+    descripcion: Generar una contraseña temporal para cualquier usuario
+    activo: true
+  - nombre: documentos_legales.control_parcial
+    descripcion: Publicar y listar documentos legales
+    activo: true
 
 roles:
   - nombre: administrador roles
@@ -31,7 +40,8 @@ rol_accion:
   - rol: ADMINISTRADOR
     acciones:
       - usuarios.ver
-      - usuarios.control_parcial
+      - usuarios.crear
+      - usuarios.editar
       - usuarios.eliminar
       - roles.asignar
       - roles.ver
@@ -42,7 +52,8 @@ rol_accion:
   - rol: GESTIÓN ACADÉMICA
     acciones:
       - usuarios.ver
-      - usuarios.control_parcial
+      - usuarios.crear
+      - usuarios.editar
   - rol: DOCENTE
     acciones:
       - usuarios.ver

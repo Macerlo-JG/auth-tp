@@ -52,13 +52,14 @@ export function agruparDocumentosPorTipo(documentos) {
   return Object.values(porTipo);
 }
 
-export const publicarDocumento = async ({ tipo, version, titulo, fechaPublicacion, archivo }) => {
+export const publicarDocumento = async ({ tipo, titulo, fechaPublicacion, archivo, rolesSeleccionados }) => {
   const formData = new FormData();
   formData.append("tipo", tipo);
-  formData.append("version", version);
   formData.append("titulo", titulo);
   if (fechaPublicacion) formData.append("fechaPublicacion", fechaPublicacion);
   formData.append("archivo", archivo);
+
+  (rolesSeleccionados || []).forEach((rol) => formData.append("roles", rol));
 
   const res = await authFetch("/documentos-legales", { method: "POST", body: formData });
   const { ok, data, message } = await parseResponse(res);

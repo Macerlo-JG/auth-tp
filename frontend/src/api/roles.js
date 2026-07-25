@@ -1,9 +1,11 @@
 import { authFetch } from "./cliente";
 import { parseResponse } from "../auth/utils/parse";
 
-// Obtiene el listado de todos los roles
-export const getRoles = async () => {
-  const res = await authFetch("/roles");
+// Obtiene el listado de roles. Si incluirInactivos es true, también
+// trae los roles dados de baja (para el admin, que los puede reactivar).
+export const getRoles = async (incluirInactivos = false) => {
+  const query = incluirInactivos ? "?incluir_inactivos=true" : "";
+  const res = await authFetch(`/roles${query}`);
 
   return parseResponse(res);
 };
@@ -19,8 +21,6 @@ export const getRol = async (idRol) => {
 export const createRol = async (rol) => {
   const res = await authFetch("/roles", {
     method: "POST",
-
-    // Envia la informacion del rol en formato JSON
     body: JSON.stringify(rol),
   });
 
@@ -31,8 +31,6 @@ export const createRol = async (rol) => {
 export const updateRol = async (idRol, rol) => {
   const res = await authFetch(`/roles/${idRol}`, {
     method: "PUT",
-
-    // Envia los datos actualizados del rol
     body: JSON.stringify(rol),
   });
 
@@ -43,6 +41,15 @@ export const updateRol = async (idRol, rol) => {
 export const deleteRol = async (idRol) => {
   const res = await authFetch(`/roles/${idRol}`, {
     method: "DELETE",
+  });
+
+  return parseResponse(res);
+};
+
+// Vuelve a activar un rol que estaba dado de baja
+export const reactivateRol = async (idRol) => {
+  const res = await authFetch(`/roles/${idRol}/reactivar`, {
+    method: "PUT",
   });
 
   return parseResponse(res);

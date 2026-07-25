@@ -7,25 +7,25 @@ import TablaRoles from "../components/roles/TablaRoles.jsx";
 import ModalRol from "../components/roles/ModalRol.jsx";
 import ConfirmarEliminarRol from "../components/roles/ConfirmarEliminarRol.jsx";
 
-import { obtenerRoles, eliminarRol } from "../services/rolesService.js";
+import { obtenerRoles, eliminarRol, reactivarRol } from "../services/rolesService.js";
 
 export default function RolesPage() {
   const { hasPermission } = useAuth();
 
-  // Listado de roles obtenido del backend.
   const [roles, setRoles] = useState([]);
   const [cargando, setCargando] = useState(true);
 
   // Rol en edición. null = modal cerrado o modo creación.
   const [rolEditar, setRolEditar] = useState(null);
   const [mostrarModal, setMostrarModal] = useState(false);
-
-  // Rol seleccionado para eliminar (null = modal de confirmación cerrado).
   const [eliminarTarget, setEliminarTarget] = useState(null);
+
+  // Solo quien puede administrar roles ve también los inactivos.
+  const puedeVerInactivos = hasPermission("auth.roles.control_parcial");
 
   const cargarRoles = async () => {
     try {
-      const lista = await obtenerRoles();
+      const lista = await obtenerRoles(puedeVerInactivos);
       setRoles(lista);
     } catch (err) {
       console.error(err);
@@ -57,7 +57,6 @@ export default function RolesPage() {
 
   const handleEliminar = async () => {
     if (!eliminarTarget) return;
-
     try {
       await eliminarRol(eliminarTarget.id_rol);
       toast.success("Rol eliminado");
@@ -70,18 +69,24 @@ export default function RolesPage() {
     }
   };
 
+  const handleReactivar = async (rol) => {
+    try {
+      await reactivarRol(rol.id_rol);
+      toast.success("Rol reactivado");
+      await cargarRoles();
+    } catch (err) {
+      console.error(err);
+      toast.error(err.message || "No se pudo reactivar el rol");
+    }
+  };
+
   return (
     <Layout>
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold text-gray-800">Roles</h1>
-
           {hasPermission("auth.roles.control_parcial") && (
-            <button
-              type="button"
-              onClick={handleNuevo}
-              className="btn-bomberos shrink-0"
-            >
+            <button type="button" onClick={handleNuevo} className="btn-bomberos shrink-0">
               <span className="text-lg leading-none">+</span>
               Nuevo rol
             </button>
@@ -95,24 +100,17 @@ export default function RolesPage() {
             roles={roles}
             onEditar={handleEditar}
             onEliminar={setEliminarTarget}
+            onReactivar={handleReactivar}
           />
         )}
       </div>
 
       {mostrarModal && (
-        <ModalRol
-          rol={rolEditar}
-          onClose={() => setMostrarModal(false)}
-          onGuardado={handleGuardado}
-        />
+        <ModalRol rol={rolEditar} onClose={() => setMostrarModal(false)} onGuardado={handleGuardado} />
       )}
 
       {eliminarTarget && (
-        <ConfirmarEliminarRol
-          rol={eliminarTarget}
-          onCancelar={() => setEliminarTarget(null)}
-          onConfirmar={handleEliminar}
-        />
+        <ConfirmarEliminarRol rol={eliminarTarget} onCancelar={() => setEliminarTarget(null)} onConfirmar={handleEliminar} />
       )}
     </Layout>
   );

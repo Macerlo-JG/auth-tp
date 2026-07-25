@@ -13,14 +13,24 @@ selección de acciones que se le vinculan (RolAccion).
 """
 
 
-def obtener_todos():
-    return Rol.query.filter_by(activo=True).all()
+def obtener_todos(incluir_inactivos=False):
+    """Si incluir_inactivos es True, trae también los roles dados de baja
+    (para el admin, que los puede ver y reactivar)."""
+    query = Rol.query
+    if not incluir_inactivos:
+        query = query.filter_by(activo=True)
+    return query.all()
+
 
 def obtener_por_id(id_rol):
-    return Rol.query.filter_by(
-        id_rol=id_rol,
-        activo=True
-    ).first()
+    return Rol.query.filter_by(id_rol=id_rol, activo=True).first()
+
+
+def obtener_por_id_cualquiera(id_rol):
+    """Igual que obtener_por_id, pero también encuentra roles inactivos.
+    Se usa para poder reactivarlos."""
+    return Rol.query.filter_by(id_rol=id_rol).first()
+
 
 def crear(datos, id_usuario_sesion):
     datos = rol_create_schema.load(datos)
@@ -68,6 +78,18 @@ def eliminar(rol, id_usuario_sesion):
     db.session.commit()
 
     propagar_a_usuarios_del_rol(rol.id_rol)
+
+
+def reactivar(rol, id_usuario_sesion):
+    """Vuelve a activar un rol dado de baja."""
+    rol.activo = True
+    rol.updated_by = id_usuario_sesion
+
+    db.session.commit()
+
+    propagar_a_usuarios_del_rol(rol.id_rol)
+
+    return rol
 
 
 def sincronizar_acciones(rol, ids_acciones_nuevas, id_usuario_sesion):
