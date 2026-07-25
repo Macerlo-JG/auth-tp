@@ -1,9 +1,12 @@
+from marshmallow import ValidationError
 from models.usuario import Usuario, EstadoUsuario
-from schemas.usuario_schemas import usuario_create_schema, usuario_update_schema
+from schemas.usuario_schemas import usuario_create_schema, usuario_update_schema, usuario_completo_con_roles_schema
 from db import db
 from services.credencial_service import crear_password_temporal
 from services.email_service import enviar_bienvenida
 from mock.emails_usuario import registrar_persona
+from models.rol import Rol
+from models.rol_usuario import RolUsuario
 from auth_common import sesion_common
 
 """Servicio de usuarios.
@@ -12,8 +15,6 @@ Contiene funciones para crear, actualizar y activar usuarios, así como
 un flujo completo de creación que también genera credenciales temporales
 y envía el correo de bienvenida.
 """
-
-
 
 def obtener_todos():
     return Usuario.query.filter_by(activo=True).all()
@@ -108,6 +109,79 @@ def crear_completo(datos, id_usuario_sesion):
     enviar_bienvenida(email, password_temporal, link_activacion)
 
     return nuevo, password_temporal
+
+def crear_completo_con_roles(datos, id_usuario_sesion):
+    """Crea un usuario, le asigna una lista de roles y envía el mail de
+    bienvenida.
+
+    Pensado para ser llamado por el microservicios Planes.
+
+    Los tres campos de entrada (id_persona, email, id_roles) se validan
+    juntos, en un solo paso, con 'usuario_completo_con_roles_schema'.
+
+    Los roles se validan antes de crear cualquier fila
+    en la base. Si algún id_rol no existe (o no está activo), la función
+    corta ahí sin haber creado el usuario ni la credencial.
+    """
+    
+    # Validar email + id_roles. No son columnas de Usuario, por eso no
+    #    pasan por usuario_create_schema.
+    datos_validados = usuario_completo_con_roles_schema.load({
+        "id_persona": datos.get("id_persona"),
+        "email": datos.get("email"),
+        "id_roles": datos.get("id_roles"),
+    })
+    id_persona = datos_validados["id_persona"]
+    email = datos_validados["email"]
+    id_roles = datos_validados["id_roles"]
+
+    # Validar que todos los roles pedidos existan y estén activos.
+    roles = (
+        Rol.query
+        .filter(Rol.id_rol.in_(id_roles), Rol.activo.is_(True))
+        .all()
+    )
+
+    ids_encontrados = [rol.id_rol for rol in roles]
+    faltantes = [id_rol for id_rol in id_roles if id_rol not in ids_encontrados]
+
+    if faltantes:
+        raise ValidationError({
+            "id_roles": [
+                f"Los roles {sorted(faltantes)} no existen o no están activos"
+            ]
+        })
+
+    # Crear el Usuario.
+    nuevo = usuario_create_schema.load({"id_persona": id_persona})
+    nuevo.created_by = id_usuario_sesion
+    db.session.add(nuevo)
+    db.session.flush()  # asigna id_usuario sin comitear la transacción
+
+    try:
+        # Credencial temporal.
+        password_temporal = crear_password_temporal(nuevo.id_usuario, id_usuario_sesion)
+
+        # Asignaciones de rol.
+        nuevas_asignaciones = [
+            RolUsuario(
+                id_usuario=nuevo.id_usuario,
+                id_rol=rol.id_rol,
+                created_by=id_usuario_sesion
+            )
+            for rol in roles
+        ]
+        db.session.add_all(nuevas_asignaciones)
+
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise
+    
+    link_activacion = f"http://localhost:5173/activar-cuenta?email={email}"
+    enviar_bienvenida(email, password_temporal, link_activacion)
+
+    return nuevo
 
 ESTADOS_QUE_REVOCAN_SESION = {EstadoUsuario.BLOQUEADO, EstadoUsuario.INACTIVO}
 

@@ -8,6 +8,7 @@ from services.usuario_service import (
     obtener_por_id,
     crear,
     crear_completo,
+    crear_completo_con_roles,
     actualizar,
     eliminar
 )
@@ -93,6 +94,34 @@ def crear_usuario_completo():
             "link_activacion": link_activacion,
         },
         "Usuario creado. Se envió un correo con la contraseña temporal.",
+        201,
+    )
+
+# Pensado para ser llamado por microservicio Planes:
+# recibe id_persona, email y una lista de id_roles, y crea el usuario ya
+# con sus roles asignados y su credencial temporal, en una única operación. 
+@usuarios_bp.route("/completo-con-roles", methods=["POST"])
+@requires_permission("auth.usuarios.control_parcial", "auth.roles.asignar", policy="ALL")
+def crear_usuario_completo_con_roles():
+    req = request.get_json()
+
+    try:
+        nuevo_usuario = crear_completo_con_roles(req, g.id_usuario)
+    except ValidationError as e:
+        return respuesta_api(False, [], e.messages, 400)
+    except ValueError as error:
+        return respuesta_api(False, [], str(error), 400)
+    except Exception as error:
+        traceback.print_exc()
+        return respuesta_api(False, [], str(error), 400)
+
+    return respuesta_api(
+        True,
+        {
+            "id_usuario": nuevo_usuario.id_usuario,
+            "estado_usuario": nuevo_usuario.estado_usuario.value,
+        },
+        "Usuario creado y roles asignados",
         201,
     )
     
