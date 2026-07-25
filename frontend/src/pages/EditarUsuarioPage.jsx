@@ -242,50 +242,8 @@ export default function EditarUsuarioPage() {
                     </option>
                   ))}
                 </select>
-                <section className="form-section">
-                  <h2 className="form-section-title">
-                    <IconBuilding className="text-bomberos" />
-                    Estado y control
-                  </h2>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <label className="form-label">
-                        Estado <span className="required">*</span>
-                      </label>
-                      <select name="estado_usuario" required defaultValue={usuario.estado_usuario} className="form-input">
-                        {ESTADOS_USUARIO.map((estado) => (
-                          <option key={estado} value={estado}>{estado}</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="form-label">ID Usuario modificador</label>
-                      <input type="number" name="updated_by" value={1} readOnly disabled className="form-input bg-gray-50 text-gray-500 cursor-not-allowed" />
-                    </div>
-                  </div>
-
-                  {/* Acciones rápidas: cambian el estado de inmediato (piden confirmación),
-      sin esperar a "Guardar usuario". Revocan la sesión activa del usuario
-      en el backend (ver services/usuario_service.py::actualizar). */}
-                  <div className="flex flex-wrap gap-3 mt-4">
-                    <button
-                      type="button"
-                      onClick={() => handleCambiarEstadoRapido("BLOQUEADO")}
-                      className="btn-cancel border border-red-300 text-red-700 hover:bg-red-50"
-                    >
-                      Bloquear usuario
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleCambiarEstadoRapido("INACTIVO")}
-                      className="btn-cancel border border-gray-400 text-gray-700 hover:bg-gray-100"
-                    >
-                      Marcar como inactivo
-                    </button>
-                  </div>
-                </section>
+                
+                
               </div>
 
               <div>
