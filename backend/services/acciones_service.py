@@ -48,7 +48,7 @@ def guardar_accion(servicio, accion_datos):
         accion = Accion(
             servicio=servicio,
             nombre=accion_datos["nombre"],
-            created_by=None,
+            created_by=1,
         )
         db.session.add(accion)
 
@@ -63,7 +63,7 @@ def guardar_rol(rol_datos):
         rol = Rol(
             nombre=rol_datos["nombre"],
             descripcion=rol_datos["descripcion"],
-            created_by=None,
+            created_by=1,
         )
         db.session.add(rol)
         return
@@ -108,6 +108,6 @@ def guardar_rol_accion(servicio, nombre_rol, nombres_acciones):
             })
             continue
 
-        db.session.add(RolAccion(id_rol=rol.id_rol, id_accion=accion.id_accion, created_by=None))
+        db.session.add(RolAccion(id_rol=rol.id_rol, id_accion=accion.id_accion, created_by=1))
 
     return conflictos

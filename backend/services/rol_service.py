@@ -12,6 +12,20 @@ Este archivo contiene la lógica de negocio del CRUD de Rol, incluida la
 selección de acciones que se le vinculan (RolAccion).
 """
 
+# Estos dos roles son la base del sistema de permisos: si se eliminan,
+# nadie podría volver a administrar roles ni usuarios.
+#
+# IMPORTANTE: todo nombre de rol se normaliza a MAYÚSCULAS con espacios
+# colapsados antes de guardarse (ver normalizar_nombre_rol en
+# schemas/registro_acciones_schemas.py), tanto si viene de un acciones.yml
+# como si se crea desde el CRUD de roles. El rol declarado como
+# "administrador roles" en acciones.yml queda guardado en la base como
+# "ADMINISTRADOR ROLES". Este set tiene que usar esa forma ya normalizada,
+# nunca la forma "cruda" del yml — de lo contrario la comparación de
+# `eliminar()` de más abajo nunca coincide y el rol queda desprotegido.
+ROLES_PROTEGIDOS = {"ADMINISTRADOR", "ADMINISTRADOR ROLES"}
+
+
 def obtener_todos(incluir_inactivos=False):
     """Si incluir_inactivos es True, trae también los roles dados de baja
     (para el admin, que los puede ver y reactivar)."""
@@ -68,10 +82,6 @@ def actualizar(rol, datos, id_usuario_sesion):
     propagar_a_usuarios_del_rol(rol.id_rol)
 
     return rol
-
-
-# Agregar esta constante arriba del todo, después de los imports:
-ROLES_PROTEGIDOS = {"ADMINISTRADOR", "administrador roles"}
 
 
 def eliminar(rol, id_usuario_sesion):

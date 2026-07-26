@@ -15,11 +15,12 @@ services:
       dockerfile: Dockerfile
     command: sh -c "pip install -e /auth-common --quiet && python app.py"
     ports:
-      - "5000:5000"
+      - "5924:5924"
     volumes:
       - ../backend:/app
       - ../../auth-common:/auth-common
     environment:
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:5173}
       - FLASK_ENV=development
       - PYTHONUNBUFFERED=1
       - DATABASE_URL=postgresql+psycopg2://postgres:postgres@postgres:5432/auth

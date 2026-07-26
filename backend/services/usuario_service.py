@@ -1,3 +1,4 @@
+from flask import current_app
 from marshmallow import ValidationError
 from models.usuario import Usuario, EstadoUsuario
 from schemas.usuario_schemas import usuario_create_schema, usuario_update_schema, usuario_completo_con_roles_schema
@@ -49,6 +50,21 @@ def _es_administrador(id_usuario):
         .first()
         is not None
     )
+
+
+def _link_activacion(email):
+    """Arma el link de activación a partir de FRONTEND_URL (config).
+
+    Antes esto estaba hardcodeado a http://localhost:5173 en dos lugares
+    distintos (crear_completo y crear_completo_con_roles). Ahora sale de
+    app.config["FRONTEND_URL"], seteable por variable de entorno, con el
+    mismo valor de localhost como default para no romper el dev actual
+    si todavía no se define la variable.
+    """
+    base_url = current_app.config.get("FRONTEND_URL", "http://localhost:5173")
+    # Evita "//" si alguien deja una barra final en la variable de entorno.
+    base_url = base_url.rstrip("/")
+    return f"{base_url}/activar-cuenta?email={email}"
 
 
 def crear(datos, id_usuario_sesion):
@@ -121,7 +137,7 @@ def crear_completo(datos, id_usuario_sesion):
 
     registrar_persona(nuevo.id_persona, email)
 
-    link_activacion = f"http://localhost:5173/activar-cuenta?email={email}"
+    link_activacion = _link_activacion(email)
     enviar_bienvenida(email, password_temporal, link_activacion)
 
     return nuevo, password_temporal
@@ -139,7 +155,7 @@ def crear_completo_con_roles(datos, id_usuario_sesion):
     en la base. Si algún id_rol no existe (o no está activo), la función
     corta ahí sin haber creado el usuario ni la credencial.
     """
-    
+
     # Validar email + id_roles. No son columnas de Usuario, por eso no
     #    pasan por usuario_create_schema.
     datos_validados = usuario_completo_con_roles_schema.load({
@@ -187,7 +203,7 @@ def crear_completo_con_roles(datos, id_usuario_sesion):
         db.session.rollback()
         raise
 
-    link_activacion = f"http://localhost:5173/activar-cuenta?email={email}"
+    link_activacion = _link_activacion(email)
     enviar_bienvenida(email, password_temporal, link_activacion)
 
     return nuevo
