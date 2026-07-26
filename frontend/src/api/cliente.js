@@ -36,7 +36,7 @@ export async function authFetch(path, options = {}) {
   const sesion = authService.getSession();
 
   // Realiza la peticion utilizando el Access Token actual
-  let res = await fetch(`${AUTH_API}${path}`, {
+  let res = await fetch(`${AUTH_API}/auth/api${path}`, {
     ...options,
     headers: construirHeaders(options, sesion?.access_token),
   });
@@ -47,7 +47,7 @@ export async function authFetch(path, options = {}) {
     try {
       const nuevoToken = await refrescarToken();
 
-      res = await fetch(`${AUTH_API}${path}`, {
+      res = await fetch(`${AUTH_API}/auth/api${path}`, {
         ...options,
         headers: construirHeaders(options, nuevoToken),
       });

@@ -32,7 +32,6 @@ from db import limiter
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
 
-
 # ---------------------------------------------------------------------------
 # Funciones de clave para rate limiting
 # ---------------------------------------------------------------------------
