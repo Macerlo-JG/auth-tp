@@ -41,21 +41,41 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  // Inicio sesion
-  const login = async (email, password) => {
-    try {
-      const session = await authService.login(email, password);
+ // Inicio sesión
+const login = async (email, password) => {
+  console.debug("[login] Inicio", { email });
 
-      setRoles(session.roles ?? []);
-      setAcciones(session.acciones ?? []);
-      setUser(session.user ?? null);
-      setIsAuthenticated(true);
+  try {
+    console.debug("[login] Llamando a authService.login...");
+    const session = await authService.login(email, password);
 
-      return session;
-    } catch (error) {
-      throw error;
-    }
-  };
+    console.debug("[login] Session recibida:", session);
+
+    console.debug("[login] roles:", session?.roles);
+    setRoles(session.roles ?? []);
+
+    console.debug("[login] acciones:", session?.acciones);
+    setAcciones(session.acciones ?? []);
+
+    console.debug("[login] user:", session?.user);
+    setUser(session.user ?? null);
+
+    console.debug("[login] setIsAuthenticated(true)");
+    setIsAuthenticated(true);
+
+    console.debug("[login] Fin OK");
+
+    return session;
+  } catch (error) {
+    console.error("[login] ERROR", error);
+    console.error("[login] message:", error?.message);
+    console.error("[login] response:", error?.response);
+    console.error("[login] response.data:", error?.response?.data);
+    console.error("[login] stack:", error?.stack);
+
+    throw error;
+  }
+};
 
   // Cierra sesion
   // Limpia toda la informacion almacenada en el contexto

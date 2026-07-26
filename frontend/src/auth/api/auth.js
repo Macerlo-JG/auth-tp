@@ -10,49 +10,69 @@ export const API_URL = AUTH_API;
 
 // Envía las credenciales al backend para iniciar sesion
 // Si la autenticación es exitosa, devuelve la información de la sesión del usuario
+// Envía las credenciales al backend para iniciar sesion
+// Si la autenticación es exitosa, devuelve la información de la sesión del usuario
 export async function login({ email, password }) {
-  // Realiza la petición al endpoint de login.
-  const response = await fetch(`${API_URL}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+  console.debug("[authApi.login] Inicio", { email });
+  console.debug("[authApi.login] URL:", `${API_URL}/auth/login`);
 
-    // Envía el correo y la contraseña en formato JSON
-    body: JSON.stringify({ email, password }),
-  });
+  try {
+    console.debug("[authApi.login] Enviando request...");
 
-  // Convierte la respuesta del servidor a un objeto JavaScript
-  const body = await response.json();
+    const response = await fetch(`${API_URL}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
 
-  // Verifica si la cuenta existe pero todavia no fue activada
-  // En ese caso, lanza un error con informacion adicional para que el frontend pueda manejar este escenario
-  if (body.code === "CUENTA_PENDIENTE") {
-    const error = new Error(body.message);
-    error.code = "CUENTA_PENDIENTE";
-    error.email = body.data?.email || email;
-    error.id_usuario = body.data?.id_usuario;
+    console.debug("[authApi.login] Status:", response.status);
+    console.debug("[authApi.login] OK:", response.ok);
+
+    const body = await response.json();
+
+    console.debug("[authApi.login] Body:", body);
+
+    if (body.code === "CUENTA_PENDIENTE") {
+      console.warn("[authApi.login] Cuenta pendiente", body);
+
+      const error = new Error(body.message);
+      error.code = "CUENTA_PENDIENTE";
+      error.email = body.data?.email || email;
+      error.id_usuario = body.data?.id_usuario;
+
+      throw error;
+    }
+
+    if (!response.ok || !body.ok) {
+      console.error("[authApi.login] Error autenticación", {
+        status: response.status,
+        body,
+      });
+
+      throw new Error(body.message || "Correo o contraseña incorrectos.");
+    }
+
+    const data = body.data;
+
+    console.debug("[authApi.login] Data:", data);
+    console.debug("[authApi.login] Login OK");
+
+    return {
+      success: true,
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+      roles: data.roles,
+      acciones: data.acciones,
+      user: data.user,
+      aviso_cambio_contrasena: data.aviso_cambio_contrasena,
+    };
+  } catch (error) {
+    console.error("[authApi.login] ERROR", error);
+    console.error("[authApi.login] message:", error?.message);
+    console.error("[authApi.login] stack:", error?.stack);
 
     throw error;
   }
-
-  // Verifica si ocurrio un error durante la autenticación
-  if (!response.ok || !body.ok) {
-    throw new Error(body.message || "Correo o contraseña incorrectos.");
-  }
-
-  // Obtiene la informacion de la sesion devuelta por el backend
-  const data = body.data;
-
-  // Devuelve la estructura que utilizara el AuthContext
-  // para almacenar la sesión del usuario
-  return {
-    success: true,
-    access_token: data.access_token,
-    refresh_token: data.refresh_token,
-    roles: data.roles,
-    acciones: data.acciones,
-    user: data.user,
-    aviso_cambio_contrasena: data.aviso_cambio_contrasena,
-  };
 }
 
 // Solicita un nuevo Access Token utilizando el Refresh Token

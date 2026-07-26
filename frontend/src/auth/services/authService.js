@@ -21,17 +21,37 @@ function eliminarSesion() {
 
 // Inicia sesión enviando las credenciales al backend
 // Si la autenticación es exitosa, guarda la sesión localmente y devuelve la respuesta recibida
+// Inicia sesión enviando las credenciales al backend
+// Si la autenticación es exitosa, guarda la sesión localmente y devuelve la respuesta recibida
 async function login(email, password) {
-  const response = await authApi.login({
-    email,
-    password,
-  });
+  console.debug("[authService.login] Inicio", { email });
 
-  guardarSesion(response);
+  try {
+    console.debug("[authService.login] Llamando a authApi.login...");
 
-  return response;
+    const response = await authApi.login({
+      email,
+      password,
+    });
+
+    console.debug("[authService.login] Respuesta API:", response);
+
+    console.debug("[authService.login] Guardando sesión...");
+    guardarSesion(response);
+    console.debug("[authService.login] Sesión guardada");
+
+    console.debug("[authService.login] Fin OK");
+    return response;
+  } catch (error) {
+    console.error("[authService.login] ERROR", error);
+    console.error("[authService.login] message:", error?.message);
+    console.error("[authService.login] response:", error?.response);
+    console.error("[authService.login] response.data:", error?.response?.data);
+    console.error("[authService.login] stack:", error?.stack);
+
+    throw error;
+  }
 }
-
 // Cierra la sesión del usuario. Notifica al backend y elimina la sesión almacenada localmente
 async function logout() {
   const sesion = obtenerSesion();
