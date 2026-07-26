@@ -61,7 +61,7 @@ def _link_activacion(email):
     mismo valor de localhost como default para no romper el dev actual
     si todavía no se define la variable.
     """
-    base_url = current_app.config.get("FRONTEND_URL", "http://localhost:5173")
+    base_url = current_app.config.get("FRONTEND_URL", "http://186.19.137.9:8480")
     # Evita "//" si alguien deja una barra final en la variable de entorno.
     base_url = base_url.rstrip("/")
     return f"{base_url}/activar-cuenta?email={email}"

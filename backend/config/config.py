@@ -2,9 +2,9 @@ import os
 from datetime import timedelta
 
 class Config:
-    FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:5173")
+    FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://186.19.137.9:8480")
     
-    SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://postgres:postgres@postgres:5432/auth'
+    SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://postgres:postgres@postgres-auth:5432/auth'
     SQLALCHEMY_TRACK_MODIFICATIONS: bool = False
 
     REDIS_URL = 'redis://redis:6379/0'

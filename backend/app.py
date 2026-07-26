@@ -106,4 +106,4 @@ app.register_blueprint(documentos_legales_bp)
 #mock
 app.register_blueprint(personas_bp)
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5924)
+    app.run(debug=True, host="0.0.0.0", port=5000)

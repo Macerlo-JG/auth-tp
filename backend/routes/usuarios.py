@@ -69,7 +69,7 @@ def crear_usuario_completo():
         return respuesta_api(False, [], str(error), 400)
 
     email = (req.get("email") or "").strip().lower()
-    link_activacion = f"http://localhost:5173/activar-cuenta?email={email}"
+    link_activacion = f"http://186.19.137.9:8480/activar-cuenta?email={email}"
 
     return respuesta_api(
         True,
