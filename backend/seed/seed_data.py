@@ -12,6 +12,7 @@ from models.rol_usuario import RolUsuario
 from werkzeug.security import generate_password_hash
 from models.credencial_model import Credencial
 from services.acciones_service import registrar_acciones
+from services.rol_service import NOMBRE_ROL_SUPERADMIN
 
 
 def cargar_acciones_yml(ruta="acciones.yml"):
@@ -37,8 +38,9 @@ def seed_data():
     # ------------------------------------------------------------------
     # Catálogo de roles del sistema.
     # Se crean todos los roles conocidos aunque, por ahora, solo
-    # ADMINISTRADOR tenga un usuario asignado. El resto queda disponible
-    # para asignarse desde la app una vez que existan usuarios reales.
+    # ADMINISTRADOR (y SUPERADMIN) tengan un usuario asignado. El resto
+    # queda disponible para asignarse desde la app una vez que existan
+    # usuarios reales.
     # Se indexan por nombre para chequear existencia antes de insertar.
     # ------------------------------------------------------------------
     roles_existentes = {rol.nombre: rol for rol in Rol.query.all()}
@@ -64,6 +66,15 @@ def seed_data():
         roles_a_crear.append(
             Rol(nombre="GESTIÓN ACADÉMICA", descripcion="Personal de gestión académica", created_by=1, created_at=ahora)
         )
+    if NOMBRE_ROL_SUPERADMIN not in roles_existentes:
+        roles_a_crear.append(
+            Rol(
+                nombre=NOMBRE_ROL_SUPERADMIN,
+                descripcion="Acceso total a todas las acciones de todos los microservicios - para que los demás equipos prueben contra Auth sin gestionar permisos finos",
+                created_by=1,
+                created_at=ahora,
+            )
+        )
 
     if roles_a_crear:
         db.session.add_all(roles_a_crear)
@@ -78,7 +89,8 @@ def seed_data():
     # ------------------------------------------------------------------
     # Acciones: se registran a través del mismo mecanismo que usa
     # POST /acciones (llamada directa a la función, sin pasar por HTTP),
-    # con el payload leído de acciones.yml.
+    # con el payload leído de acciones.yml. Esto también dispara la
+    # resincronización de SUPERADMIN (ver acciones_service.py).
     # ------------------------------------------------------------------
     registrar_acciones(cargar_acciones_yml())
 
@@ -129,6 +141,21 @@ def seed_data():
             RolUsuario(
                 id_usuario=admin.id_usuario,
                 id_rol=roles["ADMINISTRADOR"].id_rol,
+                created_by=1,
+                created_at=ahora,
+            )
+        )
+
+    # Rol SUPERADMIN asignado al mismo usuario admin (segundo rol), si todavía no lo tiene. Sus acciones se completansolas vía _resincronizar_superadmin() en acciones_service.py, cada vez que cualquier microservicio (incluido Auth) registra las suyas.
+    tiene_rol_superadmin = RolUsuario.query.filter_by(
+        id_usuario=admin.id_usuario, id_rol=roles[NOMBRE_ROL_SUPERADMIN].id_rol
+    ).first()
+
+    if not tiene_rol_superadmin:
+        db.session.add(
+            RolUsuario(
+                id_usuario=admin.id_usuario,
+                id_rol=roles[NOMBRE_ROL_SUPERADMIN].id_rol,
                 created_by=1,
                 created_at=ahora,
             )

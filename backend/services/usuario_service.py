@@ -8,7 +8,7 @@ from services.email_service import enviar_bienvenida
 from mock.emails_usuario import registrar_persona
 from models.rol import Rol
 from models.rol_usuario import RolUsuario
-from auth_common import sesion_common
+from services import sesion_service
 
 """Servicio de usuarios.
 
@@ -97,7 +97,7 @@ def actualizar(usuario, datos, id_usuario_sesion):
     # Si el nuevo estado es restrictivo, se cierra la sesión activa del
     # usuario para que no pueda seguir usando un token todavía válido.
     if intenta_restringir:
-        sesion_common.eliminar_sesion(usuario.id_usuario)
+        sesion_service.eliminar_sesion(usuario.id_usuario)
 
     return usuario
 

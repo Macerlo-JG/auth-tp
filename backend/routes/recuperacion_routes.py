@@ -9,7 +9,7 @@ from services.otp_service import generar_otp, verificar_otp
 from services.email_service import enviar_otp_recuperacion
 from services.credencial_service import restablecer_password
 
-recuperacion_bp = Blueprint("recuperacion", __name__, url_prefix="/recuperacion")
+recuperacion_bp = Blueprint("recuperacion", __name__, url_prefix="/auth/recuperacion")
 
 
 def _usuario_activo_por_email(email):

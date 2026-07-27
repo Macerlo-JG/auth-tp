@@ -15,7 +15,7 @@ from services.usuario_service import (
 from auth_common.respuesta_api import respuesta_api
 from auth_common.decorador import requires_permission
 
-usuarios_bp = Blueprint("usuarios", __name__, url_prefix="/usuarios")
+usuarios_bp = Blueprint("usuarios", __name__, url_prefix="/auth/usuarios")
 
 @usuarios_bp.route("", methods=["GET"])
 @requires_permission("auth.usuarios.ver")

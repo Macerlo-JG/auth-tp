@@ -23,7 +23,7 @@ from auth_common.respuesta_api import respuesta_api
 from auth_common.decorador import requires_permission
 from db import limiter
 
-credenciales_bp = Blueprint("credenciales", __name__, url_prefix="/credenciales")
+credenciales_bp = Blueprint("credenciales", __name__, url_prefix="/auth/credenciales")
 
 
 # Tipo de OTP propio para este flujo -- namespace separado en Redis del

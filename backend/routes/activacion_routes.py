@@ -13,7 +13,7 @@ from services.usuario_service import obtener_por_id_persona, activar_cuenta
 from services.otp_service import generar_otp, verificar_otp
 from services.email_service import enviar_otp_activacion
 
-activacion_bp = Blueprint("activacion", __name__, url_prefix="/activacion")
+activacion_bp = Blueprint("activacion", __name__, url_prefix="/auth/activacion")
 
 
 # solicito un código de activación

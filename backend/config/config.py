@@ -34,6 +34,15 @@ class Config:
         "recuperacion.solicitar_otp",
         "recuperacion.verificar_otp_endpoint",
         "recuperacion.cambiar_contrasena",
+        "acciones.registrar",
+    ]
+
+    # IPs de microservicios autorizados a llamar endpoints only_services=True
+    # Separadas por coma en la variable de entorno, ej: "172.99.0.11,172.99.0.12" (Inscripción, Planes).
+    AUTH_COMMON_SERVICIOS_PERMITIDOS = [
+        ip.strip()
+        for ip in os.environ.get("AUTH_COMMON_SERVICIOS_PERMITIDOS", "").split(",")
+        if ip.strip()
     ]
 
     # --- Flask-Mail ---

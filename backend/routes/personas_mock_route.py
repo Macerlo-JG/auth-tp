@@ -11,7 +11,7 @@ Expone el único diccionario real de personas que existe hoy
 este archivo se reemplaza sin tocar el resto del sistema.
 """
 
-personas_bp = Blueprint("personas", __name__, url_prefix="/personas")
+personas_bp = Blueprint("personas", __name__, url_prefix="/auth/personas")
 
 
 @personas_bp.route("", methods=["GET"])

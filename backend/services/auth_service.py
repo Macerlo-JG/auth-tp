@@ -15,7 +15,8 @@ from models.usuario import EstadoUsuario, Usuario
 from models.credencial_model import Credencial
 from services.credencial_service import verificar_password
 from mock.emails_usuario import obtener_email_por_id_persona
-from auth_common import sesion_common
+from auth_common.sesion_common import obtener_sesion
+from services import sesion_service
 from models.rol_usuario import RolUsuario
 from models.rol_accion import RolAccion
 
@@ -73,7 +74,7 @@ def obtener_roles_y_acciones(id_usuario):
 def crear_sesion_usuario(id_usuario, id_persona, refresh_jti):
     roles, acciones = obtener_roles_y_acciones(id_usuario)
 
-    sesion_common.crear_sesion(
+    sesion_service.crear_sesion(
         id_usuario=id_usuario,
         roles=roles,
         acciones=acciones,
@@ -85,7 +86,7 @@ def crear_sesion_usuario(id_usuario, id_persona, refresh_jti):
 
 
 def cerrar_sesion_usuario(id_usuario):
-    sesion_common.eliminar_sesion(id_usuario)
+    sesion_service.eliminar_sesion(id_usuario)
 
 
 def renovar_sesion_usuario(id_usuario, refresh_jti_recibido):
@@ -95,7 +96,7 @@ def renovar_sesion_usuario(id_usuario, refresh_jti_recibido):
       "no_existe"   — no hay sesión activa (venció por TTL o se cerró).
       "jti_invalido"— hay sesión, pero el refresh token no coincide.
     """
-    sesion = sesion_common.obtener_sesion(id_usuario)
+    sesion = obtener_sesion(id_usuario)
 
     if not sesion:
         return "no_existe"
@@ -103,7 +104,7 @@ def renovar_sesion_usuario(id_usuario, refresh_jti_recibido):
     if sesion["refresh_jti"] != refresh_jti_recibido:
         return "jti_invalido"
 
-    sesion_common.renovar_sesion(id_usuario)
+    sesion_service.renovar_sesion(id_usuario)
     return "ok"
 
 # ---------------------------------------------------------------------------
@@ -177,7 +178,7 @@ def propagar_cambio_roles(id_usuario):
     próximo login.
     """
     roles, acciones = obtener_roles_y_acciones(id_usuario)
-    sesion_common.actualizar_permisos_sesion(id_usuario, roles, acciones)
+    sesion_service.actualizar_permisos_sesion(id_usuario, roles, acciones)
 
 
 # ---------------------------------------------------------------------------

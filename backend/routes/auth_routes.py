@@ -99,7 +99,6 @@ def iniciar_sesion():
             "user": {
                 "id": usuario.id_usuario,
             },
-            "permisos": acciones,
             "aviso_cambio_contrasena": aviso_cambio_contrasena,
         }, "Inicio de sesión exitoso")
 

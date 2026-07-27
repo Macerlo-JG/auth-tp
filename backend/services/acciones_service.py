@@ -1,8 +1,15 @@
+import traceback
+
 from db import db
 from models.accion import Accion
 from models.rol import Rol
 from models.rol_accion import RolAccion
 from schemas.registro_acciones_schemas import registro_acciones_schema
+from services.rol_service import (
+    sincronizar_acciones,
+    propagar_a_usuarios_del_rol,
+    NOMBRE_ROL_SUPERADMIN,
+)
 
 """
 Registra acciones, roles y relaciones rol-acción declaradas por un
@@ -38,7 +45,37 @@ def registrar_acciones(datos):
 
     db.session.commit()
 
+    resincronizar_superadmin()
+
     return conflictos
+
+
+def resincronizar_superadmin():
+    """
+    Le da a SUPERADMIN todas las acciones activas que existan en este
+    momento, y propaga el cambio a Redis si tiene una sesión activa.
+
+    Se llama al final de cada registro de acciones (de cualquier
+    microservicio), así el superusuario queda al día sin depender de un
+    restart de Auth.
+    """
+    rol = Rol.query.filter_by(nombre=NOMBRE_ROL_SUPERADMIN, activo=True).first()
+
+    if rol is None:
+        return
+
+    ids_todas_las_acciones = [
+        accion.id_accion
+        for accion in Accion.query.filter_by(activo=True).all()
+    ]
+
+    sincronizar_acciones(rol, ids_todas_las_acciones, id_usuario_sesion=1)
+    db.session.commit()
+
+    try:
+        propagar_a_usuarios_del_rol(rol.id_rol)
+    except Exception:
+        traceback.print_exc()
 
 
 def guardar_accion(servicio, accion_datos):

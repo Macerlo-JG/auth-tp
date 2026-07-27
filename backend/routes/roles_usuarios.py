@@ -17,7 +17,7 @@ Este archivo define los endpoints relacionados a asignación y revocación de ro
 """
 
 # Blueprint = módulo de rutas montado bajo el prefijo /usuarios.
-roles_usuarios_bp = Blueprint("roles_usuarios", __name__, url_prefix="/usuarios")
+roles_usuarios_bp = Blueprint("roles_usuarios", __name__, url_prefix="/auth/usuarios")
 
 
 # Traer todos los roles disponibles y activos

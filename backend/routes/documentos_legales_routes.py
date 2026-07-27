@@ -14,7 +14,7 @@ from auth_common.respuesta_api import respuesta_api
 from auth_common.decorador import requires_permission
 
 documentos_legales_bp = Blueprint(
-    "documentos_legales", __name__, url_prefix="/documentos-legales"
+    "documentos_legales", __name__, url_prefix="/auth/documentos-legales"
 )
 
 

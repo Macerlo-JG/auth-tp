@@ -19,7 +19,7 @@ from auth_common.decorador import requires_permission
 Este archivo define los endpoints del CRUD de Rol.
 """
 
-roles_bp = Blueprint("roles", __name__, url_prefix="/roles")
+roles_bp = Blueprint("roles", __name__, url_prefix="/auth/roles")
 
 @roles_bp.route("", methods=["GET"])
 @requires_permission("auth.roles.ver")
