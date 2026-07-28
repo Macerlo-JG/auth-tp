@@ -18,7 +18,7 @@ from services.credencial_service import (
 from services.usuario_service import obtener_por_id
 from services.otp_service import generar_otp, verificar_otp
 from services.email_service import enviar_otp_cambio_contrasena
-from mock.emails_usuario import obtener_email_por_id_persona
+from services.cliente_planes import obtener_email_por_id_persona
 from auth_common.respuesta_api import respuesta_api
 from auth_common.decorador import requires_permission
 from db import limiter
@@ -97,6 +97,8 @@ def solicitar_otp_cambio():
         # El email vive en el mock de personas (mock/personas_mock.py),
         # resuelto a partir del id_persona del usuario autenticado.
         email = obtener_email_por_id_persona(usuario.id_persona)
+
+        print(email)
         if not email:
             return respuesta_api(
                 False, [], "No hay un correo asociado a este usuario", 400

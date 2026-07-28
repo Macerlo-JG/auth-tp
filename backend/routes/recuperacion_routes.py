@@ -2,7 +2,7 @@
 from flask import Blueprint, request, jsonify
 import traceback
 
-from mock.emails_usuario import obtener_id_persona_por_email
+from services.cliente_planes import obtener_id_persona_por_email, PlanesNoDisponibleError
 from models.usuario import EstadoUsuario
 from services.usuario_service import obtener_por_id_persona
 from services.otp_service import generar_otp, verificar_otp
@@ -52,6 +52,9 @@ def solicitar_otp():
             [],
             "Si el correo existe y la cuenta está activa, recibirá un código de recuperación.",
         )
+
+    except PlanesNoDisponibleError:
+        return respuesta_api(False, [], "Servicio no disponible, intentá nuevamente en unos minutos", 503)
 
     except Exception as error:
         traceback.print_exc()
@@ -116,6 +119,10 @@ def cambiar_contrasena():
 
     except ValueError as error:
         return respuesta_api(False, [], str(error), 400)
+
+    except PlanesNoDisponibleError:
+        return respuesta_api(False, [], "Servicio no disponible, intentá nuevamente en unos minutos", 503)
+    
     except Exception as error:
         traceback.print_exc()
         return respuesta_api(False, [], str(error), 500)

@@ -14,6 +14,7 @@ from services.usuario_service import (
 )
 from auth_common.respuesta_api import respuesta_api
 from auth_common.decorador import requires_permission
+from services.cliente_planes import PlanesNoDisponibleError
 
 usuarios_bp = Blueprint("usuarios", __name__, url_prefix="/auth/usuarios")
 
@@ -59,17 +60,16 @@ def crear_usuario():
 def crear_usuario_completo():
     req = request.get_json()
     try:
-        nuevo_usuario, password_temporal = crear_completo(req, g.id_usuario)
+        nuevo_usuario, password_temporal, email, link_activacion = crear_completo(req, g.id_usuario)
     except ValidationError as e:
         return respuesta_api(False, [], e.messages, 400)
     except ValueError as error:
         return respuesta_api(False, [], str(error), 400)
+    except PlanesNoDisponibleError:
+        return respuesta_api(False, [], "Servicio no disponible, intentá nuevamente en unos minutos", 503)
     except Exception as error:
         traceback.print_exc()
         return respuesta_api(False, [], str(error), 400)
-
-    email = (req.get("email") or "").strip().lower()
-    link_activacion = f"http://186.19.137.9:8480/activar-cuenta?email={email}"
 
     return respuesta_api(
         True,

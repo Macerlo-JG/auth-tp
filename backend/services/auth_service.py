@@ -14,7 +14,7 @@ from datetime import datetime
 from models.usuario import EstadoUsuario, Usuario
 from models.credencial_model import Credencial
 from services.credencial_service import verificar_password
-from mock.emails_usuario import obtener_email_por_id_persona
+from services.cliente_planes import obtener_email_por_id_persona
 from auth_common.sesion_common import obtener_sesion
 from services import sesion_service
 from models.rol_usuario import RolUsuario
@@ -157,7 +157,7 @@ def login(id_persona, password):
     # no queremos confirmar que el email existe si la contraseña es incorrecta.
     if usuario.estado_usuario == EstadoUsuario.PENDIENTE:
         # Antes acá se usaba `usuario.email`, pero el modelo Usuario NO
-        # guarda email (el email vive en el mock de personas).
+        # guarda email.
         email = obtener_email_por_id_persona(usuario.id_persona)
         raise CuentaPendienteError(
             "Su cuenta aún no fue confirmada. Revise su correo e ingrese el código de activación.",

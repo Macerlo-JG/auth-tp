@@ -23,7 +23,7 @@ services:
       - FRONTEND_URL=${FRONTEND_URL:-http://localhost:5173}
       - FLASK_ENV=development
       - PYTHONUNBUFFERED=1
-      - DATABASE_URL=postgresql+psycopg2://postgres:postgres@postgres-auth:5432/auth
+      - DATABASE_URL=postgresql+psycopg2://postgres:postgres@postgres:5432/auth
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - MAIL_SERVER=${MAIL_SERVER}
       - MAIL_PORT=${MAIL_PORT}

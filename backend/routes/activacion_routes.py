@@ -7,7 +7,7 @@ ej: recuperación de contraseña o edición de datos sensibles como mail de inic
 from flask import Blueprint, request, jsonify
 import traceback
 
-from mock.emails_usuario import obtener_id_persona_por_email
+from services.cliente_planes import obtener_id_persona_por_email, PlanesNoDisponibleError
 from models.usuario import EstadoUsuario
 from services.usuario_service import obtener_por_id_persona, activar_cuenta
 from services.otp_service import generar_otp, verificar_otp
@@ -26,8 +26,9 @@ def solicitar_otp():
         if not email:
             return respuesta_api(False, [], "email es requerido", 400)
 
-        # MOCK: email -> id_persona a través del mock único (mismo que usa login).
+        # email -> id_persona resuelto contra Planes.
         id_persona = obtener_id_persona_por_email(email)
+
         if not id_persona:
             # No revelamos si el correo existe para evitar enumeración de usuarios.
             return respuesta_api(True, [], "Si el correo existe, recibirá un código de activación.")
@@ -47,6 +48,9 @@ def solicitar_otp():
         enviar_otp_activacion(email, codigo)
 
         return respuesta_api(True, [], "Se envió un código de activación a su correo.")
+
+    except PlanesNoDisponibleError:
+        return respuesta_api(False, [], "Servicio no disponible, intentá nuevamente en unos minutos", 503)
 
     except Exception as error:
         traceback.print_exc()
@@ -80,6 +84,9 @@ def verificar():
         activar_cuenta(usuario)
 
         return respuesta_api(True, [], "Cuenta activada correctamente. Ya puede iniciar sesión.")
+
+    except PlanesNoDisponibleError:
+        return respuesta_api(False, [], "Servicio no disponible, intentá nuevamente en unos minutos", 503)
 
     except Exception as error:
         traceback.print_exc()

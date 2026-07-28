@@ -11,7 +11,7 @@ from auth_common.decorador import requires_permission
 
 """
 Endpoint de registro de acciones, roles y relaciones rol-acción.
-Lo llama cada microservicio (Inscripción, Planes) al arrancar, con el
+Lo llama cada microservicio (Legajo, Inscripción) al arrancar, con el
 contenido de su acciones.yml.
 """
 

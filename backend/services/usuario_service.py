@@ -5,10 +5,10 @@ from schemas.usuario_schemas import usuario_create_schema, usuario_update_schema
 from db import db
 from services.credencial_service import crear_password_temporal
 from services.email_service import enviar_bienvenida
-from mock.emails_usuario import registrar_persona
+from services.cliente_planes import obtener_email_por_id_persona, PlanesNoDisponibleError
 from models.rol import Rol
 from models.rol_usuario import RolUsuario
-from services import sesion_service
+from auth_common import sesion_common
 
 """Servicio de usuarios.
 
@@ -61,10 +61,10 @@ def _link_activacion(email):
     mismo valor de localhost como default para no romper el dev actual
     si todavía no se define la variable.
     """
-    base_url = current_app.config.get("FRONTEND_URL", "http://186.19.137.9:8480")
+    base_url = current_app.config.get("FRONTEND_URL", "http://localhost:8480")
     # Evita "//" si alguien deja una barra final en la variable de entorno.
     base_url = base_url.rstrip("/")
-    return f"{base_url}/activar-cuenta?email={email}"
+    return f"{base_url}/auth/activar-cuenta?email={email}"
 
 
 def crear(datos, id_usuario_sesion):
@@ -97,7 +97,7 @@ def actualizar(usuario, datos, id_usuario_sesion):
     # Si el nuevo estado es restrictivo, se cierra la sesión activa del
     # usuario para que no pueda seguir usando un token todavía válido.
     if intenta_restringir:
-        sesion_service.eliminar_sesion(usuario.id_usuario)
+        sesion_common.eliminar_sesion(usuario.id_usuario)
 
     return usuario
 
@@ -118,12 +118,14 @@ def activar_cuenta(usuario, id_usuario_sesion=None):
 def crear_completo(datos, id_usuario_sesion):
     """Crea un usuario, le genera una contraseña temporal y le manda
     el mail de bienvenida, todo en un solo paso."""
-    email = datos.pop("email", None)
-    if not email or not str(email).strip():
-        raise ValueError("El email es requerido para enviar las credenciales")
-    email = str(email).strip().lower()
+    datos.pop("email", None)
 
     nuevo = usuario_create_schema.load(datos)
+
+    email = obtener_email_por_id_persona(nuevo.id_persona)
+    if not email:
+        raise ValueError("La persona indicada no tiene un email registrado en Planes")
+
     nuevo.created_by = id_usuario_sesion
     db.session.add(nuevo)
     db.session.flush()
@@ -135,12 +137,10 @@ def crear_completo(datos, id_usuario_sesion):
         db.session.rollback()
         raise
 
-    registrar_persona(nuevo.id_persona, email)
-
     link_activacion = _link_activacion(email)
     enviar_bienvenida(email, password_temporal, link_activacion)
 
-    return nuevo, password_temporal
+    return nuevo, password_temporal, email, link_activacion
 
 
 def crear_completo_con_roles(datos, id_usuario_sesion):

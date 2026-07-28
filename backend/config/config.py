@@ -4,7 +4,9 @@ from datetime import timedelta
 class Config:
     FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://186.19.137.9:8480")
     
-    SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://postgres:postgres@postgres-auth:5432/auth'
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+    "DATABASE_URL",
+    "postgresql+psycopg2://postgres:postgres@postgres-auth:5432/auth")
     SQLALCHEMY_TRACK_MODIFICATIONS: bool = False
 
     REDIS_URL = 'redis://redis:6379/0'
@@ -22,6 +24,9 @@ class Config:
 
     RATELIMIT_STORAGE_URI = 'redis://redis:6379/1'
 
+    # URL interna del microservicio Planes.
+    PLANES_URL = os.environ.get("PLANES_URL", "http://planes-backend:5000")
+
     AUTH_COMMON_REDIS_URL = REDIS_URL
     AUTH_COMMON_SESSION_TTL = int(JWT_ACCESS_TOKEN_EXPIRES.total_seconds())
 
@@ -37,7 +42,7 @@ class Config:
         "acciones.registrar",
     ]
 
-    # IPs de microservicios autorizados a llamar endpoints only_services=True
+     # IPs de microservicios autorizados a llamar endpoints only_services=True
     # Separadas por coma en la variable de entorno, ej: "172.99.0.11,172.99.0.12" (Inscripción, Planes).
     AUTH_COMMON_SERVICIOS_PERMITIDOS = [
         ip.strip()
