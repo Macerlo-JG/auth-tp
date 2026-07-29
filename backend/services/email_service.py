@@ -27,7 +27,7 @@ def enviar_mail(destinatario, asunto, cuerpo):
         body=cuerpo,
         sender=current_app.config.get("MAIL_DEFAULT_SENDER"),
     )
-    try:
+    try:       
         mail.send(msg)
         _ultimos_envios.append({
             "destinatario": destinatario,
@@ -35,7 +35,8 @@ def enviar_mail(destinatario, asunto, cuerpo):
             "cuerpo": cuerpo,
         })
         return True
-    except Exception:
+
+    except Exception as e:
         traceback.print_exc()
         return False
 

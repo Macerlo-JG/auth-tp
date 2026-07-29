@@ -7,7 +7,7 @@ ej: recuperación de contraseña o edición de datos sensibles como mail de inic
 from flask import Blueprint, request, jsonify
 import traceback
 
-from services.cliente_planes import obtener_id_persona_por_email, PlanesNoDisponibleError
+from services.cliente_planes import obtener_persona_por_email, PlanesNoDisponibleError
 from models.usuario import EstadoUsuario
 from services.usuario_service import obtener_por_id_persona, activar_cuenta
 from services.otp_service import generar_otp, verificar_otp
@@ -27,7 +27,7 @@ def solicitar_otp():
             return respuesta_api(False, [], "email es requerido", 400)
 
         # email -> id_persona resuelto contra Planes.
-        id_persona = obtener_id_persona_por_email(email)
+        id_persona, _ = obtener_persona_por_email(email)
 
         if not id_persona:
             # No revelamos si el correo existe para evitar enumeración de usuarios.
@@ -68,7 +68,7 @@ def verificar():
         if not email or not otp:
             return respuesta_api(False, [], "email y otp son requeridos", 400)
 
-        id_persona = obtener_id_persona_por_email(email)
+        id_persona, _ = obtener_persona_por_email(email)
         if not id_persona:
             return respuesta_api(False, [], "Código inválido.", 400)
 

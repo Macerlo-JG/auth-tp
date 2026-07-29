@@ -71,7 +71,7 @@ def obtener_roles_y_acciones(id_usuario):
 # Sesión
 # ---------------------------------------------------------------------------
 
-def crear_sesion_usuario(id_usuario, id_persona, refresh_jti):
+def crear_sesion_usuario(id_usuario, id_persona, id_legajo, refresh_jti):
     roles, acciones = obtener_roles_y_acciones(id_usuario)
 
     sesion_service.crear_sesion(
@@ -80,6 +80,7 @@ def crear_sesion_usuario(id_usuario, id_persona, refresh_jti):
         acciones=acciones,
         refresh_jti=refresh_jti,
         id_persona=id_persona,
+        id_legajo=id_legajo
     )
 
     return roles, acciones
@@ -157,7 +158,7 @@ def login(id_persona, password):
     # no queremos confirmar que el email existe si la contraseña es incorrecta.
     if usuario.estado_usuario == EstadoUsuario.PENDIENTE:
         # Antes acá se usaba `usuario.email`, pero el modelo Usuario NO
-        # guarda email.
+        # guarda email (el email vive en el mock de personas).
         email = obtener_email_por_id_persona(usuario.id_persona)
         raise CuentaPendienteError(
             "Su cuenta aún no fue confirmada. Revise su correo e ingrese el código de activación.",

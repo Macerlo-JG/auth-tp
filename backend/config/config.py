@@ -2,7 +2,7 @@ import os
 from datetime import timedelta
 
 class Config:
-    FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://186.19.137.9:8480")
+    FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:8480")
     
     SQLALCHEMY_DATABASE_URI = os.environ.get(
     "DATABASE_URL",

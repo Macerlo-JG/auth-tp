@@ -8,7 +8,7 @@ from auth_common import sesion_common
 from routes.usuarios import usuarios_bp
 from routes.roles_usuarios import roles_usuarios_bp
 from routes.roles import roles_bp
-from seed.seed_data import seed_data
+from seed.seed_data import seed_data, seed_data_prueba
 from routes.credenciales_routes import credenciales_bp
 from routes.auth_routes import auth_bp
 from routes.activacion_routes import activacion_bp
@@ -94,6 +94,13 @@ def limite_excedido(error):
 with app.app_context():
     db.create_all()    
     seed_data()
+
+       # Usuarios de prueba (docente@test.com, alumno@test.com): solo en
+    # desarrollo local, nunca contra un ambiente real. Depende de que
+    # Planes tenga cargadas las personas 2 y 3 con contacto de email
+    # (ver 001_datos_iniciales.sql y seed_data_prueba()).
+    if os.environ.get("FLASK_ENV") == "development":
+        seed_data_prueba()
 
 app.register_blueprint(usuarios_bp)    
 app.register_blueprint(roles_usuarios_bp)

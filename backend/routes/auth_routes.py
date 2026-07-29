@@ -18,7 +18,7 @@ from flask_jwt_extended import (
     get_jwt,
 )
 
-from services.cliente_planes import obtener_id_persona_por_email, PlanesNoDisponibleError
+from services.cliente_planes import obtener_persona_por_email, PlanesNoDisponibleError
 
 from services.auth_service import (
     login,
@@ -69,7 +69,7 @@ def iniciar_sesion():
             return respuesta_api(False, [], "email y password son requeridos", 400)
 
         # email -> id_persona se resuelve contra Planes (GET /contactos/GetPersonaIDFromMail)
-        id_persona = obtener_id_persona_por_email(email)
+        id_persona, id_legajo = obtener_persona_por_email(email)
 
         if id_persona is None:
             return respuesta_api(False, [], "Credenciales inválidas", 401)
@@ -84,6 +84,7 @@ def iniciar_sesion():
         roles, acciones = crear_sesion_usuario(
             id_usuario=usuario.id_usuario,
             id_persona=usuario.id_persona,
+            id_legajo=id_legajo,
             refresh_jti=refresh_jti,
         )
 
@@ -97,6 +98,7 @@ def iniciar_sesion():
             "acciones": acciones,
             "user": {
                 "id": usuario.id_usuario,
+                "id_legajo": id_legajo,
             },
             "aviso_cambio_contrasena": aviso_cambio_contrasena,
         }, "Inicio de sesión exitoso")

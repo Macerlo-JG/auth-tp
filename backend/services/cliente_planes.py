@@ -5,12 +5,12 @@ Cliente HTTP para el microservicio Planes.
 import requests
 from flask import current_app
 
-def obtener_id_persona_por_email(email):
+def obtener_persona_por_email(email):
     """
-    Resuelve id_persona a partir de un email, consultando a Planes.
+    Resuelve id_persona e id_legajo a partir de un email, consultando a Planes.
 
-    Devuelve id_persona, si Planes encontró un contacto con ese email,
-    o None si Planes respondió 404 (no encontró ningún contacto).
+    Devuelve la tupla (id_persona, id_legajo). Si Planes no encontró
+    ningún contacto con ese email, devuelve (None, None).
     """
     base_url = current_app.config.get("PLANES_URL", "http://planes-backend:5000")
     url = f"{base_url.rstrip('/')}/contactos/GetPersonaIDFromMail"
@@ -19,12 +19,16 @@ def obtener_id_persona_por_email(email):
         response = requests.get(url, params={"email": email}, timeout=3)
 
         if response.status_code == 404:
-            return None
+            return None, None
 
         response.raise_for_status()
 
-        body = response.json()
-        return int(body["data"]["personaid"])
+        data = response.json()["data"]
+        id_persona = int(data["personaid"])
+        id_legajo = data.get("legajoid")
+        id_legajo = int(id_legajo) if id_legajo is not None else None
+
+        return id_persona, id_legajo
 
     except requests.exceptions.RequestException as error:
         raise PlanesNoDisponibleError(f"No se pudo consultar Planes: {error}")

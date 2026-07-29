@@ -163,3 +163,73 @@ def seed_data():
 
     # Un solo commit al final para todo el seed (roles + acciones + admin).
     db.session.commit()
+
+
+    
+def seed_data_prueba():
+    """
+    Usuarios de prueba para desarrollo local.
+
+    Pensado para poder ejercitar de punta a punta los tres flujos que
+    dependen de Planes: login, activación de cuenta y recuperación de
+    contraseña - además de credenciales (verificar/cambiar), que solo
+    necesita un usuario ACTIVO ya logueado.
+
+    Requiere que las personas 2 (Jose Rodriguez) y 3 (Martina Gonzalez)
+    ya existan en Planes con un contacto de tipo Email:
+        - docente@test.com -> persona_id 2
+        - alumno@test.com  -> persona_id 3
+    (ver 001_datos_iniciales.sql).
+    """
+    ahora = datetime.now(timezone.utc)
+
+    # docente@test.com (id_persona=2): PENDIENTE, para probar activación
+    # de punta a punta (solicitar-otp -> Mailpit/Gmail -> verificar).
+    docente = Usuario.query.filter_by(id_persona=2).first()
+
+    if not docente:
+        docente = Usuario(
+            id_persona=2,
+            estado_usuario=EstadoUsuario.PENDIENTE,
+            created_by=1,
+            created_at=ahora,
+        )
+        db.session.add(docente)
+        db.session.flush()
+
+        db.session.add(
+            Credencial(
+                id_usuario=docente.id_usuario,
+                password_hash=generate_password_hash("docente123"),
+                created_by=1,
+                created_at=ahora,
+                es_actual=True,
+            )
+        )
+
+    # alumno@test.com (id_persona=3): ACTIVO directamente, para probar
+    # login, recuperación de contraseña y credenciales sin depender de
+    # haber activado antes a mano.
+    alumno = Usuario.query.filter_by(id_persona=3).first()
+
+    if not alumno:
+        alumno = Usuario(
+            id_persona=3,
+            estado_usuario=EstadoUsuario.ACTIVO,
+            created_by=1,
+            created_at=ahora,
+        )
+        db.session.add(alumno)
+        db.session.flush()
+
+        db.session.add(
+            Credencial(
+                id_usuario=alumno.id_usuario,
+                password_hash=generate_password_hash("alumno123"),
+                created_by=1,
+                created_at=ahora,
+                es_actual=True,
+            )
+        )
+
+    db.session.commit()

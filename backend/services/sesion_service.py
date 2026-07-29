@@ -1,7 +1,7 @@
 """
 Escritura de la sesion de usuario en Redis.
 
-session:{id_usuario} -> Hash (roles, acciones, refresh_jti, id_persona)
+session:{id_usuario} -> Hash (roles, acciones, refresh_jti, id_persona, id_legajo)
 
 Responsabilidad exclusiva de Auth: es el unico servicio que hace
 login/logout/refresh y cambios de rol, por lo tanto el unico que escribe
@@ -23,7 +23,7 @@ from config.config import Config
 _redis_client = redis.from_url(Config.REDIS_URL, decode_responses=True)
 
 
-def crear_sesion(id_usuario, roles, acciones, refresh_jti, id_persona):
+def crear_sesion(id_usuario, roles, acciones, refresh_jti, id_persona, id_legajo):
     clave = clave_sesion(id_usuario)
 
     _redis_client.hset(clave, mapping={
@@ -31,6 +31,7 @@ def crear_sesion(id_usuario, roles, acciones, refresh_jti, id_persona):
         "acciones": json.dumps(acciones),
         "refresh_jti": refresh_jti,
         "id_persona": str(id_persona),
+        "id_legajo": str(id_legajo) if id_legajo is not None else "",
     })
     _redis_client.expire(clave, Config.AUTH_COMMON_SESSION_TTL)
 

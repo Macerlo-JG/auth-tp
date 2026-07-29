@@ -2,7 +2,7 @@
 from flask import Blueprint, request, jsonify
 import traceback
 
-from services.cliente_planes import obtener_id_persona_por_email, PlanesNoDisponibleError
+from services.cliente_planes import obtener_persona_por_email, PlanesNoDisponibleError
 from models.usuario import EstadoUsuario
 from services.usuario_service import obtener_por_id_persona
 from services.otp_service import generar_otp, verificar_otp
@@ -16,7 +16,7 @@ def _usuario_activo_por_email(email):
     """Verificamos que el usuario exista y esté ACTIVO.
     Se usa antes de enviar el OTP para no filtrar usuarios inactivos o pendientes.
     """
-    id_persona = obtener_id_persona_por_email(email)
+    id_persona, _ = obtener_persona_por_email(email)
     if not id_persona:
         return None
 
@@ -100,7 +100,7 @@ def cambiar_contrasena():
                 400,
             )
 
-        id_persona = obtener_id_persona_por_email(email)
+        id_persona, _ = obtener_persona_por_email(email)
         if not id_persona:
             return respuesta_api(False, [], "Código inválido.", 400)
 
