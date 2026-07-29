@@ -160,10 +160,12 @@ def crear_completo_con_roles(datos, id_usuario_sesion):
     #    pasan por usuario_create_schema.
     datos_validados = usuario_completo_con_roles_schema.load({
         "id_persona": datos.get("id_persona"),
+        "id_legajo": datos.get("id_legajo"),
         "email": datos.get("email"),
         "id_roles": datos.get("id_roles"),
     })
     id_persona = datos_validados["id_persona"]
+    id_legajo = datos_validados["id_legajo"]
     email = datos_validados["email"]
     id_roles = datos_validados["id_roles"]
 

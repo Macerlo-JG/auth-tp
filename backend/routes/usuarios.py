@@ -85,7 +85,7 @@ def crear_usuario_completo():
 
 
 # Pensado para microservicio Planes:
-# recibe id_persona, email y una lista de id_roles, y crea el usuario ya
+# recibe id_persona, id_legajo, email y una lista de id_roles, y crea el usuario ya
 # con sus roles asignados y su credencial temporal, en una única operación. 
 @usuarios_bp.route("/completo-con-roles", methods=["POST"])
 @requires_permission("auth.usuarios.crear", "auth.roles.asignar", policy="ALL")
@@ -103,7 +103,7 @@ def crear_usuario_completo_con_roles():
 
     return respuesta_api(
         True,
-        {"id_usuario": nuevo_usuario.id_usuario, "estado_usuario": nuevo_usuario.estado_usuario.value},
+        {"id_usuario": nuevo_usuario.id_usuario},
         "Usuario creado y roles asignados",
         201,
     )

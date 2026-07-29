@@ -90,7 +90,7 @@ class UsuarioUpdateSchema(UsuarioBaseSchema):
 class UsuarioCompletoConRolesSchema(ma.Schema):
     """
     Valida los tres campos de 'POST /usuarios/completo-con-roles' en un
-    solo paso: id_persona, email e id_roles. 
+    solo paso: id_persona, id_legajo, email e id_roles. 
 
     Solo valida datos de entrada sueltos, la construcción real del
     Usuario se sigue haciendo con UsuarioCreateSchema, ya validado.
@@ -107,6 +107,21 @@ class UsuarioCompletoConRolesSchema(ma.Schema):
         error_messages={
             "required": "La persona es obligatoria",
             "null": "La persona no puede ser null"
+        }
+    )
+
+    id_legajo = fields.Integer(
+        required=True,
+        strict=True,
+        validate=[
+            validate.Range(
+                min=1,
+                error="id_legajo debe ser mayor a 0"
+            )
+        ],
+        error_messages={
+            "required": "El legajo es obligatorio",
+            "null": "El legajo no puede ser null"
         }
     )
 
