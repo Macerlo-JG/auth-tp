@@ -3,7 +3,7 @@ Cliente HTTP para el microservicio Planes.
 """
 
 import requests
-from flask import current_app
+from flask import current_app, request
 
 def obtener_persona_por_email(email):
     """
@@ -44,8 +44,19 @@ def obtener_email_por_id_persona(id_persona):
     base_url = current_app.config.get("PLANES_URL", "http://planes-backend:5000")
     url = f"{base_url.rstrip('/')}/legajos/GetPersonaFromPersonaId"
 
+    headers = {}
+
+    auth = request.headers.get("Authorization")
+    if auth:
+        headers["Authorization"] = auth
+
     try:
-        response = requests.get(url, params={"id": id_persona}, timeout=3)
+        response = requests.get(
+            url,
+            params={"id": id_persona},
+            headers=headers,
+            timeout=3,
+        )
 
         if response.status_code == 404:
             return None

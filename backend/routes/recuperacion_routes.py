@@ -2,7 +2,7 @@
 from flask import Blueprint, request, jsonify
 import traceback
 
-from services.cliente_planes import obtener_persona_por_email, PlanesNoDisponibleError
+from services.cliente_planes import obtener_persona_por_email
 from models.usuario import EstadoUsuario
 from services.usuario_service import obtener_por_id_persona
 from services.otp_service import generar_otp, verificar_otp
@@ -16,7 +16,7 @@ def _usuario_activo_por_email(email):
     """Verificamos que el usuario exista y esté ACTIVO.
     Se usa antes de enviar el OTP para no filtrar usuarios inactivos o pendientes.
     """
-    id_persona, _ = obtener_persona_por_email(email)
+    id_persona, _id_legajo = obtener_persona_por_email(email)
     if not id_persona:
         return None
 
@@ -52,9 +52,6 @@ def solicitar_otp():
             [],
             "Si el correo existe y la cuenta está activa, recibirá un código de recuperación.",
         )
-
-    except PlanesNoDisponibleError:
-        return respuesta_api(False, [], "Servicio no disponible, intentá nuevamente en unos minutos", 503)
 
     except Exception as error:
         traceback.print_exc()
@@ -100,7 +97,7 @@ def cambiar_contrasena():
                 400,
             )
 
-        id_persona, _ = obtener_persona_por_email(email)
+        id_persona, _id_legajo = obtener_persona_por_email(email)
         if not id_persona:
             return respuesta_api(False, [], "Código inválido.", 400)
 
@@ -120,9 +117,6 @@ def cambiar_contrasena():
     except ValueError as error:
         return respuesta_api(False, [], str(error), 400)
 
-    except PlanesNoDisponibleError:
-        return respuesta_api(False, [], "Servicio no disponible, intentá nuevamente en unos minutos", 503)
-    
     except Exception as error:
         traceback.print_exc()
         return respuesta_api(False, [], str(error), 500)

@@ -5,7 +5,7 @@ from schemas.usuario_schemas import usuario_create_schema, usuario_update_schema
 from db import db
 from services.credencial_service import crear_password_temporal
 from services.email_service import enviar_bienvenida
-from services.cliente_planes import obtener_email_por_id_persona, PlanesNoDisponibleError
+from services.cliente_planes import obtener_email_por_id_persona
 from models.rol import Rol
 from models.rol_usuario import RolUsuario
 from auth_common import sesion_common
@@ -144,11 +144,11 @@ def crear_completo(datos, id_usuario_sesion):
 
 
 def crear_completo_con_roles(datos, id_usuario_sesion):
-    """Igual que crear_completo, pero también le asigna roles.
-    Pensado para el microservicio Planes."""
-    """Crea un usuario, le asigna una lista de roles y envía el mail de
+    """
+    Pensado para el microservicio Planes.
+    Crea un usuario, le asigna una lista de roles y envía el mail de
     bienvenida.
-    Los tres campos de entrada (id_persona, email, id_roles) se validan
+    Los cuatro campos de entrada (id_persona, id_legajo, email, id_roles) se validan
     juntos, en un solo paso, con 'usuario_completo_con_roles_schema'.
 
     Los roles se validan antes de crear cualquier fila

@@ -7,11 +7,12 @@ ej: recuperación de contraseña o edición de datos sensibles como mail de inic
 from flask import Blueprint, request, jsonify
 import traceback
 
-from services.cliente_planes import obtener_persona_por_email, PlanesNoDisponibleError
+from services.cliente_planes import obtener_persona_por_email
 from models.usuario import EstadoUsuario
 from services.usuario_service import obtener_por_id_persona, activar_cuenta
 from services.otp_service import generar_otp, verificar_otp
 from services.email_service import enviar_otp_activacion
+from auth_common.respuesta_api import respuesta_api
 
 activacion_bp = Blueprint("activacion", __name__, url_prefix="/auth/activacion")
 
@@ -27,7 +28,7 @@ def solicitar_otp():
             return respuesta_api(False, [], "email es requerido", 400)
 
         # email -> id_persona resuelto contra Planes.
-        id_persona, _ = obtener_persona_por_email(email)
+        id_persona, _id_legajo = obtener_persona_por_email(email)
 
         if not id_persona:
             # No revelamos si el correo existe para evitar enumeración de usuarios.
@@ -49,9 +50,6 @@ def solicitar_otp():
 
         return respuesta_api(True, [], "Se envió un código de activación a su correo.")
 
-    except PlanesNoDisponibleError:
-        return respuesta_api(False, [], "Servicio no disponible, intentá nuevamente en unos minutos", 503)
-
     except Exception as error:
         traceback.print_exc()
         return respuesta_api(False, [], str(error), 500)
@@ -68,7 +66,7 @@ def verificar():
         if not email or not otp:
             return respuesta_api(False, [], "email y otp son requeridos", 400)
 
-        id_persona, _ = obtener_persona_por_email(email)
+        id_persona, _id_legajo = obtener_persona_por_email(email)
         if not id_persona:
             return respuesta_api(False, [], "Código inválido.", 400)
 
@@ -85,18 +83,6 @@ def verificar():
 
         return respuesta_api(True, [], "Cuenta activada correctamente. Ya puede iniciar sesión.")
 
-    except PlanesNoDisponibleError:
-        return respuesta_api(False, [], "Servicio no disponible, intentá nuevamente en unos minutos", 503)
-
     except Exception as error:
         traceback.print_exc()
         return respuesta_api(False, [], str(error), 500)
-
-
-def respuesta_api(ok=True, data=None, message="", status=200):
-    return jsonify({
-        "ok": ok,
-        "data": data if data is not None else [],
-        "count": len(data) if isinstance(data, list) else (1 if data else 0),
-        "message": message,
-    }), status

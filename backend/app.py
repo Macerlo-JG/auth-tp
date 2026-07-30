@@ -18,7 +18,6 @@ from auth_common import AuthCommon
 from auth_common.respuesta_api import respuesta_api
 from db import db, ma, limiter, mail
 from routes.documentos_legales_routes import documentos_legales_bp
-from routes.personas_mock_route import personas_bp
 
 """
 Archivo principal de la aplicación:
@@ -38,6 +37,9 @@ ma.init_app(app)
 mail.init_app(app)
 jwt_manager = JWTManager(app)
 
+@app.route("/health")
+def health():
+    return respuesta_api(True, [], "ok", 200)
 
 # Validación centralizada de tokens: además de verificar la firma,
 # consultamos Redis para saber si la sesión existe y si el `jti` de
@@ -95,8 +97,7 @@ with app.app_context():
     db.create_all()    
     seed_data()
 
-       # Usuarios de prueba (docente@test.com, alumno@test.com): solo en
-    # desarrollo local, nunca contra un ambiente real. Depende de que
+    # Usuarios de prueba (docente@test.com, alumno@test.com): depende de que
     # Planes tenga cargadas las personas 2 y 3 con contacto de email
     # (ver 001_datos_iniciales.sql y seed_data_prueba()).
     if os.environ.get("FLASK_ENV") == "development":
@@ -111,7 +112,6 @@ app.register_blueprint(recuperacion_bp)
 app.register_blueprint(acciones_bp)
 app.register_blueprint(roles_bp)
 app.register_blueprint(documentos_legales_bp)
-#mock
-app.register_blueprint(personas_bp)
+
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)

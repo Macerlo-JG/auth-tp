@@ -2,7 +2,7 @@ import os
 from datetime import timedelta
 
 class Config:
-    FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:8480")
+    FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://186.19.137.9:8480")
     
     SQLALCHEMY_DATABASE_URI = os.environ.get(
     "DATABASE_URL",
@@ -25,7 +25,7 @@ class Config:
     RATELIMIT_STORAGE_URI = 'redis://redis:6379/1'
 
     # URL interna del microservicio Planes.
-    PLANES_URL = os.environ.get("PLANES_URL", "http://planes-backend:5000")
+    PLANES_URL = os.environ.get("PLANES_URL", "http://bomberos_backend:5000")
 
     AUTH_COMMON_REDIS_URL = REDIS_URL
     AUTH_COMMON_SESSION_TTL = int(JWT_ACCESS_TOKEN_EXPIRES.total_seconds())
@@ -40,6 +40,7 @@ class Config:
         "recuperacion.verificar_otp_endpoint",
         "recuperacion.cambiar_contrasena",
         "acciones.registrar",
+        "health",
     ]
 
      # IPs de microservicios autorizados a llamar endpoints only_services=True

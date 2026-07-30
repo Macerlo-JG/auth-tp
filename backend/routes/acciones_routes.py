@@ -15,7 +15,7 @@ Lo llama cada microservicio (Legajo, Inscripción) al arrancar, con el
 contenido de su acciones.yml.
 """
 
-acciones_bp = Blueprint("acciones", __name__, url_prefix="/acciones")
+acciones_bp = Blueprint("acciones", __name__, url_prefix="/auth/acciones")
 
 @acciones_bp.route("", methods=["GET"])
 @requires_permission("auth.roles.control_parcial")

@@ -18,7 +18,7 @@ from flask_jwt_extended import (
     get_jwt,
 )
 
-from services.cliente_planes import obtener_persona_por_email, PlanesNoDisponibleError
+from services.cliente_planes import obtener_persona_por_email
 
 from services.auth_service import (
     login,
@@ -68,7 +68,7 @@ def iniciar_sesion():
         if not email or not password:
             return respuesta_api(False, [], "email y password son requeridos", 400)
 
-        # email -> id_persona se resuelve contra Planes (GET /contactos/GetPersonaIDFromMail)
+        # email -> id_persona, id_legajo se resuelve contra Planes (GET /contactos/GetPersonaIDFromMail)
         id_persona, id_legajo = obtener_persona_por_email(email)
 
         if id_persona is None:
@@ -114,11 +114,6 @@ def iniciar_sesion():
             },
             "message": str(error),
         }), 403
-
-    except PlanesNoDisponibleError as error:
-        # Error de infraestructura (Planes caído, timeout).
-        traceback.print_exc()
-        return respuesta_api(False, [], "Servicio no disponible, intentá nuevamente en unos minutos", 503)
 
     except ValueError as error:
         return respuesta_api(False, [], str(error), 401)

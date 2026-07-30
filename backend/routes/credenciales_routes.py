@@ -25,11 +25,9 @@ from db import limiter
 
 credenciales_bp = Blueprint("credenciales", __name__, url_prefix="/auth/credenciales")
 
-
 # Tipo de OTP propio para este flujo -- namespace separado en Redis del
 # de "recuperacion" y "activacion", así un código de uno no sirve para otro.
 TIPO_OTP_CAMBIO = "cambio_contrasena"
-
 
 def clave_por_usuario_jwt():
     """Rate limit por identidad del JWT ya validado (no por IP)."""
@@ -94,11 +92,9 @@ def solicitar_otp_cambio():
         if not usuario:
             return respuesta_api(False, [], "Usuario no encontrado", 404)
 
-        # El email vive en el mock de personas (mock/personas_mock.py),
-        # resuelto a partir del id_persona del usuario autenticado.
+        # email -> id_persona se resuelve contra Planes (GET /contactos/GetPersonaIDFromMail)
         email = obtener_email_por_id_persona(usuario.id_persona)
 
-        print(email)
         if not email:
             return respuesta_api(
                 False, [], "No hay un correo asociado a este usuario", 400
@@ -120,7 +116,6 @@ def solicitar_otp_cambio():
 def cambiar_credencial():
     try:
         id_usuario_token = int(get_jwt_identity())
-
         req = request.get_json() or {}
         password_actual = req.get("password_actual")
         password_nueva = req.get("password_nueva")
@@ -135,7 +130,10 @@ def cambiar_credencial():
         if not usuario:
             return respuesta_api(False, [], "Usuario no encontrado", 404)
 
+        # email -> id_persona se resuelve contra Planes (GET /contactos/GetPersonaIDFromMail)
         email = obtener_email_por_id_persona(usuario.id_persona)
+        
+
         if not email:
             return respuesta_api(
                 False, [], "No hay un correo asociado a este usuario", 400
